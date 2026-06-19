@@ -34,7 +34,7 @@ This is the model used in ODP v1. It is supported in v2 for compatibility and mi
 
 The **Ordering Application** or **Logistics Service** MUST provide one `client_id` and `client_secret` for each individual merchant it works with, even if those merchants use the same **Software Service**.
 
-**Credential acquisition:** The merchant **Software Service** retrieves the `client_id` and `client_secret` from the **Ordering Application** or **Logistics Service** and uses them to obtain an access token via the token endpoint.
+**Credential acquisition:** The merchant **Software Service** retrieves the `client_id` and `client_secret` from the **Ordering Application** or **Logistics Service** and uses them to obtain an access token via the [token endpoint](https://spec.opendelivery.io/v2/openapi.yaml#operation/postOAuthToken).
 
 **Token usage:** The `accessToken` obtained must be included in the `Authorization` header of every protected request:
 
@@ -97,11 +97,11 @@ In this flow, the authorization is not implicit in the credential — it require
 
 This model provides stronger governance over which applications can access a merchant's data, making it suitable for ecosystems where merchant consent must be auditable and revocable.
 
-It is not mandatory for all integrations. When supported, it MUST be declared in the Discovery. The detailed OAuth2 Authorization Code flow parameters are defined in the REST transport binding.
+It is not mandatory for all integrations. When supported, it MUST be declared in the Discovery. The detailed OAuth2 Authorization Code flow parameters are defined in the [REST transport binding](https://spec.opendelivery.io/v2/openapi.yaml#operation/postOAuthAuthorize).
 
 ## API Key
 
-Some endpoints may require authentication via API Key instead of OAuth2. When used, the key MUST be passed in the request header:
+Some endpoints may require authentication via API Key instead of OAuth2. When used, the key MUST be passed in the request header (see [`ApiKeyAuth` security scheme](https://spec.opendelivery.io/v2/openapi.yaml#/components/securitySchemes/ApiKeyAuth)):
 
 | header | type | description |
 |---|---|---|
@@ -117,7 +117,7 @@ When an **Ordering Application** sends a webhook event to a **Software Service**
 
 The **Software Service** is responsible for verifying the signature on every received webhook to confirm the request originates from a known and authorized **Ordering Application**.
 
-The specific headers, signing algorithm, and acknowledgement rules are defined in the REST transport binding.
+The specific headers, signing algorithm, and acknowledgement rules are defined in the [REST transport binding](https://spec.opendelivery.io/v2/openapi.yaml#operation/postWebhookEvent).
 
 ## Scopes
 
@@ -146,7 +146,7 @@ Message signing is a security capability independent of the OAuth2 authenticatio
 
 ## Discovery Declaration
 
-Every ODP v2 implementation MUST expose a Discovery endpoint that declares its authentication configuration. The following fields are required for authentication declaration:
+Every ODP v2 implementation MUST expose a [Discovery endpoint](https://spec.opendelivery.io/v2/openapi.yaml#operation/getDiscovery) that declares its authentication configuration. The following fields are required for authentication declaration:
 
 | field | type | required | description |
 |---|---|---|---|
