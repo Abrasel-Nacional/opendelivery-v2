@@ -6,6 +6,8 @@ Open Delivery v2 is a protocol‑first redesign focused on long‑term interoper
 
 This work is **under active development**.
 
+The intent is for v2 to become the **official Open Delivery documentation** from a defined effective date, while v1 remains active for a transition period and is later deprecated.
+
 ---
 
 ## 📌 What is Open Delivery?
@@ -32,11 +34,13 @@ Key goals of v2 include:
 
 - Protocol‑first design (not API‑first)
 - Clear separation between protocol and transport
-- Modular, domain‑oriented specifications
+- Modular capabilities, extensions, and bindings
 - Explicit versioning and governance rules
 - Long‑term extensibility and backward compatibility
 
 This repository represents a **new protocol generation**, not a patch or minor revision.
+
+At the same time, v2 is being written from the functional baseline already established in v1. In practice, the v2 specification starts by preserving existing behavior and then evolves through approved changes and new capabilities.
 
 ---
 
@@ -52,22 +56,39 @@ Discussions, proposals, and early drafts are expected as part of this phase.
 
 ---
 
+## 📚 Specification Documentation
+
+The complete specification is organized into modular protocol capabilities:
+
+**→ Start here:** [**Specification Index and Guide**](README_SPEC.md)
+
+### Quick Links
+- **Foundation:** [Principles](docs/principles.md) · [Terminology](docs/terminology.md) · [Overview](docs/overview.md)
+- **Primary Capability:** [Orders](docs/domains/orders/index.md)
+- **Supporting Capabilities:** [Merchant](docs/domains/merchant/index.md) · [Logistics](docs/domains/logistics/index.md)
+- **For v1 Users:** [Implementation Guide](IMPLEMENTATION_GUIDE.md) · [Endpoint Mapping](docs/domains/ENDPOINT_MAPPING.md)
+
+The v2 documentation is the target source of truth. Migration material is intended to explain deltas from v1, not to embed a full public copy of the legacy reference.
+
+---
+
 ## 🧱 Structure and Scope
 
-Open Delivery v2 is organized around independent domains, such as:
+Open Delivery v2 is organized around independent protocol capabilities and extensions, such as:
 
 - Orders
-- Menu
-- CRM
-- Loyalty
+- Merchant
 - Logistics
-- Core and Security
+- CRM
+- Indoor Extension
+- Loyalty Extension
+- Core protocol and security
 
-Each domain is designed to be:
+Each capability is designed to be:
 
 - Independently implementable
 - Versioned explicitly
-- Loosely coupled to other domains
+- Loosely coupled to other capabilities
 
 Transport bindings (such as REST / OpenAPI) are treated as **implementation details**, not as the protocol itself.
 
@@ -80,7 +101,7 @@ Contributions are welcome and encouraged.
 At this stage, participation happens primarily through **GitHub Issues**, which are used for:
 
 - Architectural discussions
-- Domain modeling feedback
+- Capability modeling feedback
 - Questions and clarifications
 - Specification proposals
 

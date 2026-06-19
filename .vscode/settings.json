@@ -1,0 +1,9 @@
+{
+  "chat.tools.terminal.autoApprove": {
+    "mkdocs": true,
+    "/^source /c/OpenDelivery/opendelivery-v2/\\.venv/Scripts/activate && mkdocs build --strict$/": {
+      "approve": true,
+      "matchCommandLine": true
+    }
+  }
+}

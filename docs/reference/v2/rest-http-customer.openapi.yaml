@@ -1,0 +1,271 @@
+openapi: 3.0.3
+info:
+  title: Open Delivery Protocol - REST/HTTP Customer Binding
+  version: 2.0.0-draft
+  description: |
+    REST/HTTP contract for ODP Customer Capability.
+    Normative protocol behavior is defined in docs/protocol/customer.md.
+servers:
+  - url: https://api.dominio.com
+    description: Example API host
+paths:
+  /v1/customer/customers:ingest:
+    post:
+      summary: Ingest customer record into CRM workflow
+      operationId: ingestCustomer
+      tags: [customer]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IngestCustomerRequest'
+      responses:
+        '202':
+          description: Accepted
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /v1/customer/customers:
+    get:
+      summary: Fetch customer records for CRM processing
+      operationId: getCustomers
+      tags: [customer]
+      parameters:
+        - in: query
+          name: updatedAfter
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Customer list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  customers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Customer'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /v1/customer/orders:ingest:
+    post:
+      summary: Ingest customer-centric order view
+      operationId: ingestOrdersForCRM
+      tags: [customer]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IngestOrderRequest'
+      responses:
+        '202':
+          description: Accepted
+  /v1/customer/orders:
+    get:
+      summary: Fetch customer-linked orders for CRM analytics
+      operationId: getOrdersForCRM
+      tags: [customer]
+      responses:
+        '200':
+          description: Order list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orders:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CustomerOrderView'
+  /v1/customer/events:
+    post:
+      summary: Receive customer event stream payload
+      operationId: receiveCustomerEvent
+      tags: [customer]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventEnvelope'
+      responses:
+        '202':
+          description: Accepted
+  /v1/customer/leads:ingest:
+    post:
+      summary: Ingest lead into CRM workflow
+      operationId: ingestLead
+      tags: [customer]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IngestLeadRequest'
+      responses:
+        '202':
+          description: Accepted
+  /v1/customer/reviews:ingest:
+    post:
+      summary: Ingest review payload (draft)
+      operationId: ingestReview
+      tags: [customer, draft]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IngestReviewRequest'
+      responses:
+        '202':
+          description: Accepted
+components:
+  schemas:
+    IngestCustomerRequest:
+      type: object
+      required: [customer]
+      properties:
+        customer:
+          $ref: '#/components/schemas/Customer'
+    IngestLeadRequest:
+      type: object
+      required: [lead]
+      properties:
+        lead:
+          $ref: '#/components/schemas/Lead'
+    IngestOrderRequest:
+      type: object
+      required: [order]
+      properties:
+        order:
+          $ref: '#/components/schemas/CustomerOrderView'
+    IngestReviewRequest:
+      type: object
+      required: [review]
+      properties:
+        review:
+          $ref: '#/components/schemas/Review'
+    EventEnvelope:
+      type: object
+      required: [event]
+      properties:
+        event:
+          $ref: '#/components/schemas/CustomerEvent'
+    Customer:
+      type: object
+      required: [id, externalIds, name, contacts, consent, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        externalIds:
+          type: array
+          items:
+            type: string
+        name:
+          type: string
+        contacts:
+          type: object
+          additionalProperties: true
+        document:
+          type: string
+        birthDate:
+          type: string
+        gender:
+          type: string
+        consent:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Lead:
+      type: object
+      required: [id, source, status]
+      properties:
+        id:
+          type: string
+        source:
+          type: string
+        status:
+          type: string
+        customerRef:
+          type: string
+    CustomerOrderView:
+      type: object
+      required: [orderId, customerId, salesChannel, timestamps]
+      properties:
+        orderId:
+          type: string
+        customerId:
+          type: string
+        salesChannel:
+          type: string
+        timestamps:
+          type: object
+          additionalProperties: true
+    CustomerEvent:
+      type: object
+      required: [eventType, entityType, occurredAt, payload]
+      properties:
+        eventType:
+          type: string
+        entityType:
+          type: string
+          enum: [customer, order, lead, review]
+        occurredAt:
+          type: string
+          format: date-time
+        payload:
+          type: object
+          additionalProperties: true
+    Review:
+      type: object
+      required: [id, referenceType, score]
+      properties:
+        id:
+          type: string
+        referenceType:
+          type: string
+          enum: [order, store, experience]
+        score:
+          type: number
+        comment:
+          type: string
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: object
+              additionalProperties: true
+            retryable:
+              type: boolean
+            timestamp:
+              type: string
+              format: date-time

@@ -1,116 +1,179 @@
-# Open Delivery Protocol v2
-
-Open Delivery is an open protocol that defines how independent systems exchange information in the food service and commerce ecosystem.
-
-This repository contains the **Version 2** specification of the Open Delivery protocol, designed with a **protocol‑first**, modular, and long‑term approach.
-
-Open Delivery is a specification.  
-It defines **rules, concepts, and responsibilities**, not implementations.
-
+---
+hide:
+  - toc
+title: Open Delivery Protocol
+description: The common language for ordering applications, software services, and logistics providers.
 ---
 
-## Purpose of This Specification
+<div class="landing-page">
 
-The purpose of the Open Delivery protocol is to enable interoperability between heterogeneous systems without requiring custom, one‑off integrations for each pair of participants.
+  <!-- ── HERO ──────────────────────────────────────────────── -->
+  <div class="hero-wrapper">
+    <div class="hero-content">
+      <h1>Open Delivery<br>Protocol</h1>
+      <p class="hero-subheading">
+        The common language for ordering, fulfillment, and delivery.
+      </p>
+      <p class="hero-description">
+        Open Delivery defines building blocks for food and retail delivery coordination—from
+        merchant catalog discovery to order placement and last-mile logistics—allowing
+        the ecosystem to interoperate through one standard, without custom bilateral integrations.
+      </p>
+      <a href="documentation/core-concepts/" class="promo-button">Get started</a>
+    </div>
+    <div class="hero-image">
+      <img src="assets/images/opendelivery-logo.png" alt="Open Delivery Protocol logo" class="hero-logo-crisp">
+    </div>
+  </div>
 
-The protocol establishes a shared language and set of expectations so that systems can integrate while remaining independently operated and governed.
+  <!-- ── PROMO CARDS ───────────────────────────────────────── -->
+  <div class="promo-card-wrapper">
+    <div class="promo-card">
+      <h3>Learn</h3>
+      <p>Protocol overview, core concepts, and design principles</p>
+      <a href="documentation/core-concepts/" class="promo-button">Read the docs</a>
+    </div>
+    <div class="promo-card">
+      <h3>Implement</h3>
+      <p>GitHub repo, technical spec, and capability reference</p>
+      <a href="https://github.com/Abrasel-Nacional/opendelivery-v2" class="promo-button" target="_blank">View on GitHub</a>
+    </div>
+    <div class="promo-card">
+      <h3>Contribute</h3>
+      <p>Feedback, issues, and pull requests welcome</p>
+      <a href="https://github.com/Abrasel-Nacional/opendelivery-v2/issues" class="promo-button" target="_blank">Open an issue</a>
+    </div>
+  </div>
 
----
+  <hr class="od-divider">
 
-## What Open Delivery Is
+  <!-- ── CORE CAPABILITIES ─────────────────────────────────── -->
+  <div class="section-intro">
+    <h2>Core capabilities</h2>
+    <p>
+      The protocol is organized into independent capabilities. Each capability specifies
+      information model, supported operations, interaction roles, and interoperability obligations.
+    </p>
+    <p>
+      Before any capability is used, participants discover each other through the mandatory
+      well-known document defined by the protocol.
+    </p>
+  </div>
 
-Open Delivery:
+  <div class="domain-grid">
+    <div class="domain-card">
+      <div class="domain-card-icon">🏢</div>
+      <h3>Merchant</h3>
+      <p>Merchant entity structure and operational rules. Menus, categories, items, availability.</p>
+      <br><a href="specification/merchant/" class="promo-button">Learn more</a>
+    </div>
+    <div class="domain-card">
+      <div class="domain-card-icon">📋</div>
+      <h3>Orders</h3>
+      <p>Order lifecycle, state management, and coordination. Idempotency, events, cancellation.</p>
+      <br><a href="specification/orders/" class="promo-button">Learn more</a>
+    </div>
+    <div class="domain-card">
+      <div class="domain-card-icon">👤</div>
+      <h3>Customer</h3>
+      <p>Customer, lead, and customer-linked order interoperability for CRM, loyalty, and marketing use cases.</p>
+      <br><a href="specification/customer/" class="promo-button">Learn more</a>
+    </div>
+    <div class="domain-card">
+      <div class="domain-card-icon">📍</div>
+      <h3>Logistics</h3>
+      <p>Delivery coordination and tracking. Address resolution, delivery states, and updates.</p>
+      <br><a href="specification/logistics/" class="promo-button">Learn more</a>
+    </div>
+  </div>
 
-- Defines how systems communicate with each other
-- Specifies concepts, entities, and responsibilities
-- Is vendor‑neutral and implementation‑agnostic
-- Enables point‑to‑point integrations
-- Supports decentralized architectures
+  <hr class="od-divider">
 
----
+  <!-- ── FEATURES ──────────────────────────────────────────── -->
+  <div class="section-intro">
+    <h2>Built for flexibility, neutrality, and scale</h2>
+    <p>
+      Delivery coordination demands interoperability. Open Delivery is built on
+      transport-agnostic protocol semantics—REST, MCP, or any other binding—so
+      different systems work together without custom integration per pair.
+    </p>
+  </div>
 
-## What Open Delivery Is Not
+  <div class="features-section">
+    <div class="features-list">
+      <div class="feature-item">
+        <div class="feature-item-icon">🔄</div>
+        <div>
+          <h3>Transport-agnostic</h3>
+          <p>Protocol semantics define conformance. Transport binding (REST, MCP, queues) is a separate layer. The same protocol works over any data interchange mechanism.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-item-icon">🏪</div>
+        <div>
+          <h3>Merchants at the center</h3>
+          <p>Built to facilitate commerce while ensuring merchants retain control of their catalog, pricing, and operational rules. Merchant context is the single source of truth.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-item-icon">📐</div>
+        <div>
+          <h3>Normative and unambiguous</h3>
+          <p>Uses RFC 2119 keywords (MUST, MUST NOT, SHOULD, MAY) throughout. No implicit behavior—if it is not normatively stated, it is not required.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-item-icon">🔗</div>
+        <div>
+          <h3>Autonomous peers</h3>
+          <p>Ordering Application, Software Service, and Logistics Service are independent peers. There is no central orchestrator—each party decides autonomously.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-item-icon">🔒</div>
+        <div>
+          <h3>Secure and merchant-scoped</h3>
+          <p>Credentials are merchant-scoped. Implementations MUST NOT share a single credential set across merchants. Security contracts are first-class protocol citizens.</p>
+        </div>
+      </div>
+    </div>
+  </div>
 
-Open Delivery does **not**:
+  <hr class="od-divider">
 
-- Provide infrastructure or hosting
-- Define business rules or commercial agreements
-- Act as a marketplace or platform
-- Enforce a specific technology stack
-- Replace internal system architectures
+  <!-- ── GET STARTED ───────────────────────────────────────── -->
+  <div class="get-started-container">
+    <div class="get-started-container-intro">
+      <h2>Get started today</h2>
+      <p>
+        Open Delivery is an open standard designed to let ordering apps, merchant software,
+        and logistics providers interact seamlessly—without needing custom, one-off
+        integrations for every connection. We actively seek your feedback and contributions.
+      </p>
+    </div>
+    <div class="get-started-container-steps">
+      <div class="get-started-container-step">
+        <div class="get-started-container-step-icon">📖</div>
+        <div>
+          <h3><a href="documentation/core-concepts/">Read the concepts</a></h3>
+          <p>Understand parties, capabilities, and coordination model</p>
+        </div>
+      </div>
+      <div class="get-started-container-step">
+        <div class="get-started-container-step-icon">📐</div>
+        <div>
+          <h3><a href="protocol/guidelines/">Follow the rules</a></h3>
+          <p>Cross-cutting normative rules and RFC 2119 language</p>
+        </div>
+      </div>
+      <div class="get-started-container-step">
+        <div class="get-started-container-step-icon">🏗️</div>
+        <div>
+          <h3><a href="protocol/authentication/">Set up access</a></h3>
+          <p>Understand the shared authentication flow before protected capability operations</p>
+        </div>
+      </div>
+    </div>
+  </div>
 
-Each participant remains responsible for implementing, operating, and securing its own systems.
-
----
-
-## Ecosystem Scope
-
-The Open Delivery protocol is designed to support interoperability between systems such as:
-
-- Ordering platforms
-- Point of Sale (POS) systems
-- CRM and loyalty platforms
-- Logistics and delivery services
-- Integration hubs and middleware
-
-The protocol focuses on **communication between systems**, not on user interfaces or operational workflows.
-
----
-
-## Design Approach
-
-Open Delivery v2 is based on the following high‑level design approach:
-
-- **Protocol‑first**, not API‑first
-- Clear separation between protocol and transport
-- Modular and domain‑oriented specifications
-- Explicit versioning and evolution rules
-- Backward compatibility as a design goal
-
-These principles guide all decisions in this specification.
-
----
-
-## Document Organization
-
-This specification is organized as follows:
-
-- **Overview** – High‑level description of the protocol and its actors
-- **Principles** – Foundational design principles
-- **Scope** – What is in scope and out of scope
-- **Terminology** – Normative definitions of key terms
-- **Domains** – Domain‑specific specifications (e.g., Orders, Menu, CRM)
-- **Transport Bindings** – How the protocol can be exchanged over specific transports
-
-Each section builds on the previous ones and should be read in order by first‑time readers.
-
----
-
-## Status of This Document
-
-This specification is under active development.
-
-- Content may change as the protocol evolves
-- Not all domains are fully specified
-- Backward compatibility is not yet guaranteed
-
-Feedback and discussion are expected and encouraged during this phase.
-
----
-
-## Participation
-
-Discussion, feedback, and proposals are handled through GitHub Issues.
-
-👉 Open a new issue:  
-https://github.com/Abrasel-Nacional/opendelivery-v2/issues/new
-
-The project backlog and ongoing work are tracked in the official GitHub Project:
-
-👉 https://github.com/orgs/Abrasel-Nacional/projects/5
-
----
-
-## License
-
-Open Delivery is licensed under the Apache License 2.0.
+</div>
