@@ -14,7 +14,7 @@ Protocol pages remain the normative source of behavior and conformance obligatio
 
 ## v2 Artifacts
 
-- Discovery endpoint: [rest-http-discovery.openapi.yaml](v2/rest-http-discovery.openapi.yaml)
+- Discovery endpoint: [discovery.openapi.yaml](v2/discovery.openapi.yaml)
 
 ## Authoring Rules
 

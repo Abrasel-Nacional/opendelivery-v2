@@ -9,43 +9,21 @@ docs_dir: docs
 site_dir: site
 
 nav:
-  - Overview:
+  - Guide:
     - Home: index.md
     - Core Concepts: documentation/core-concepts.md
+    - Discovery: protocol/discovery.md
     - Roadmap: documentation/roadmap.md
-  - Specification:
-    - Overview: specification/overview.md
-    - Authentication: protocol/authentication.md
-    - Merchant Capability:
-      - Overview: specification/merchant.md
-      - Transport:
-        - REST: specification/merchant-rest.md
-    - Orders Capability:
-      - Overview: specification/orders.md
-      - Transport:
-        - REST: specification/orders-rest.md
-      - Indoor Extension:
-        - Overview: specification/indoor.md
-        - Transport:
-          - REST: specification/indoor-rest.md
-    - Customer Capability:
-      - Overview: specification/customer.md
-      - Transport:
-        - REST: specification/customer-rest.md
-      - Loyalty Extension:
-        - Overview: specification/loyalty.md
-        - Transport:
-          - REST: specification/loyalty-rest.md
-    - Logistics Capability:
-      - Overview: specification/logistics.md
-      - Transport:
-        - REST: specification/logistics-rest.md
-    - REST Transport:
-      - Overview: specification/rest.md
-      - Discovery: specification/rest-discovery.md
+  - API Reference:
+    - Overview: reference/index.md
+    - Authentication: reference/authentication.md
+    - Discovery: reference/discovery.md
+    - Customer & Loyalty: reference/customer.md
+    - Indoor / Salão: reference/indoor.md
 
 theme:
   name: material
+  custom_dir: overrides
   language: en
   logo: assets/images/opendelivery-logo.png
   favicon: assets/images/opendelivery-logo.png
@@ -59,10 +37,6 @@ theme:
     - navigation.top
     - navigation.tracking
     - navigation.indexes
-    - navigation.instant
-    - navigation.instant.prefetch
-    - navigation.instant.progress
-    - header.autohide
 
 markdown_extensions:
   - admonition

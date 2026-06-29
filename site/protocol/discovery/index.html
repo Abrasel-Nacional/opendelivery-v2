@@ -13,17 +13,21 @@
         <link rel="canonical" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/discovery/">
       
       
+        <link rel="prev" href="../../documentation/core-concepts/">
+      
+      
+        <link rel="next" href="../../documentation/roadmap/">
       
       
         
       
       
       <link rel="icon" href="../../assets/images/opendelivery-logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
-        <title>Discovery and Well-Known - Open Delivery Protocol</title>
+        <title>Discovery - Open Delivery Protocol</title>
       
     
     
@@ -57,6 +61,58 @@
 
     
     
+
+<style>
+  /* Seta no tab que tem dropdown */
+  .od-tab-has-dropdown > .md-tabs__link::after {
+    content: " ▾";
+    font-size: .55rem;
+    opacity: .7;
+    vertical-align: middle;
+  }
+
+  /* Dropdown renderizado como filho de <body> (padrão portal).
+     position: fixed + z-index alto escapa de qualquer stacking context
+     do Material e do container do ReDoc. */
+  .od-dropdown {
+    display: none;
+    position: fixed;
+    margin: 0;
+    padding: .3rem 0;
+    list-style: none;
+    background: var(--md-primary-fg-color--dark, #00695c);
+    border-radius: 0 0 .25rem .25rem;
+    box-shadow: 0 .4rem 1rem rgba(0, 0, 0, .25);
+    min-width: 14rem;
+    z-index: 1000;
+  }
+
+  .od-dropdown li { margin: 0; }
+
+  .od-dropdown a {
+    display: block;
+    padding: .5rem 1.1rem;
+    color: rgba(255, 255, 255, .8);
+    font-size: .7rem;
+    font-weight: 500;
+    letter-spacing: .02em;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background .12s, color .12s;
+  }
+
+  .od-dropdown a:hover {
+    background: rgba(255, 255, 255, .12);
+    color: #fff;
+  }
+
+  .od-dropdown a.od-active {
+    color: #fff;
+    background: rgba(255, 255, 255, .08);
+    font-weight: 700;
+  }
+</style>
+
   </head>
   
   
@@ -76,7 +132,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#discovery-and-well-known" class="md-skip">
+        <a href="#discovery" class="md-skip">
           Skip to content
         </a>
       
@@ -111,7 +167,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Discovery and Well-Known
+              Discovery
             
           </span>
         </div>
@@ -200,17 +256,19 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
+      <li class="md-tabs__item md-tabs__item--active">
         <a href="../.." class="md-tabs__link">
           
   
   
     
   
-  Overview
+  Guide
 
         </a>
       </li>
@@ -226,13 +284,13 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../specification/overview/" class="md-tabs__link">
+        <a href="../../reference/" class="md-tabs__link">
           
   
   
     
   
-  Specification
+  API Reference
 
         </a>
       </li>
@@ -294,6 +352,8 @@
       
   
   
+    
+  
   
   
     
@@ -307,18 +367,23 @@
       
         
       
-    
-    
-    
-      
+        
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" >
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" checked>
         
           
           <div class="md-nav__link md-nav__container">
@@ -329,7 +394,7 @@
   <span class="md-ellipsis">
     
   
-    Overview
+    Guide
   
 
     
@@ -340,18 +405,18 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_1" id="__nav_1_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_1" id="__nav_1_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_1">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Overview
+    Guide
   
 
           </label>
@@ -382,6 +447,236 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Discovery
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Discovery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-problem-discovery-solves" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The problem discovery solves
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-integration-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The integration flow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-the-manifest-contains" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the manifest contains
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="What the manifest contains">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#identity-and-protocol-version" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Identity and protocol version
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#capabilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Capabilities
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Capabilities">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#orders-and-logistics-originator-and-receiver" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Orders and Logistics — originator and receiver
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#merchant-synchronization-flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Merchant — synchronization flags
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#indoor-fiscal-and-table-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Indoor — fiscal and table configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#customer-operational-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Customer — operational limits
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-publishers-perspective" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The publisher's perspective
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-consumers-perspective" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The consumer's perspective
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -432,7 +727,7 @@
     
       
         
-      
+          
         
       
         
@@ -457,14 +752,15 @@
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
         
           
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
-            
+          <div class="md-nav__link md-nav__container">
+            <a href="../../reference/" class="md-nav__link ">
+              
   
   
   <span class="md-ellipsis">
     
   
-    Specification
+    API Reference
   
 
     
@@ -472,19 +768,27 @@
   
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Specification
+    API Reference
   
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
             
               
                 
@@ -493,1194 +797,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../specification/overview/" class="md-nav__link">
+      <a href="../../reference/authentication/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Overview
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Merchant Capability
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_2">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Merchant Capability
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../specification/merchant/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Overview
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-    
-    
-    
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2_2" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_2_2" id="__nav_2_2_2_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Transport
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_2_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_2_2">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Transport
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../specification/merchant-rest/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    REST
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Orders Capability
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_3">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Orders Capability
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../specification/orders/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Overview
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-    
-    
-    
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3_2" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_3_2" id="__nav_2_3_2_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Transport
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_3_2">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Transport
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../specification/orders-rest/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    REST
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3_3" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_3_3" id="__nav_2_3_3_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Indoor Extension
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_3_3">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Indoor Extension
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../specification/indoor/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Overview
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-    
-    
-    
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3_3_2" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_3_3_2" id="__nav_2_3_3_2_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Transport
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_2_3_3_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_3_3_2">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Transport
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../specification/indoor-rest/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    REST
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Customer Capability
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_4">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Customer Capability
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../specification/customer/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Overview
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-    
-    
-    
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4_2" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_4_2" id="__nav_2_4_2_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Transport
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_4_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_4_2">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Transport
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../specification/customer-rest/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    REST
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4_3" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_4_3" id="__nav_2_4_3_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Loyalty Extension
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_4_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_4_3">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Loyalty Extension
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../specification/loyalty/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Overview
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-    
-    
-    
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4_3_2" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_4_3_2" id="__nav_2_4_3_2_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Transport
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_2_4_3_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_4_3_2">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Transport
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../specification/loyalty-rest/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    REST
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Logistics Capability
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_5">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Logistics Capability
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../specification/logistics/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Overview
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-    
-    
-    
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_5_2" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_5_2" id="__nav_2_5_2_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Transport
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_5_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_5_2">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Transport
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../specification/logistics-rest/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    REST
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_6" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_6" id="__nav_2_6_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    REST Transport
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_6">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    REST Transport
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../specification/rest/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Overview
+    Authentication
   
 
     
@@ -1701,7 +825,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../specification/rest-discovery/" class="md-nav__link">
+      <a href="../../reference/discovery/" class="md-nav__link">
         
   
   
@@ -1722,9 +846,57 @@
 
               
             
-          </ul>
-        </nav>
-      
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/customer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Customer & Loyalty
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/indoor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Indoor / Salão
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -1764,10 +936,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#what-discovery-is-for" class="md-nav__link">
+  <a href="#the-problem-discovery-solves" class="md-nav__link">
     <span class="md-ellipsis">
       
-        What Discovery Is For
+        The problem discovery solves
       
     </span>
   </a>
@@ -1775,10 +947,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#well-known-endpoint" class="md-nav__link">
+  <a href="#how-it-works" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Well-Known Endpoint
+        How it works
       
     </span>
   </a>
@@ -1786,10 +958,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#discovery-fields" class="md-nav__link">
+  <a href="#the-integration-flow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Discovery Fields
+        The integration flow
       
     </span>
   </a>
@@ -1797,10 +969,110 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#discovery-example" class="md-nav__link">
+  <a href="#what-the-manifest-contains" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Discovery Example
+        What the manifest contains
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="What the manifest contains">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#identity-and-protocol-version" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Identity and protocol version
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#capabilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Capabilities
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Capabilities">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#orders-and-logistics-originator-and-receiver" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Orders and Logistics — originator and receiver
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#merchant-synchronization-flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Merchant — synchronization flags
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#indoor-fiscal-and-table-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Indoor — fiscal and table configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#customer-operational-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Customer — operational limits
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-publishers-perspective" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The publisher's perspective
       
     </span>
   </a>
@@ -1808,10 +1080,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#normative-statements" class="md-nav__link">
+  <a href="#the-consumers-perspective" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Normative Statements
+        The consumer's perspective
       
     </span>
   </a>
@@ -1838,165 +1110,207 @@
   
 
 
-<h1 id="discovery-and-well-known">Discovery and Well-Known<a class="headerlink" href="#discovery-and-well-known" title="Permanent link">&para;</a></h1>
-<p>This section defines how participants publish discoverable protocol support before productive coordination.</p>
-<p>In The Open Delivery Protocol (ODP), Discovery is a mandatory protocol mechanism, not a capability.
-It allows one participant to understand another participant before any capability operation.
-Discovery always uses a REST endpoint, even when capability operations use other transport bindings.</p>
-<h2 id="what-discovery-is-for">What Discovery Is For<a class="headerlink" href="#what-discovery-is-for" title="Permanent link">&para;</a></h2>
-<p>Discovery allows participants to determine:</p>
-<ul>
-<li>Whether a participant supports a given capability</li>
-<li>Which operations are available inside that capability</li>
-<li>Which side originates or receives each operation</li>
-<li>Which protocol version/profile is supported</li>
-</ul>
-<h2 id="well-known-endpoint">Well-Known Endpoint<a class="headerlink" href="#well-known-endpoint" title="Permanent link">&para;</a></h2>
-<p>ODP uses a REST well-known endpoint for discovery in the same general spirit seen in standards such as OAuth, OpenAPI-related ecosystem conventions, and UCP.</p>
-<p>The reason is practical: discovery must be simple, predictable, and retrievable before any participant-specific transport assumptions are made.</p>
-<p>This means the protocol has two layers:</p>
-<ul>
-<li>A mandatory REST well-known endpoint for discovery</li>
-<li>One or more transport bindings for capability operations</li>
-</ul>
-<p>Before any productive capability coordination, a participant MUST publish a machine-readable discovery document in this endpoint.</p>
-<p><strong>Required URL suffix:</strong></p>
-<div class="highlight"><pre><span></span><code>/.well-known/opendelivery
+<h1 id="discovery">Discovery<a class="headerlink" href="#discovery" title="Permanent link">&para;</a></h1>
+<p>Before any capability operation can happen, each participant publishes a public, machine-readable document that tells the other side exactly what it supports. That document is the <strong>discovery manifest</strong>, served at a well-known URL.</p>
+<p>This page explains what discovery is for, how each side of the integration uses it, and how to read and publish a manifest. Normative rules and the full field reference are in the <a href="../../reference/discovery/">Discovery API spec</a>.</p>
+<hr />
+<h2 id="the-problem-discovery-solves">The problem discovery solves<a class="headerlink" href="#the-problem-discovery-solves" title="Permanent link">&para;</a></h2>
+<p>In V1, there was no standard way to know what a counterpart supported before calling it. Integrators found out through trial and error: they called an endpoint, got a <code>404</code> or an unexpected error, and then went back to their counterpart asking what was actually implemented. This was slow, expensive, and led to divergent implementations where each pair of participants had their own set of informal bilateral agreements.</p>
+<p>Discovery eliminates that. Instead of discovering capabilities indirectly through failed calls, each participant declares its capabilities upfront in a single, always-available document.</p>
+<hr />
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<p>The manifest is served over a standard HTTP <code>GET</code> at a URL that always ends with <code>/.well-known/opendelivery</code>:</p>
+<div class="highlight"><pre><span></span><code>GET https://dominio.com/.well-known/opendelivery
 </code></pre></div>
-<p>Every discovery URL MUST end with this suffix.</p>
-<p>Using the domain root is recommended for consistency, but not mandatory.</p>
-<p>A participant MAY expose discovery at any HTTPS-accessible host or path prefix, as long as the URL keeps the mandatory suffix.</p>
+<p>The endpoint is always public — no authentication required. The response is a JSON document that describes everything a counterpart needs to know before sending a single capability request: which capabilities are active, what operations are supported, which events are emitted, how to deliver messages (webhook or polling), and what operational limits to respect.</p>
+<p>The two parties can sit at opposite ends of this exchange:</p>
 <ul>
-<li>The exact URL <strong>MUST</strong> be communicated to the other participant through out-of-band channels (e.g., configuration, registration, or manual setup) before any capability operation begins.</li>
-<li>The endpoint <strong>MUST</strong> be publicly accessible without authenticated requests.</li>
-<li>The endpoint <strong>MUST</strong> use HTTPS (SSL/TLS).</li>
-<li>The endpoint response <strong>MUST</strong> include proper CORS headers if accessed from browser contexts.</li>
+<li><strong>The publisher</strong> is the participant who implements and serves the manifest.</li>
+<li><strong>The consumer</strong> is the counterpart who reads the manifest before starting the integration.</li>
 </ul>
-<p>Accepted examples:</p>
-<ul>
-<li><code>https://dominio.com/.well-known/opendelivery</code> (recommended)</li>
-<li><code>https://api.dominio.com/.well-known/opendelivery</code></li>
-<li><code>https://dominio.com/api/.well-known/opendelivery</code></li>
-</ul>
-<p>Transport-specific implementation details are defined in <a href="../../transport-bindings/rest-http-discovery/">REST/HTTP Discovery Binding</a>.</p>
-<h2 id="discovery-fields">Discovery Fields<a class="headerlink" href="#discovery-fields" title="Permanent link">&para;</a></h2>
-<p>A valid discovery payload MUST include all fields marked as <code>YES</code> and MUST NOT declare operations or behaviors the participant cannot execute.
-When <code>discovery.compatibility</code> is provided, it SHOULD include backward-compatibility guidance.</p>
-<table>
-<thead>
-<tr>
-<th>name</th>
-<th>type</th>
-<th>required</th>
-<th>description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>discovery.participantId</code></td>
-<td>string</td>
-<td>YES</td>
-<td>Unique participant identifier</td>
-</tr>
-<tr>
-<td><code>discovery.protocolVersion</code></td>
-<td>string</td>
-<td>YES</td>
-<td>Protocol version string</td>
-</tr>
-<tr>
-<td><code>discovery.capabilities[].name</code></td>
-<td>string</td>
-<td>YES</td>
-<td>Capability name (<code>orders</code>, <code>merchant</code>, <code>customer</code>, <code>logistics</code>)</td>
-</tr>
-<tr>
-<td><code>discovery.capabilities[].operations[]</code></td>
-<td>array[string]</td>
-<td>YES</td>
-<td>Supported operation identifiers in that capability</td>
-</tr>
-<tr>
-<td><code>discovery.capabilities[].role</code></td>
-<td>string</td>
-<td>YES</td>
-<td>Participant role in operations (<code>ORIGINATOR</code>, <code>RECEIVER</code>, <code>BOTH</code>)</td>
-</tr>
-<tr>
-<td><code>discovery.capabilities[].profiles[]</code></td>
-<td>array[string]</td>
-<td>NO</td>
-<td>Supported profiles/variants for that capability</td>
-</tr>
-<tr>
-<td><code>discovery.compatibility</code></td>
-<td>string</td>
-<td>NO</td>
-<td>Compatibility statement</td>
-</tr>
-<tr>
-<td><code>discovery.notes</code></td>
-<td>string</td>
-<td>NO</td>
-<td>Informative notes</td>
-</tr>
-</tbody>
-</table>
-<h2 id="discovery-example">Discovery Example<a class="headerlink" href="#discovery-example" title="Permanent link">&para;</a></h2>
+<p>In practice, both sides are usually publishers and consumers — each side has its own manifest, and each reads the other's before coordinating.</p>
+<hr />
+<h2 id="the-integration-flow">The integration flow<a class="headerlink" href="#the-integration-flow" title="Permanent link">&para;</a></h2>
+<p>Discovery is always step zero. The sequence looks like this:</p>
+<div class="highlight"><pre><span></span><code>Consumer                                 Publisher
+   |                                         |
+   |  GET /.well-known/opendelivery          |
+   |----------------------------------------&gt;|
+   |                                         |
+   |  200 OK  { manifest }                   |
+   |&lt;----------------------------------------|
+   |                                         |
+   |  [reads capabilities, limits, events]   |
+   |  [configures integration accordingly]   |
+   |                                         |
+   |  POST /orders   (or webhook, etc.)      |
+   |----------------------------------------&gt;|
+</code></pre></div>
+<p>The consumer reads the manifest once (or periodically to detect changes) and uses it to decide how to behave. Only after reading the manifest does it begin capability operations.</p>
+<p>The full discovery URL is exchanged out-of-band — through registration, configuration, or manual setup — before the integration starts. The manifest itself is not the place to learn the URL; the URL is shared through your onboarding process.</p>
+<hr />
+<h2 id="what-the-manifest-contains">What the manifest contains<a class="headerlink" href="#what-the-manifest-contains" title="Permanent link">&para;</a></h2>
+<p>The manifest is a single JSON object with five top-level sections. Here is a quick tour of each one, using the full example from the spec as reference.</p>
+<h3 id="identity-and-protocol-version">Identity and protocol version<a class="headerlink" href="#identity-and-protocol-version" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;appId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;openDelivery&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;currentVersion&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;supportedVersions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;2.0&quot;</span><span class="p">]</span>
+<span class="w">  </span><span class="p">},</span>
 <span class="w">  </span><span class="nt">&quot;discovery&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;participantId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;software-service-123&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;protocolVersion&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;v1.7.0&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;capabilities&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;merchant&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ORIGINATOR&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;operations&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;publishMerchant&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;notifyMerchantUpdate&quot;</span><span class="p">]</span>
-<span class="w">      </span><span class="p">},</span>
-<span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;orders&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;RECEIVER&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;operations&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;receiveOrder&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;acknowledgeOrderEvent&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;resolveCancellation&quot;</span><span class="p">]</span>
-<span class="w">      </span><span class="p">},</span>
-<span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;customer&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;BOTH&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;operations&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;ingestCustomer&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;getCustomers&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;receiveCustomerEvent&quot;</span><span class="p">]</span>
-<span class="w">      </span><span class="p">},</span>
-<span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;logistics&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;BOTH&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;operations&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;quoteDelivery&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;createDelivery&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;publishDeliveryEvent&quot;</span><span class="p">]</span>
-<span class="w">      </span><span class="p">}</span>
-<span class="w">    </span><span class="p">],</span>
-<span class="w">    </span><span class="nt">&quot;compatibility&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;backward-compatible&quot;</span>
+<span class="w">    </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0.0&quot;</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-<h2 id="normative-statements">Normative Statements<a class="headerlink" href="#normative-statements" title="Permanent link">&para;</a></h2>
+<p><code>appId</code> is the stable identifier for the participant application, issued during onboarding. The consumer uses it to correlate the manifest with the credentials it already has.</p>
+<p><code>openDelivery.supportedVersions</code> tells the consumer which protocol versions this participant can interoperate with. If there is no version overlap, the integration cannot proceed.</p>
+<p><code>discovery.version</code> identifies which version of the discovery format this manifest follows.</p>
+<hr />
+<h3 id="authentication">Authentication<a class="headerlink" href="#authentication" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;authentication&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;supportedGrantTypes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;client_credentials&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;authorization_code&quot;</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;clientIdGeneration&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;by_app&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;by_merchant&quot;</span><span class="p">]</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>This section tells the consumer which OAuth 2.0 grant types to use and how credentials are issued:</p>
 <ul>
-<li>Participant MUST publish a machine-readable discovery document before productive capability coordination.</li>
-<li>Discovery endpoint MUST be public — no authentication required.</li>
-<li>Discovery endpoint MUST use HTTPS (SSL/TLS).</li>
-<li>Discovery endpoint URL MUST end with <code>/.well-known/opendelivery</code>.</li>
-<li>Participant MUST communicate the full discovery URL to partners before capability operations.</li>
-<li>Discovery payload MUST include all required fields and MUST NOT declare unsupported behaviors.</li>
-<li>If <code>discovery.compatibility</code> is present, it SHOULD include backward-compatibility guidance.</li>
+<li><code>client_credentials</code> — the standard application-level flow.</li>
+<li><code>authorization_code</code> — used when a merchant must explicitly grant consent. Only implement this if it is declared here.</li>
+<li><code>by_app</code> — one credential pair covers all merchants (recommended for V2).</li>
+<li><code>by_merchant</code> — separate credentials per merchant (V1 legacy, still supported for migration).</li>
 </ul>
+<p>The consumer looks at this section and configures its authentication client accordingly before making any protected capability call.</p>
+<hr />
+<h3 id="capabilities">Capabilities<a class="headerlink" href="#capabilities" title="Permanent link">&para;</a></h3>
+<p>Capabilities are the core of the manifest. Each capability key (<code>orders</code>, <code>merchant</code>, <code>customer</code>, <code>logistics</code>, <code>indoor</code>) is present only if the participant actively supports it. Omitting a key means the capability is not supported — no need to guess.</p>
+<h4 id="orders-and-logistics-originator-and-receiver">Orders and Logistics — originator and receiver<a class="headerlink" href="#orders-and-logistics-originator-and-receiver" title="Permanent link">&para;</a></h4>
+<p>Orders and Logistics have two sub-roles that can exist independently:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;capabilities&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;orders&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;supported&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;originator&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;supported&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;supportedEvents&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;ORDER_CREATED&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;ORDER_CONFIRMED&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;ORDER_CANCELLED&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;ORDER_COMPLETED&quot;</span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;unsupportedEvents&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;ORDER_DISPATCHED&quot;</span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;supportsWebhook&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;supportsPolling&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">&quot;receiver&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;supported&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;supportedOperations&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;createOrder&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;confirmOrder&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;cancelOrder&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;updateOrderStatus&quot;</span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;unsupportedOperations&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;dispatchOrder&quot;</span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;supportsWebhook&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;supportsPolling&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>Originator</strong> means this participant emits order events. The consumer knows exactly which events will arrive (<code>supportedEvents</code>) and which will never arrive (<code>unsupportedEvents</code>). This eliminates the classic ambiguity of "does this partner send <code>ORDER_DISPATCHED</code> or not?" — it is declared explicitly.</p>
+<p><strong>Receiver</strong> means this participant accepts incoming order operations. The consumer knows which operations it can call and which it should not attempt.</p>
+<p><code>supportsWebhook</code> and <code>supportsPolling</code> tell the consumer how to deliver or retrieve messages. If only <code>supportsWebhook: true</code> and <code>supportsPolling: false</code>, the consumer must push events; it cannot poll for them.</p>
+<p>The same structure applies to Logistics.</p>
+<hr />
+<h4 id="merchant-synchronization-flags">Merchant — synchronization flags<a class="headerlink" href="#merchant-synchronization-flags" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;capabilities&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;merchant&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;supported&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;supportsPartialUpdate&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;supportsFullGetByOriginator&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><code>supportsPartialUpdate</code> tells the consumer whether it can send patch-style updates or must always send the full merchant payload. <code>supportsFullGetByOriginator</code> tells whether the originator side exposes a GET endpoint for the consumer to fetch the current state — useful for reconciliation and initial loads.</p>
+<hr />
+<h4 id="indoor-fiscal-and-table-configuration">Indoor — fiscal and table configuration<a class="headerlink" href="#indoor-fiscal-and-table-configuration" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;capabilities&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;indoor&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;supported&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;invoiceIssuer&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pos&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;invoiceIssueMoment&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;account_closing&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;usesAccountId&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Indoor (table service) has operational characteristics that vary significantly between implementations. The manifest declares who issues the fiscal invoice (<code>pos</code>, <code>app</code>, or <code>platform</code>), when it is issued, and whether the integration uses an <code>accountId</code> to track open table sessions. Without this, consumers would have to negotiate these details bilaterally for every deployment.</p>
+<hr />
+<h4 id="customer-operational-limits">Customer — operational limits<a class="headerlink" href="#customer-operational-limits" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;capabilities&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;customer&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;supported&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;supportsBatchGet&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;supportsBatchPost&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;maxBatchSize&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;maxGetPeriodDays&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;requestsPerSecond&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;maxPayloadSizeKb&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1024</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;acceptedGetPeriodicity&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;daily&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>The Customer capability declares the operational limits the consumer must respect. This is where the manifest acts as a live configuration document: instead of hunting through separate documentation to find rate limits and batch sizes, the consumer reads them here and adapts its behavior automatically.</p>
+<ul>
+<li><code>maxBatchSize</code> — never send more items than this in a single POST.</li>
+<li><code>maxGetPeriodDays</code> — never query a date range wider than this.</li>
+<li><code>requestsPerSecond</code> — throttle accordingly.</li>
+<li><code>acceptedGetPeriodicity</code> — how often the consumer should poll (e.g., <code>daily</code> means once per day is enough and more frequent polling is discouraged).</li>
+</ul>
+<hr />
+<h2 id="the-publishers-perspective">The publisher's perspective<a class="headerlink" href="#the-publishers-perspective" title="Permanent link">&para;</a></h2>
+<p>If you are implementing the manifest endpoint, here is what to keep in mind:</p>
+<p><strong>Declare what you actually support, not what you aspire to support.</strong> A consumer reading <code>supportedEvents: [ORDER_CREATED, ORDER_CONFIRMED]</code> will build its integration around those two events. If <code>ORDER_CONFIRMED</code> never actually arrives, the consumer's flow breaks.</p>
+<p><strong>Be explicit about what you do not support.</strong> Use <code>unsupportedEvents</code> and <code>unsupportedOperations</code> to declare gaps clearly. An empty list <code>[]</code> is a valid value and means "all standard items in this category are supported."</p>
+<p><strong>Keep the manifest up to date.</strong> If your implementation changes — you add polling support, raise a batch limit, or start emitting a new event — update the manifest. Consumers may re-read it periodically to detect changes.</p>
+<p><strong>Serve it fast and reliably.</strong> The manifest is read before the integration starts. A slow or intermittent discovery endpoint can block an entire onboarding.</p>
+<hr />
+<h2 id="the-consumers-perspective">The consumer's perspective<a class="headerlink" href="#the-consumers-perspective" title="Permanent link">&para;</a></h2>
+<p>If you are reading a counterpart's manifest before connecting, here is how to use it:</p>
+<p><strong>Read the manifest before any capability call.</strong> Do not assume what the counterpart supports. Read the manifest first, then configure your integration accordingly.</p>
+<p><strong>Check protocol version compatibility.</strong> If <code>openDelivery.supportedVersions</code> does not include your version, coordinate with the counterpart before proceeding.</p>
+<p><strong>Adapt to the declared delivery mode.</strong> If the manifest says <code>supportsWebhook: true, supportsPolling: false</code> for a capability, set up your webhook receiver — do not build a polling loop.</p>
+<p><strong>Respect operational limits.</strong> The <code>customer</code> capability's limits (<code>maxBatchSize</code>, <code>requestsPerSecond</code>, <code>maxGetPeriodDays</code>) are declarations, not suggestions. Exceeding them will result in errors or throttling.</p>
+<p><strong>Handle missing capabilities gracefully.</strong> If a capability key is absent from the manifest, treat it as unsupported and do not call it. Log it clearly so the integration owner understands what is and is not available.</p>
+<p><strong>Re-read periodically.</strong> Manifests change rarely, but they do change. Re-reading the manifest on startup and periodically in production lets you detect changes (new capabilities, updated limits, added events) without manual reconfiguration.</p>
+<hr />
 <div class="admonition tip">
-<p class="admonition-title">Implementation Checklist</p>
+<p class="admonition-title">Quick checklist for publishers</p>
 <ul>
-<li>Publish a machine-readable discovery document before productive coordination.</li>
-<li>Use a public HTTPS endpoint for discovery.</li>
-<li>Ensure the discovery URL ends with <code>/.well-known/opendelivery</code>.</li>
-<li>Communicate the full discovery URL to partners before any capability operation.</li>
-<li>Declare supported capabilities, operations, and participant role per operation.</li>
-<li>Do not declare behaviors that are not actually supported.</li>
-<li>If provided, include backward-compatibility guidance in <code>discovery.compatibility</code>.</li>
+<li>The endpoint URL ends with <code>/.well-known/opendelivery</code>.</li>
+<li>The endpoint is public — no authentication required.</li>
+<li>The endpoint uses HTTPS.</li>
+<li>Only capabilities you actively support are listed.</li>
+<li><code>unsupportedEvents</code> and <code>unsupportedOperations</code> are populated explicitly.</li>
+<li>Operational limits (batch sizes, rate limits, query windows) are accurate.</li>
+<li>The full URL has been shared with your counterpart out-of-band.</li>
 </ul>
-<p>Conformance requirements are defined in <code>Well-Known Endpoint</code> and <code>Discovery Fields</code>.
-For REST/HTTP mapping and OpenAPI artifact, see <code>transport-bindings/rest-http-discovery.md</code> and <code>reference/v2/rest-http-discovery.openapi.yaml</code>.</p>
 </div>
+<div class="admonition tip">
+<p class="admonition-title">Quick checklist for consumers</p>
+<ul>
+<li>Read the manifest before the first capability call.</li>
+<li>Verify protocol version compatibility.</li>
+<li>Configure delivery mode (webhook vs. polling) from <code>supportsWebhook</code> / <code>supportsPolling</code>.</li>
+<li>Apply operational limits from the <code>customer</code> (or other) capability section.</li>
+<li>Treat absent capability keys as unsupported.</li>
+<li>Plan to re-read the manifest periodically.</li>
+</ul>
+</div>
+<hr />
+<p><strong>Full field reference and normative rules:</strong> <a href="../../reference/discovery/">Discovery API →</a></p>
 
 
 
@@ -2048,17 +1362,124 @@ For REST/HTTP mapping and OpenAPI artifact, see <code>transport-bindings/rest-ht
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
-    
     
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "navigation.indexes", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.progress", "header.autohide"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "navigation.indexes"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
+
       <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
+<script>
+(function () {
+  var NAV = [
+    
+    {
+      title: "Guide",
+      children: [
+        
+        
+        { title: "Home", url: "https://abrasel-nacional.github.io/opendelivery-v2/", active: false },
+        
+        { title: "Core Concepts", url: "https://abrasel-nacional.github.io/opendelivery-v2/documentation/core-concepts/", active: false },
+        
+        { title: "Discovery", url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/discovery/", active: true },
+        
+        { title: "Roadmap", url: "https://abrasel-nacional.github.io/opendelivery-v2/documentation/roadmap/", active: false }
+        
+        
+      ]
+    },
+    
+    {
+      title: "API Reference",
+      children: [
+        
+        
+        { title: "Overview", url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/", active: false },
+        
+        { title: "Authentication", url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/authentication/", active: false },
+        
+        { title: "Discovery", url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/discovery/", active: false },
+        
+        { title: "Customer \u0026 Loyalty", url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/customer/", active: false },
+        
+        { title: "Indoor / Sal\u00e3o", url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/indoor/", active: false }
+        
+        
+      ]
+    }
+    
+  ];
+
+  /* Um único dropdown compartilhado, filho direto de <body> */
+  var portal = document.createElement("ul");
+  portal.className = "od-dropdown";
+  document.body.appendChild(portal);
+
+  var hideTimer = null;
+
+  function fillPortal(children) {
+    portal.innerHTML = "";
+    children.forEach(function (child) {
+      if (!child.url) return;
+      var li = document.createElement("li");
+      var a  = document.createElement("a");
+      a.href = child.url;
+      a.textContent = child.title;
+
+      if (child.active) {
+        a.classList.add("od-active");
+      }
+
+      li.appendChild(a);
+      portal.appendChild(li);
+    });
+  }
+
+  function showPortal(tab, children) {
+    clearTimeout(hideTimer);
+    fillPortal(children);
+    var r = tab.getBoundingClientRect();
+    portal.style.left = r.left + "px";
+    portal.style.top  = r.bottom + "px";
+    portal.style.display = "block";
+  }
+
+  function scheduleHide() {
+    hideTimer = setTimeout(function () {
+      portal.style.display = "none";
+    }, 150);
+  }
+
+  /* Manter aberto enquanto o mouse está sobre o próprio dropdown */
+  portal.addEventListener("mouseenter", function () { clearTimeout(hideTimer); });
+  portal.addEventListener("mouseleave", scheduleHide);
+
+  function wireTabs() {
+    document.querySelectorAll(".od-tab-has-dropdown").forEach(function (el) {
+      el.classList.remove("od-tab-has-dropdown");
+    });
+
+    document.querySelectorAll(".md-tabs__item").forEach(function (tab, i) {
+      var section = NAV[i];
+      if (!section || !section.children || section.children.length === 0) return;
+
+      tab.classList.add("od-tab-has-dropdown");
+
+      tab.addEventListener("mouseenter", function () {
+        showPortal(tab, section.children);
+      });
+      tab.addEventListener("mouseleave", scheduleHide);
+    });
+  }
+
+  wireTabs();
+})();
+</script>
+
   </body>
 </html>

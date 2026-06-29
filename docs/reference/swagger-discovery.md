@@ -20,7 +20,7 @@ Normative behavior remains defined in [Discovery and Well-Known](../protocol/dis
 <script>
   window.addEventListener('load', function () {
     SwaggerUIBundle({
-      url: '../v2/rest-http-discovery.openapi.yaml',
+      url: '../v2/discovery.openapi.yaml',
       dom_id: '#swagger-ui',
       deepLinking: true,
       displayRequestDuration: true,

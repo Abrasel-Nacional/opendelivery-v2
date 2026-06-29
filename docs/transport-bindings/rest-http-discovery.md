@@ -58,7 +58,7 @@ Accept: application/json
 |---|---|---|---|
 | `discovery.participantId` | string | YES | Unique participant identifier |
 | `discovery.protocolVersion` | string | YES | Protocol version string |
-| `discovery.capabilities[].name` | string | YES | Capability name: `merchant`, `orders`, or `logistics` |
+| `discovery.capabilities[].name` | string | YES | Capability name: `merchant`, `orders`, `customer`, or `logistics` |
 | `discovery.capabilities[].role` | string | YES | Participant role: `ORIGINATOR`, `RECEIVER`, or `BOTH` |
 | `discovery.capabilities[].operations[]` | array[string] | YES | Supported operation identifiers |
 | `discovery.capabilities[].profiles[]` | array[string] | NO | Supported profiles or variants |
@@ -117,4 +117,4 @@ Error payloads SHOULD follow the [Error Model](../protocol/error-handling.md).
 
 ## OpenAPI Artifact
 
-- Download: [rest-http-discovery.openapi.yaml](../reference/v2/rest-http-discovery.openapi.yaml)
+- Download: [discovery.openapi.yaml](../reference/v2/discovery.openapi.yaml)

@@ -1,0 +1,101 @@
+{% extends "main.html" %}
+
+{% block extrahead %}
+{{ super() }}
+<style>
+  .md-main__inner,
+  .md-content,
+  .md-content__inner {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* O ReDoc renderiza seu próprio menu lateral como position:fixed e rola
+     junto com a janela. NÃO criamos um container fixo com overflow próprio:
+     isso desacoplava o scroll real do scroll que o ReDoc escuta (janela),
+     quebrando a navegação e o realce do menu. O posicionamento abaixo do
+     header + tabs é feito via `scrollYOffset` no Redoc.init (ver abaixo),
+     que também desloca o menu fixo do ReDoc para fora da área do header. */
+  #redoc-container {
+    background: #fff;
+  }
+
+  #redoc-container a {
+    text-decoration: none;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div id="redoc-container"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/redoc@2.5.3/bundles/redoc.standalone.js"></script>
+<script>
+  /* O <article> que envolve o ReDoc recebe a classe `md-typeset` do Material.
+     Ela traz regras como `.md-typeset ul:not([hidden]) { display: flow-root }`
+     que vencem em especificidade o `display:none` do ReDoc e impedem que os
+     submenus do menu lateral colapsem. Nestas páginas o conteúdo é 100% ReDoc
+     (que tem tipografia própria), então removemos a classe — sem ela o ReDoc
+     controla o display dos submenus e o colapso volta a funcionar. */
+  (function () {
+    var article = document.querySelector(".md-content__inner.md-typeset");
+    if (article) article.classList.remove("md-typeset");
+  })();
+
+  /* Altura real do header + barra de tabs do Material. Passada ao ReDoc como
+     scrollYOffset: ele usa esse valor tanto para deslocar o menu fixo para
+     baixo do header (deixando os grupos clicáveis para colapsar) quanto para
+     calcular o realce/scroll da seção ativa corretamente. É uma função porque
+     o ReDoc a reavalia a cada scroll, acompanhando mudanças de layout. */
+  function odHeaderOffset() {
+    var header = document.querySelector(".md-header");
+    var tabs = document.querySelector(".md-tabs");
+    var h = header ? header.getBoundingClientRect().height : 48;
+    var t = tabs ? tabs.getBoundingClientRect().height : 0;
+    return h + t;
+  }
+
+  Redoc.init(
+    {{ page.meta.openapi_spec | tojson }},
+    {
+      scrollYOffset: odHeaderOffset,
+      pathInMiddlePanel: true,
+      hideHostname: true,
+      hideDownloadButton: false,
+      menuToggle: true,
+      noAutoAuth: true,
+      showWebhookVerb: true,
+      expandResponses: "200,201,202,203,204",
+      theme: {
+        spacing: { sectionVertical: 20 },
+        colors: {
+          primary: { main: "#009688" }
+        },
+        typography: {
+          fontSize: "15px",
+          lineHeight: "1.5",
+          fontFamily: "Roboto, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif",
+          headings: {
+            fontFamily: "Roboto, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif",
+            fontWeight: "600"
+          }
+        },
+        sidebar: {
+          width: "280px",
+          backgroundColor: "#fafafa"
+        },
+        rightPanel: {
+          width: "40%"
+        }
+      }
+    },
+    document.getElementById("redoc-container")
+  );
+</script>
+
+{% endblock %}
+
+{% block sidebar %}{% endblock %}
+{% block toc %}{% endblock %}

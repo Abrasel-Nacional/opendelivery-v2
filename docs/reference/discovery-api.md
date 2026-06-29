@@ -4,7 +4,7 @@ This page presents the Discovery API in a documentation style native to MkDocs.
 
 Normative behavior remains defined in [Discovery and Well-Known](../protocol/discovery.md).
 HTTP transport rules remain defined in [REST/HTTP Discovery Binding](../transport-bindings/rest-http-discovery.md).
-The machine-readable contract remains defined in [rest-http-discovery.openapi.yaml](v2/rest-http-discovery.openapi.yaml).
+The machine-readable contract remains defined in [discovery.openapi.yaml](v2/discovery.openapi.yaml).
 
 ## Endpoint Summary
 
@@ -65,7 +65,7 @@ Accept: application/json
 |---|---|---|---|
 | `discovery.participantId` | string | YES | Unique participant identifier |
 | `discovery.protocolVersion` | string | YES | Protocol version string |
-| `discovery.capabilities[].name` | string | YES | Capability name (`merchant`, `orders`, `logistics`) |
+| `discovery.capabilities[].name` | string | YES | Capability name (`merchant`, `orders`, `customer`, `logistics`) |
 | `discovery.capabilities[].role` | string | YES | Participant role in that capability (`ORIGINATOR`, `RECEIVER`, `BOTH`) |
 | `discovery.capabilities[].operations[]` | array[string] | YES | Supported operation identifiers |
 | `discovery.capabilities[].profiles[]` | array[string] | NO | Supported profiles or variants |
@@ -113,4 +113,4 @@ Error payloads SHOULD follow [Error Model](../protocol/error-handling.md).
 |---|---|
 | Protocol rules | [Discovery and Well-Known](../protocol/discovery.md) |
 | HTTP transport details | [REST/HTTP Discovery Binding](../transport-bindings/rest-http-discovery.md) |
-| OpenAPI contract | [rest-http-discovery.openapi.yaml](v2/rest-http-discovery.openapi.yaml) |
+| OpenAPI contract | [discovery.openapi.yaml](v2/discovery.openapi.yaml) |

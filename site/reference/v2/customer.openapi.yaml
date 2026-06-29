@@ -1,0 +1,1327 @@
+openapi: 3.0.1
+info:
+  title: Open Delivery V2 - Customer (CRM), Orders, Leads, Reviews, Loyalty, Events
+  version: 2.0.0-rc1
+  license:
+    name: Proprietary Draft
+    url: https://opendelivery.io/licensing
+servers:
+  - url: https://api.opendelivery.io/v2
+security:
+  - bearerAuth: []
+tags:
+  # ── Visão Geral ──────────────────────────────────────────────────────────────
+  - name: CapabilityOverview
+    x-displayName: Visão Geral
+    x-traitTag: true
+    description: |-
+      ## Customer & Loyalty Capability
+
+      Esta especificação descreve os contratos de transporte do protocolo Open Delivery
+      para as capacidades de **CRM** (Customers, Leads, Orders, Reviews, Events) e
+      **Loyalty** (programas, contas, transações, recompensas, cupons, resgates e eventos).
+
+      > **Open Delivery é um protocolo, não uma API de produto.**
+      > Não há servidor central nem ambiente de produção. Cada parte implementa os
+      > endpoints que lhe cabem em sua própria infraestrutura.
+
+      ## Partes envolvidas
+
+      | Papel | Responsabilidade nesta capability |
+      |---|---|
+      | **Ordering Application** | Plataforma de pedidos. Consome endpoints do CRM/Loyalty e recebe eventos via webhook. |
+      | **Software Service — CRM/Loyalty** | Plataforma de CRM e fidelidade. Hospeda e implementa os endpoints desta especificação. |
+
+      ## Descoberta de capacidades
+
+      Antes de qualquer integração, a **Ordering Application DEVE** consultar
+      `GET /.well-known/opendelivery` para descobrir capacidades disponíveis,
+      limites de payload, paginação e metadados de integração. Ver tag **Discovery**.
+
+      ## Autenticação
+
+      <SecurityDefinitions />
+
+  # ── Discovery ────────────────────────────────────────────────────────────────
+  - name: Discovery
+    description: |-
+      Endpoint canônico de descoberta de capacidades e regras de integração.
+
+      **Hospedado por:** Software Service (CRM/Loyalty)
+      **Chamado por:** Ordering Application
+
+      A Ordering Application **DEVE** consultar este endpoint antes de qualquer
+      operação para descobrir capacidades disponíveis, limites operacionais,
+      configurações de paginação e metadados de integração.
+
+  # ── CRM ──────────────────────────────────────────────────────────────────────
+  - name: CRMOverview
+    x-displayName: Visão Geral do CRM
+    x-traitTag: true
+    description: |-
+      ## CRM no contexto do protocolo
+
+      A capacidade de CRM define contratos de transporte para sincronização de dados
+      entre a plataforma de pedidos e o sistema de CRM. O protocolo **não impõe**
+      regras de negócio internas — segmentação, eligibilidade de campanhas e lógica
+      promocional são responsabilidade de cada implementação.
+
+      ## Responsabilidades por endpoint
+
+      | Endpoint | Hospedado por | Chamado por |
+      |---|---|---|
+      | `GET /customers` | Software Service (CRM) | Ordering Application |
+      | `POST /customers` | Software Service (CRM) | Ordering Application |
+      | `GET /leads` | Software Service (CRM) | Ordering Application |
+      | `POST /leads` | Software Service (CRM) | Ordering Application |
+      | `GET /orders` | Software Service (CRM) | Ordering Application |
+      | `POST /orders` | Software Service (CRM) | Ordering Application |
+      | `GET /orders/{orderId}` | Software Service (CRM) | Ordering Application |
+      | `GET /reviews` | Software Service (CRM) | Ordering Application |
+      | `POST /reviews` | Software Service (CRM) | Ordering Application |
+      | `GET /reviews/{reviewId}` | Software Service (CRM) | Ordering Application |
+      | `POST /customer/events` *(webhook)* | **Ordering Application** | Software Service (CRM) |
+
+      ## Modelo de dados — Customer
+
+      <SchemaDefinition schemaRef="#/components/schemas/Customer" />
+
+  - name: Customers
+    description: |-
+      **Hospedado por:** Software Service (CRM)
+      **Chamado por:** Ordering Application
+
+      Entidade central do padrão Customer. Representa o cliente final com
+      identificadores, dados de contato, endereços e consentimentos.
+
+  - name: Leads
+    description: |-
+      **Hospedado por:** Software Service (CRM)
+      **Chamado por:** Ordering Application
+
+      Lead representa um potencial cliente com estrutura mínima — sem exigir
+      cadastro completo. A plataforma de pedidos envia leads para o CRM conforme
+      eventos de interesse (ex.: carrinho abandonado, consulta de cardápio).
+
+  - name: Orders
+    description: |-
+      **Hospedado por:** Software Service (CRM)
+      **Chamado por:** Ordering Application
+
+      Visão CRM dos pedidos: histórico e sincronização em lote. Esta tag **não**
+      replica o lifecycle operacional de pedidos — para isso, consulte a
+      especificação de Orders. Aqui o foco é enriquecer o perfil do cliente
+      no CRM com o histórico de compras.
+
+  - name: Reviews
+    description: |-
+      **Hospedado por:** Software Service (CRM)
+      **Chamado por:** Ordering Application
+
+      Avaliações com modelo MVP flexível. O campo `overall` não é obrigatório;
+      diferentes metodologias de rating (NPS, estrelas, escala numérica) podem
+      coexistir dentro do mesmo protocolo.
+
+  - name: CustomerEvents
+    description: |-
+      **Hospedado por:** Ordering Application *(webhook)*
+      **Chamado por:** Software Service (CRM)
+
+      Webhook assíncrono de eventos focados no cliente. Notifica a Ordering
+      Application sobre eventos com relevância direta para CRM, sem replicar
+      o lifecycle operacional completo do pedido.
+
+  # ── Loyalty ──────────────────────────────────────────────────────────────────
+  - name: LoyaltyOverview
+    x-displayName: Visão Geral do Loyalty
+    x-traitTag: true
+    description: |-
+      ## Loyalty no contexto do protocolo
+
+      A capacidade de Loyalty define contratos de transporte para programas de
+      fidelidade. O protocolo transporta estrutura e estado — **não impõe** regras
+      de eligibilidade, cálculo de pontos, expiração ou segmentação de campanhas.
+
+      ## Responsabilidades por endpoint
+
+      | Endpoint | Hospedado por | Chamado por |
+      |---|---|---|
+      | `GET /loyalty/programs` | Software Service (Loyalty) | Ordering Application |
+      | `POST /loyalty/programs` | Software Service (Loyalty) | Ordering Application |
+      | `GET /loyalty/programs/{programId}` | Software Service (Loyalty) | Ordering Application |
+      | `GET /customers/{customerId}/loyalty-accounts` | Software Service (Loyalty) | Ordering Application |
+      | `GET /loyalty/accounts/{accountId}` | Software Service (Loyalty) | Ordering Application |
+      | `GET /loyalty/accounts/{accountId}/transactions` | Software Service (Loyalty) | Ordering Application |
+      | `GET /loyalty/rewards` | Software Service (Loyalty) | Ordering Application |
+      | `GET /loyalty/coupons` | Software Service (Loyalty) | Ordering Application |
+      | `POST /loyalty/redemptions` | Software Service (Loyalty) | Ordering Application |
+      | `POST /loyalty/events` *(webhook)* | **Ordering Application** | Software Service (Loyalty) |
+
+      ## Modelo de dados — LoyaltyProgram
+
+      <SchemaDefinition schemaRef="#/components/schemas/LoyaltyProgram" />
+
+  - name: Loyalty
+    description: |-
+      **Hospedado por:** Software Service (Loyalty)
+      **Chamado por:** Ordering Application
+
+      Fidelidade orientada a programa: contas, transações, recompensas, cupons
+      e resgates. Cada conta de fidelidade está vinculada a um programa e a um
+      cliente identificado pelo protocolo.
+
+  - name: LoyaltyEvents
+    description: |-
+      **Hospedado por:** Ordering Application *(webhook)*
+      **Chamado por:** Software Service (Loyalty)
+
+      Webhook específico de eventos de fidelidade. Notifica a Ordering Application
+      sobre movimentações relevantes no programa de fidelidade do cliente.
+
+x-tagGroups:
+  - name: Visão Geral
+    tags:
+      - CapabilityOverview
+      - Discovery
+  - name: CRM
+    tags:
+      - CRMOverview
+      - Customers
+      - Leads
+      - Orders
+      - Reviews
+      - CustomerEvents
+  - name: Loyalty
+    tags:
+      - LoyaltyOverview
+      - Loyalty
+      - LoyaltyEvents
+
+paths:
+  /.well-known/opendelivery:
+    get:
+      tags: [Discovery]
+      summary: Descoberta de capacidades e regras de integração
+      operationId: getDiscovery
+      description: >-
+        Endpoint canônico para descoberta de capacidades implementadas, limites
+        operacionais, paginação, payload e metadados de integração.
+      responses:
+        '200':
+          description: Documento de descoberta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscoveryDocument'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /configs:
+    get:
+      tags: [Discovery]
+      deprecated: true
+      summary: Alias legado para descoberta/configuração
+      operationId: getConfigs
+      description: >-
+        Alias legado para compatibilidade. Novas implementações devem preferir
+        o endpoint /.well-known/opendelivery.
+      responses:
+        '200':
+          description: Documento de descoberta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscoveryDocument'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /customers:
+    get:
+      tags: [Customers]
+      summary: Lista e consulta clientes com filtros
+      operationId: listCustomers
+      description: >-
+        Consulta clientes de forma paginada, priorizando filtros em vez de
+        navegação por identificador unitário. Uso recomendado para integrações
+        CRM e importação/consulta em massa.
+      parameters:
+        - $ref: '#/components/parameters/customerIdentifierType'
+        - $ref: '#/components/parameters/customerIdentifierValue'
+        - $ref: '#/components/parameters/externalId'
+        - $ref: '#/components/parameters/updatedFrom'
+        - $ref: '#/components/parameters/updatedTo'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/pageSize'
+      responses:
+        '200':
+          description: Lista paginada de clientes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    post:
+      tags: [Customers]
+      summary: Importa ou sincroniza clientes
+      operationId: upsertCustomers
+      description: >-
+        Importação/sincronização de clientes. Suporta lote pequeno ou médio,
+        conforme os limites declarados no documento de descoberta.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerUpsertRequest'
+      responses:
+        '202':
+          description: Lote recebido para processamento.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /leads:
+    get:
+      tags: [Leads]
+      summary: Lista leads com filtros
+      operationId: listLeads
+      parameters:
+        - $ref: '#/components/parameters/updatedFrom'
+        - $ref: '#/components/parameters/updatedTo'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/pageSize'
+      responses:
+        '200':
+          description: Lista paginada de leads.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeadListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    post:
+      tags: [Leads]
+      summary: Importa ou sincroniza leads
+      operationId: upsertLeads
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeadUpsertRequest'
+      responses:
+        '202':
+          description: Lote recebido para processamento.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /orders:
+    get:
+      tags: [Orders]
+      summary: Consulta pedidos em lote/histórico para uso pelo CRM
+      operationId: listOrders
+      parameters:
+        - $ref: '#/components/parameters/customerIdentifierType'
+        - $ref: '#/components/parameters/customerIdentifierValue'
+        - $ref: '#/components/parameters/storeId'
+        - $ref: '#/components/parameters/originChannel'
+        - $ref: '#/components/parameters/createdFrom'
+        - $ref: '#/components/parameters/createdTo'
+        - $ref: '#/components/parameters/updatedFrom'
+        - $ref: '#/components/parameters/updatedTo'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/pageSize'
+      responses:
+        '200':
+          description: Lista paginada de pedidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    post:
+      tags: [Orders]
+      summary: Importa ou sincroniza pedidos em lote
+      operationId: upsertOrders
+      description: >-
+        Importação em lote de pedidos para integração com CRM, preservando
+        compatibilidade com o payload base de Pedidos V1 e permitindo extensões.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderUpsertRequest'
+      responses:
+        '202':
+          description: Lote recebido para processamento.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /orders/{orderId}:
+    get:
+      tags: [Orders]
+      summary: Consulta pedido específico (opcional)
+      operationId: getOrderById
+      description: >-
+        Endpoint opcional para cenários que demandem consulta direta a um pedido
+        conhecido. A integração continua privilegiando consultas por filtros e lote.
+      parameters:
+        - $ref: '#/components/parameters/orderId'
+      responses:
+        '200':
+          description: Pedido encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /reviews:
+    get:
+      tags: [Reviews]
+      summary: Lista avaliações com filtros
+      operationId: listReviews
+      parameters:
+        - $ref: '#/components/parameters/customerIdentifierType'
+        - $ref: '#/components/parameters/customerIdentifierValue'
+        - $ref: '#/components/parameters/orderIdQuery'
+        - $ref: '#/components/parameters/createdFrom'
+        - $ref: '#/components/parameters/createdTo'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/pageSize'
+      responses:
+        '200':
+          description: Lista paginada de avaliações.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    post:
+      tags: [Reviews]
+      summary: Plataforma cliente envia avaliações ao CRM
+      operationId: createReviews
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewUpsertRequest'
+      responses:
+        '202':
+          description: Lote recebido para processamento.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /reviews/{reviewId}:
+    get:
+      tags: [Reviews]
+      summary: Consulta avaliação específica (opcional)
+      operationId: getReviewById
+      parameters:
+        - $ref: '#/components/parameters/reviewId'
+      responses:
+        '200':
+          description: Avaliação encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /customer/events:
+    post:
+      tags: [CustomerEvents]
+      summary: Webhook exclusivo de eventos focados no cliente
+      operationId: publishCustomerEvent
+      description: >-
+        Webhook assíncrono para eventos que geram gatilhos úteis para CRM,
+        sem replicar todo o lifecycle operacional do pedido.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerEventEnvelope'
+      responses:
+        '202':
+          description: Evento recebido.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /loyalty/programs:
+    get:
+      tags: [Loyalty]
+      summary: Lista programas de fidelidade
+      operationId: listLoyaltyPrograms
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/pageSize'
+      responses:
+        '200':
+          description: Lista paginada de programas de fidelidade.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoyaltyProgramListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    post:
+      tags: [Loyalty]
+      summary: Cadastra ou sincroniza programas de fidelidade
+      operationId: upsertLoyaltyPrograms
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoyaltyProgramUpsertRequest'
+      responses:
+        '202':
+          description: Lote recebido para processamento.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /loyalty/programs/{programId}:
+    get:
+      tags: [Loyalty]
+      summary: Consulta programa de fidelidade específico
+      operationId: getLoyaltyProgramById
+      parameters:
+        - $ref: '#/components/parameters/programId'
+      responses:
+        '200':
+          description: Programa encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoyaltyProgram'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /customers/{customerId}/loyalty-accounts:
+    get:
+      tags: [Loyalty]
+      summary: Lista contas de fidelidade de um cliente
+      operationId: listCustomerLoyaltyAccounts
+      parameters:
+        - $ref: '#/components/parameters/customerId'
+        - $ref: '#/components/parameters/programIdQuery'
+      responses:
+        '200':
+          description: Lista de contas de fidelidade do cliente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoyaltyAccountListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /loyalty/accounts/{accountId}:
+    get:
+      tags: [Loyalty]
+      summary: Consulta conta de fidelidade específica
+      operationId: getLoyaltyAccountById
+      parameters:
+        - $ref: '#/components/parameters/accountId'
+      responses:
+        '200':
+          description: Conta encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoyaltyAccount'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /loyalty/accounts/{accountId}/transactions:
+    get:
+      tags: [Loyalty]
+      summary: Histórico de movimentações de fidelidade
+      operationId: listLoyaltyTransactions
+      parameters:
+        - $ref: '#/components/parameters/accountId'
+        - $ref: '#/components/parameters/createdFrom'
+        - $ref: '#/components/parameters/createdTo'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/pageSize'
+      responses:
+        '200':
+          description: Lista paginada de movimentações.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoyaltyTransactionListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /loyalty/rewards:
+    get:
+      tags: [Loyalty]
+      summary: Catálogo de recompensas
+      operationId: listLoyaltyRewards
+      parameters:
+        - $ref: '#/components/parameters/programIdQuery'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/pageSize'
+      responses:
+        '200':
+          description: Lista paginada de recompensas.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoyaltyRewardListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /loyalty/coupons:
+    get:
+      tags: [Loyalty]
+      summary: Lista cupons de fidelidade e relacionamento
+      operationId: listLoyaltyCoupons
+      parameters:
+        - $ref: '#/components/parameters/programIdQuery'
+        - $ref: '#/components/parameters/customerIdQuery'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/pageSize'
+      responses:
+        '200':
+          description: Lista paginada de cupons.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoyaltyCouponListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /loyalty/redemptions:
+    post:
+      tags: [Loyalty]
+      summary: Solicita resgate de recompensa
+      operationId: createLoyaltyRedemption
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoyaltyRedemptionRequest'
+      responses:
+        '202':
+          description: Solicitação de resgate recebida.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /loyalty/events:
+    post:
+      tags: [LoyaltyEvents]
+      summary: Webhook específico de eventos de fidelidade
+      operationId: publishLoyaltyEvent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoyaltyEventEnvelope'
+      responses:
+        '202':
+          description: Evento recebido.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    page:
+      in: query
+      name: page
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+      description: Página da consulta.
+    pageSize:
+      in: query
+      name: pageSize
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 500
+        default: 50
+      description: Tamanho da página.
+    createdFrom:
+      in: query
+      name: createdFrom
+      schema:
+        type: string
+        format: date-time
+      description: Data/hora inicial de criação.
+    createdTo:
+      in: query
+      name: createdTo
+      schema:
+        type: string
+        format: date-time
+      description: Data/hora final de criação.
+    updatedFrom:
+      in: query
+      name: updatedFrom
+      schema:
+        type: string
+        format: date-time
+      description: Data/hora inicial de atualização.
+    updatedTo:
+      in: query
+      name: updatedTo
+      schema:
+        type: string
+        format: date-time
+      description: Data/hora final de atualização.
+    customerIdentifierType:
+      in: query
+      name: customerIdentifierType
+      schema:
+        type: string
+      description: Tipo do identificador principal do cliente.
+    customerIdentifierValue:
+      in: query
+      name: customerIdentifierValue
+      schema:
+        type: string
+      description: Valor do identificador principal do cliente.
+    externalId:
+      in: query
+      name: externalId
+      schema:
+        type: string
+      description: Identificador externo para correlação/deduplicação.
+    storeId:
+      in: query
+      name: storeId
+      schema:
+        type: string
+      description: Identificador da unidade/loja.
+    originChannel:
+      in: query
+      name: originChannel
+      schema:
+        $ref: '#/components/schemas/OriginChannel'
+      description: Canal/origem padronizado do pedido.
+    orderId:
+      in: path
+      name: orderId
+      required: true
+      schema:
+        type: string
+    orderIdQuery:
+      in: query
+      name: orderId
+      schema:
+        type: string
+    reviewId:
+      in: path
+      name: reviewId
+      required: true
+      schema:
+        type: string
+    programId:
+      in: path
+      name: programId
+      required: true
+      schema:
+        type: string
+    programIdQuery:
+      in: query
+      name: programId
+      schema:
+        type: string
+    accountId:
+      in: path
+      name: accountId
+      required: true
+      schema:
+        type: string
+    customerId:
+      in: path
+      name: customerId
+      required: true
+      schema:
+        type: string
+    customerIdQuery:
+      in: query
+      name: customerId
+      schema:
+        type: string
+  responses:
+    BadRequest:
+      description: Requisição inválida.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: string
+              message:
+                type: string
+            required: [code, message]
+  schemas:
+    DiscoveryDocument:
+      type: object
+      properties:
+        version:
+          type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        operationalLimits:
+          type: object
+          properties:
+            maxPageSize:
+              type: integer
+            maxBatchSize:
+              type: integer
+            rateLimitPerSecond:
+              type: integer
+        webhookEndpoints:
+          type: array
+          items:
+            type: string
+        documentation:
+          type: object
+          properties:
+            protocolUrl:
+              type: string
+              format: uri
+            openApiUrl:
+              type: string
+              format: uri
+    Identifier:
+      type: object
+      required: [type, value]
+      properties:
+        type:
+          type: string
+        value:
+          type: string
+    ExternalIdentifier:
+      type: object
+      required: [source, value]
+      properties:
+        source:
+          type: string
+        value:
+          type: string
+    ContactPoint:
+      type: object
+      required: [type, value]
+      properties:
+        type:
+          type: string
+          enum: [phone, email, other]
+        value:
+          type: string
+    Consent:
+      type: object
+      properties:
+        purpose:
+          type: string
+        channel:
+          type: string
+        status:
+          type: string
+          enum: [opt_in, opt_out, legal_consent, revoked]
+        source:
+          type: string
+        grantedAt:
+          type: string
+          format: date-time
+        revokedAt:
+          type: string
+          format: date-time
+    Address:
+      type: object
+      properties:
+        type:
+          type: string
+        street:
+          type: string
+        number:
+          type: string
+        complement:
+          type: string
+        neighborhood:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        postalCode:
+          type: string
+        country:
+          type: string
+    Customer:
+      type: object
+      required: [identifier]
+      properties:
+        id:
+          type: string
+        identifier:
+          $ref: '#/components/schemas/Identifier'
+        externalIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExternalIdentifier'
+        name:
+          type: string
+        contacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContactPoint'
+        birthDate:
+          type: string
+          format: date
+        addresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Address'
+        metadata:
+          type: object
+          additionalProperties: true
+        consents:
+          type: array
+          items:
+            $ref: '#/components/schemas/Consent'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CustomerUpsertRequest:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Customer'
+      required: [items]
+    CustomerListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Customer'
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer
+    Lead:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        contact:
+          $ref: '#/components/schemas/ContactPoint'
+        source:
+          type: string
+        metadata:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    LeadUpsertRequest:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Lead'
+      required: [items]
+    LeadListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Lead'
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer
+    OriginChannel:
+      type: string
+      enum:
+        - own_app
+        - marketplace
+        - in_store
+        - qr_code
+        - kiosk
+        - delivery
+        - takeout
+        - other
+    OrderCustomerRef:
+      type: object
+      properties:
+        identifier:
+          $ref: '#/components/schemas/Identifier'
+        externalIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExternalIdentifier'
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+        storeId:
+          type: string
+        originChannel:
+          $ref: '#/components/schemas/OriginChannel'
+        customer:
+          $ref: '#/components/schemas/OrderCustomerRef'
+        rawOrder:
+          type: object
+          additionalProperties: true
+          description: >-
+            Payload base do pedido reaproveitado da V1, com possíveis extensões
+            compatíveis para CRM/Fidelidade.
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    OrderUpsertRequest:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Order'
+      required: [items]
+    OrderListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Order'
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer
+    RatingMethod:
+      type: string
+      enum: [stars, nps, binary, score, other]
+    ReviewRating:
+      type: object
+      properties:
+        method:
+          $ref: '#/components/schemas/RatingMethod'
+        value:
+          oneOf:
+            - type: integer
+            - type: number
+            - type: boolean
+            - type: string
+        scaleMin:
+          type: number
+        scaleMax:
+          type: number
+        isOverall:
+          type: boolean
+          default: false
+        category:
+          type: string
+          description: Categoria aberta ou default, sem enum fechado no MVP.
+        question:
+          type: string
+        comment:
+          type: string
+    Review:
+      type: object
+      properties:
+        id:
+          type: string
+        customerIdentifier:
+          $ref: '#/components/schemas/Identifier'
+        orderId:
+          type: string
+        source:
+          type: string
+        ratings:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReviewRating'
+        comment:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    ReviewUpsertRequest:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Review'
+      required: [items]
+    ReviewListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Review'
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer
+    CustomerEventType:
+      type: string
+      enum:
+        - order.created
+        - order.cancelled
+        - order.delivered
+        - cart.abandoned
+        - customer.updated
+        - customer.consent.updated
+        - review.created
+    CustomerEventEnvelope:
+      type: object
+      required: [eventType, occurredAt]
+      properties:
+        id:
+          type: string
+        eventType:
+          $ref: '#/components/schemas/CustomerEventType'
+        occurredAt:
+          type: string
+          format: date-time
+        customerIdentifier:
+          $ref: '#/components/schemas/Identifier'
+        orderId:
+          type: string
+        payload:
+          type: object
+          additionalProperties: true
+    LoyaltyProgram:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        ownerType:
+          type: string
+          enum: [store, chain, coalition, shared, other]
+        status:
+          type: string
+        metadata:
+          type: object
+          additionalProperties: true
+    LoyaltyProgramUpsertRequest:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/LoyaltyProgram'
+      required: [items]
+    LoyaltyProgramListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/LoyaltyProgram'
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer
+    LoyaltyBalanceType:
+      type: string
+      enum: [points, cashback, other]
+    LoyaltyAccount:
+      type: object
+      properties:
+        id:
+          type: string
+        programId:
+          type: string
+        customerId:
+          type: string
+        balanceType:
+          $ref: '#/components/schemas/LoyaltyBalanceType'
+        balance:
+          type: number
+        currency:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+          additionalProperties: true
+    LoyaltyAccountListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/LoyaltyAccount'
+    LoyaltyTransactionType:
+      type: string
+      enum: [earn, redeem, adjust, expire, coupon_use, tier_change, other]
+    LoyaltyTransaction:
+      type: object
+      properties:
+        id:
+          type: string
+        accountId:
+          type: string
+        type:
+          $ref: '#/components/schemas/LoyaltyTransactionType'
+        amount:
+          type: number
+        relatedOrderId:
+          type: string
+        occurredAt:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+          additionalProperties: true
+    LoyaltyTransactionListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/LoyaltyTransaction'
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer
+    LoyaltyRewardType:
+      type: string
+      enum: [product, shipping, cashback, generic]
+    LoyaltyReward:
+      type: object
+      properties:
+        id:
+          type: string
+        programId:
+          type: string
+        type:
+          $ref: '#/components/schemas/LoyaltyRewardType'
+        name:
+          type: string
+        sku:
+          type: string
+        cost:
+          type: number
+        metadata:
+          type: object
+          additionalProperties: true
+    LoyaltyRewardListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/LoyaltyReward'
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer
+    LoyaltyCoupon:
+      type: object
+      properties:
+        id:
+          type: string
+        programId:
+          type: string
+        customerId:
+          type: string
+        code:
+          type: string
+        status:
+          type: string
+        metadata:
+          type: object
+          additionalProperties: true
+        expiresAt:
+          type: string
+          format: date-time
+    LoyaltyCouponListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/LoyaltyCoupon'
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer
+    LoyaltyRedemptionRequest:
+      type: object
+      required: [accountId, rewardId]
+      properties:
+        accountId:
+          type: string
+        rewardId:
+          type: string
+        quantity:
+          type: integer
+          default: 1
+        relatedOrderId:
+          type: string
+        metadata:
+          type: object
+          additionalProperties: true
+    LoyaltyEventType:
+      type: string
+      enum:
+        - loyalty.points.earned
+        - loyalty.cashback.earned
+        - loyalty.redemption.created
+        - loyalty.coupon.used
+        - loyalty.tier.changed
+    LoyaltyEventEnvelope:
+      type: object
+      required: [eventType, occurredAt]
+      properties:
+        id:
+          type: string
+        eventType:
+          $ref: '#/components/schemas/LoyaltyEventType'
+        occurredAt:
+          type: string
+          format: date-time
+        accountId:
+          type: string
+        customerId:
+          type: string
+        programId:
+          type: string
+        payload:
+          type: object
+          additionalProperties: true

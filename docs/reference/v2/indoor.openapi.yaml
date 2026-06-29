@@ -1,0 +1,1679 @@
+openapi: 3.1.0
+x-spectral-ignore:
+  - owasp:api4:2023-string-restricted
+info:
+  title: Open Delivery V2 - Salão / Indoor API
+  version: 2.0.0-rc
+  summary: API proposta para operações de salão/indoor no Open Delivery V2
+  description: >
+    Especificação proposta para o módulo Salão/Indoor do Open Delivery V2.
+    O pedido continua sendo o canal de entrada de itens, enquanto a conta
+    é a entidade central para agrupamento operacional, pagamentos, eventos,
+    fechamento e integração fiscal.
+
+servers:
+  - url: https://api.example.com/od/v2
+    description: Ambiente de production
+    x-internal: false
+  - url: https://sandbox.example.com/od/v2
+    description: Ambiente de staging/homologação
+    x-internal: true
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Orders
+    description: Operações de criação e consulta de pedidos indoor
+  - name: Accounts
+    description: Operações sobre conta de salão (mesa, comanda, balcão)
+  - name: Payments
+    description: Lançamentos de pagamentos da conta
+  - name: Fiscal
+    description: Solicitação e consulta de documentos fiscais
+  - name: Events
+    description: Consulta por polling de eventos emitidos pelo ciclo de vida da conta
+
+paths:
+  /orders:
+    post:
+      tags: [Orders]
+      operationId: createIndoorOrder
+      summary: Criar pedido indoor
+      description: >
+        Cria um pedido do tipo INDOOR. O pedido é o canal de entrada dos itens
+        e pode criar ou localizar uma conta operacional associada à combinação
+        operationMode + identifier.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderCreateRequest'
+      responses:
+        '201':
+          description: Pedido criado com sucesso
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderCreateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /orders/{orderId}:
+    get:
+      tags: [Orders]
+      operationId: getOrderById
+      summary: Consultar pedido por ID
+      parameters:
+        - $ref: '#/components/parameters/OrderId'
+      responses:
+        '200':
+          description: Pedido encontrado
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /accounts:
+    post:
+      tags: [Accounts]
+      operationId: openAccount
+      summary: Abrir conta explicitamente
+      description: >
+        Abre uma conta explicitamente quando a implementação desejar criar a conta
+        antes do primeiro pedido. Em implementações que não trabalham com abertura
+        explícita, a conta também pode nascer implicitamente no primeiro POST /orders.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountOpenRequest'
+      responses:
+        '201':
+          description: Conta aberta
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      tags: [Accounts]
+      operationId: getAccount
+      summary: Consultar conta por chave operacional
+      description: >
+        Recupera a conta ativa usando a chave operacional (operationMode + identifier).
+        Esta é a forma primária de acessar e operar sobre uma conta.
+      parameters:
+        - $ref: '#/components/parameters/OperationModeQuery'
+        - $ref: '#/components/parameters/IdentifierQuery'
+      responses:
+        '200':
+          description: Conta encontrada
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags: [Accounts]
+      operationId: updateAccount
+      summary: Atualizar metadados da conta
+      description: >
+        Atualiza atributos operacionais da conta, como identificação, serviço,
+        notificações ou configurações aplicáveis enquanto a conta estiver ativa.
+      parameters:
+        - $ref: '#/components/parameters/OperationModeQuery'
+        - $ref: '#/components/parameters/IdentifierQuery'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountUpdateRequest'
+      responses:
+        '200':
+          description: Conta atualizada
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /accounts/{accountId}:
+    get:
+      tags: [Accounts]
+      operationId: getAccountById
+      summary: Consultar conta por accountId
+      parameters:
+        - $ref: '#/components/parameters/AccountId'
+      responses:
+        '200':
+          description: Conta encontrada
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /accounts/pre-close:
+    post:
+      tags: [Accounts]
+      operationId: preCloseAccount
+      summary: Pré-fechar / bloquear conta para pagamento
+      description: >
+        Solicita o pré-fechamento da conta, também tratado como lock operacional
+        para impedir alterações concorrentes durante o checkout.
+      parameters:
+        - $ref: '#/components/parameters/OperationModeQuery'
+        - $ref: '#/components/parameters/IdentifierQuery'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountPreCloseRequest'
+      responses:
+        '202':
+          description: Solicitação de pré-fechamento aceita
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AsyncAcceptedResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /accounts/unlock:
+    post:
+      tags: [Accounts]
+      operationId: unlockAccount
+      summary: Desbloquear conta
+      description: >
+        Remove o lock/pre-close da conta quando o PDV permitir reabertura do fluxo
+        operacional antes do fechamento final.
+      parameters:
+        - $ref: '#/components/parameters/OperationModeQuery'
+        - $ref: '#/components/parameters/IdentifierQuery'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountUnlockRequest'
+      responses:
+        '202':
+          description: Solicitação de desbloqueio aceita
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AsyncAcceptedResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /accounts/close:
+    post:
+      tags: [Accounts]
+      operationId: closeAccount
+      summary: Fechar conta definitivamente
+      description: >
+        Fecha a conta definitivamente. O fechamento final representa o marco
+        operacional absoluto e irreversível da conta.
+      parameters:
+        - $ref: '#/components/parameters/OperationModeQuery'
+        - $ref: '#/components/parameters/IdentifierQuery'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountCloseRequest'
+      responses:
+        '202':
+          description: Solicitação de fechamento aceita
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AsyncAcceptedResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /accounts/items/{itemId}/cancel:
+    post:
+      tags: [Accounts]
+      operationId: cancelAccountItem
+      summary: Cancelar item da conta
+      description: >
+        Cancela um item já lançado na conta. Alterações semânticas de item devem
+        ser tratadas como cancelamento e novo lançamento, e não edição direta do item.
+      parameters:
+        - $ref: '#/components/parameters/OperationModeQuery'
+        - $ref: '#/components/parameters/IdentifierQuery'
+        - $ref: '#/components/parameters/ItemId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemCancelRequest'
+      responses:
+        '200':
+          description: Item cancelado
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountItem'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /accounts/transfers:
+    post:
+      tags: [Accounts]
+      operationId: transferAccountContent
+      summary: Transferir itens ou conta completa
+      description: >
+        Executa operação atômica de transferência entre contas/operações.
+        Permite transferência parcial por item ou transferência total da conta/mesa.
+      parameters:
+        - $ref: '#/components/parameters/OperationModeQuery'
+        - $ref: '#/components/parameters/IdentifierQuery'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferRequest'
+      responses:
+        '200':
+          description: Transferência concluída
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /accounts/payments:
+    post:
+      tags: [Payments]
+      operationId: createPayment
+      summary: Lançar pagamento na conta
+      description: >
+        Registra um lançamento de pagamento na conta. O pagamento pode ser total
+        ou parcial, por valor, e opcionalmente por item, conforme capacidade do PDV.
+      parameters:
+        - $ref: '#/components/parameters/OperationModeQuery'
+        - $ref: '#/components/parameters/IdentifierQuery'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentCreateRequest'
+      responses:
+        '201':
+          description: Pagamento lançado
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      tags: [Payments]
+      operationId: listAccountPayments
+      summary: Listar pagamentos da conta
+      parameters:
+        - $ref: '#/components/parameters/OperationModeQuery'
+        - $ref: '#/components/parameters/IdentifierQuery'
+      responses:
+        '200':
+          description: Lista de pagamentos
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  payments:
+                    type: array
+                    maxItems: 1000
+                    items:
+                      $ref: '#/components/schemas/Payment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # /payments/{paymentId}:
+    # get:                               # comentado por solicitação
+    #   tags: [Payments]
+    #   operationId: getPaymentById
+    #   summary: Consultar pagamento por ID
+    #   parameters:
+    #     - $ref: '#/components/parameters/PaymentId'
+    #   responses:
+    #     '200':
+    #       description: Pagamento encontrado
+    #       headers:
+    #         X-RateLimit-Limit:
+    #           $ref: '#/components/headers/X-RateLimit-Limit'
+    #         X-RateLimit-Remaining:
+    #           $ref: '#/components/headers/X-RateLimit-Remaining'
+    #         X-RateLimit-Reset:
+    #           $ref: '#/components/headers/X-RateLimit-Reset'
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: '#/components/schemas/Payment'
+    #     '400':
+    #       $ref: '#/components/responses/BadRequest'
+    #     '404':
+    #       $ref: '#/components/responses/NotFound'
+    #     '401':
+    #       $ref: '#/components/responses/Unauthorized'
+    #     '429':
+    #       $ref: '#/components/responses/TooManyRequests'
+    #     '500':
+    #       $ref: '#/components/responses/InternalServerError'
+
+  /accounts/fiscal:
+    post:
+      tags: [Fiscal]
+      operationId: requestFiscalDocument
+      summary: Solicitar emissão/associação fiscal da conta
+      description: >
+        Solicita a emissão ou recuperação do documento fiscal associado à conta.
+        O processamento é assíncrono e deve ser acompanhado por eventos e/ou GET de fallback.
+      parameters:
+        - $ref: '#/components/parameters/OperationModeQuery'
+        - $ref: '#/components/parameters/IdentifierQuery'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FiscalRequest'
+      responses:
+        '202':
+          description: Solicitação fiscal aceita
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AsyncAcceptedResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      tags: [Fiscal]
+      operationId: listAccountFiscalDocuments
+      summary: Listar documentos fiscais vinculados à conta
+      parameters:
+        - $ref: '#/components/parameters/OperationModeQuery'
+        - $ref: '#/components/parameters/IdentifierQuery'
+      responses:
+        '200':
+          description: Lista de documentos fiscais
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  documents:
+                    type: array
+                    maxItems: 1000
+                    items:
+                      $ref: '#/components/schemas/FiscalDocument'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # /fiscal/{documentId}:
+    # get:                               # comentado por solicitação
+    #   tags: [Fiscal]
+    #   operationId: getFiscalDocumentById
+    #   summary: Consultar documento fiscal por ID
+    #   parameters:
+    #     - $ref: '#/components/parameters/DocumentId'
+    #   responses:
+    #     '200':
+    #       description: Documento fiscal encontrado
+    #       headers:
+    #         X-RateLimit-Limit:
+    #           $ref: '#/components/headers/X-RateLimit-Limit'
+    #         X-RateLimit-Remaining:
+    #           $ref: '#/components/headers/X-RateLimit-Remaining'
+    #         X-RateLimit-Reset:
+    #           $ref: '#/components/headers/X-RateLimit-Reset'
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: '#/components/schemas/FiscalDocument'
+    #     '400':
+    #       $ref: '#/components/responses/BadRequest'
+    #     '404':
+    #       $ref: '#/components/responses/NotFound'
+    #     '401':
+    #       $ref: '#/components/responses/Unauthorized'
+    #     '429':
+    #       $ref: '#/components/responses/TooManyRequests'
+    #     '500':
+    #       $ref: '#/components/responses/InternalServerError'
+
+  # /events:
+    # get:                                # polling comentado por solicitação
+    #   tags: [Events]
+    #   operationId: pollEvents
+    #   summary: Consultar eventos por polling
+    #   description: >
+    #     Permite recuperar eventos de conta, pagamento e fiscal por consulta,
+    #     como fallback ou alternativa ao webhook.
+    #   parameters:
+    #     - in: query
+    #       name: since
+    #       required: false
+    #       schema:
+    #         type: string
+    #         format: date-time
+    #         maxLength: 64
+    #       description: Momento inicial para filtrar eventos mais recentes.
+    #     - in: query
+    #       name: eventTypes
+    #       required: false
+    #       schema:
+    #         type: array
+    #         maxItems: 50
+    #         items:
+    #           $ref: '#/components/schemas/EventType'
+    #       style: form
+    #       explode: false
+    #       description: Lista opcional de tipos de evento a retornar.
+    #   responses:
+    #     '200':
+    #       description: Eventos encontrados
+    #       headers:
+    #         X-RateLimit-Limit:
+    #           $ref: '#/components/headers/X-RateLimit-Limit'
+    #         X-RateLimit-Remaining:
+    #           $ref: '#/components/headers/X-RateLimit-Remaining'
+    #         X-RateLimit-Reset:
+    #           $ref: '#/components/headers/X-RateLimit-Reset'
+    #       content:
+    #         application/json:
+    #           schema:
+    #             type: object
+    #             properties:
+    #               events:
+    #                 type: array
+    #                 maxItems: 1000
+    #                 items:
+    #                   $ref: '#/components/schemas/EventNotification'
+    #     '400':
+    #       $ref: '#/components/responses/BadRequest'
+    #     '401':
+    #       $ref: '#/components/responses/Unauthorized'
+    #     '429':
+    #       $ref: '#/components/responses/TooManyRequests'
+    #     '500':
+    #       $ref: '#/components/responses/InternalServerError'
+
+webhooks:
+  accountEvent:
+    post:
+      tags: [Events]
+      operationId: receiveAccountEvent
+      summary: Webhook para notificação de eventos
+      description: >
+        Webhook consumido pelo originador para receber eventos de conta, pagamento e fiscal.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventNotification'
+      responses:
+        '200':
+          description: Evento recebido
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    OrderId:
+      in: path
+      name: orderId
+      required: true
+      schema:
+        type: string
+      description: Identificador único do pedido.
+    AccountId:
+      in: path
+      name: accountId
+      required: true
+      schema:
+        type: string
+      description: Identificador interno da conta quando já existente.
+    ItemId:
+      in: path
+      name: itemId
+      required: true
+      schema:
+        type: string
+      description: Identificador único do item dentro da conta.
+    PaymentId:
+      in: path
+      name: paymentId
+      required: true
+      schema:
+        type: string
+      description: Identificador único do pagamento.
+    DocumentId:
+      in: path
+      name: documentId
+      required: true
+      schema:
+        type: string
+      description: Identificador único do documento fiscal.
+    OperationModeQuery:
+      in: query
+      name: operationMode
+      required: true
+      schema:
+        $ref: '#/components/schemas/OperationMode'
+      description: Modo operacional da conta indoor.
+    IdentifierQuery:
+      in: query
+      name: identifier
+      required: true
+      schema:
+        type: string
+      description: Identificador operacional da mesa, comanda ou balcão.
+
+  responses:
+    BadRequest:
+      description: Requisição inválida
+      headers:
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/X-RateLimit-Limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/X-RateLimit-Remaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/X-RateLimit-Reset'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Recurso não encontrado
+      headers:
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/X-RateLimit-Limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/X-RateLimit-Remaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/X-RateLimit-Reset'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Conflito de estado da operação
+      headers:
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/X-RateLimit-Limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/X-RateLimit-Remaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/X-RateLimit-Reset'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Requisição sem credenciais válidas de autenticação.
+      headers:
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/X-RateLimit-Limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/X-RateLimit-Remaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/X-RateLimit-Reset'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    TooManyRequests:
+      description: Limite de requisições excedido.
+      headers:
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/X-RateLimit-Limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/X-RateLimit-Remaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/X-RateLimit-Reset'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalServerError:
+      description: Erro interno inesperado no processamento da requisição.
+      headers:
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/X-RateLimit-Limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/X-RateLimit-Remaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/X-RateLimit-Reset'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  headers:
+    X-RateLimit-Limit:
+      description: Número máximo de requisições permitidas na janela atual.
+      schema:
+        type: integer
+        minimum: 0
+    X-RateLimit-Remaining:
+      description: Quantidade restante de requisições na janela atual.
+      schema:
+        type: integer
+        minimum: 0
+    X-RateLimit-Reset:
+      description: Instante em que a janela de limite será reiniciada.
+      schema:
+        type: string
+        format: date-time
+        maxLength: 64
+
+  schemas:
+    OrderCreateRequest:
+      type: object
+      required: [orderType, items, indoor]
+      properties:
+        orderType:
+          type: string
+          enum: [INDOOR]
+          description: Tipo do pedido. Para este módulo, sempre INDOOR.
+        items:
+          type: array
+          minItems: 1
+          description: Lista de itens incluídos neste lançamento de pedido.
+          items:
+            $ref: '#/components/schemas/OrderItemInput'
+        indoor:
+          $ref: '#/components/schemas/Indoor'
+
+    OrderCreateResponse:
+      type: object
+      required: [orderId, status]
+      properties:
+        orderId:
+          type: string
+          description: Identificador do pedido criado.
+        accountId:
+          type: string
+          description: >
+            Identificador da conta, quando já existir ou tiver sido gerado
+            durante o processamento do pedido.
+        status:
+          type: string
+          enum: [ACCEPTED, REJECTED, PENDING]
+          description: Resultado do processamento inicial do pedido.
+
+    Order:
+      allOf:
+        - $ref: '#/components/schemas/OrderCreateRequest'
+        - type: object
+          properties:
+            orderId:
+              type: string
+              description: Identificador do pedido.
+            accountId:
+              type: string
+              description: Conta relacionada ao pedido.
+            createdAt:
+              type: string
+              format: date-time
+              description: Data/hora de criação do pedido.
+
+    Indoor:
+      type: object
+      required: [operationMode, identifier, originChannel, consumptionType]
+      properties:
+        operationMode:
+          $ref: '#/components/schemas/OperationMode'
+        identifier:
+          type: string
+          description: >
+            Identificador operacional da mesa, comanda ou balcão utilizado para localizar
+            a operação ativa antes, durante ou após a criação do pedido.
+        accountId:
+          type: string
+          description: >
+            Identificador interno da conta, quando já conhecido. Não deve ser obrigatório
+            no primeiro POST do pedido.
+        originChannel:
+          $ref: '#/components/schemas/OriginChannel'
+        consumptionType:
+          $ref: '#/components/schemas/ConsumptionType'
+        formaDeEntrega:
+          $ref: '#/components/schemas/FulfillmentInfo'
+        service:
+          $ref: '#/components/schemas/ServiceInfo'
+        notifications:
+          $ref: '#/components/schemas/Notifications'
+        fiscal:
+          $ref: '#/components/schemas/OrderFiscalInfo'
+
+    OrderItemInput:
+      type: object
+      required: [externalCode, name, quantity]
+      properties:
+        externalCode:
+          type: string
+          description: Código externo do item no sistema de origem.
+        name:
+          type: string
+          description: Nome comercial do item.
+        quantity:
+          type: number
+          format: double
+          description: Quantidade solicitada do item.
+        unitPrice:
+          type: number
+          format: double
+          description: Preço unitário informado no pedido, quando aplicável.
+        notes:
+          type: string
+          description: Observações livres do item.
+        seat:
+          type: string
+          description: Posição, lugar ou referência do cliente associada ao item.
+        options:
+          type: array
+          description: Opcionais/complementos selecionados para este item.
+          items:
+            $ref: '#/components/schemas/AccountItemOption'
+
+    AccountOpenRequest:
+      type: object
+      required: [operationMode, identifier]
+      properties:
+        operationMode:
+          $ref: '#/components/schemas/OperationMode'
+        identifier:
+          type: string
+          description: Identificador operacional da conta a ser aberta.
+        service:
+          $ref: '#/components/schemas/ServiceInfo'
+        notifications:
+          $ref: '#/components/schemas/Notifications'
+
+    AccountUpdateRequest:
+      type: object
+      properties:
+        identifier:
+          type: string
+          description: Novo identificador operacional da conta, quando houver alteração.
+        service:
+          $ref: '#/components/schemas/ServiceInfo'
+        notifications:
+          $ref: '#/components/schemas/Notifications'
+        fiscal:
+          $ref: '#/components/schemas/AccountFiscalSummary'
+
+    Account:
+      type: object
+      required: [operationMode, identifier, status, openedAt]
+      properties:
+        accountId:
+          type: string
+          description: Identificador interno da conta/ticket/sale quando existir.
+        operationMode:
+          $ref: '#/components/schemas/OperationMode'
+        identifier:
+          type: string
+          description: Identificador operacional atual da conta.
+        status:
+          $ref: '#/components/schemas/AccountStatus'
+        openedAt:
+          type: string
+          format: date-time
+          description: Data/hora de abertura operacional da conta.
+        closedAt:
+          type: string
+          format: date-time
+          description: Data/hora de fechamento definitivo da conta.
+        orders:
+          type: array
+          description: Lista resumida dos pedidos associados à conta.
+          items:
+            $ref: '#/components/schemas/AccountOrderRef'
+        items:
+          type: array
+          description: Itens agregados da conta.
+          items:
+            $ref: '#/components/schemas/AccountItem'
+        payments:
+          type: array
+          description: Lançamentos de pagamento associados à conta.
+          items:
+            $ref: '#/components/schemas/Payment'
+        totals:
+          $ref: '#/components/schemas/AccountTotals'
+        fiscal:
+          $ref: '#/components/schemas/AccountFiscalSummary'
+
+    AccountOrderRef:
+      type: object
+      required: [orderId, createdAt]
+      properties:
+        orderId:
+          type: string
+          description: Identificador do pedido.
+        originChannel:
+          type: string
+          description: Canal resumido de origem do pedido.
+        createdAt:
+          type: string
+          format: date-time
+          description: Data/hora de criação do pedido.
+
+    AccountItem:
+      type: object
+      required: [itemId, name, quantity, status, addedAt]
+      properties:
+        itemId:
+          type: string
+          description: Identificador único do item na conta.
+        externalCode:
+          type: string
+          description: Código externo do item no sistema de origem (PDV).
+        name:
+          type: string
+          description: Nome do item.
+        quantity:
+          type: number
+          format: double
+          description: Quantidade do item na conta.
+        unitPrice:
+          type: number
+          format: double
+          description: Preço unitário do item.
+        discount:
+          type: number
+          format: double
+          description: >
+            Desconto aplicado a este item. Representa a diferença entre o preço
+            original e o preço efetivamente cobrado, permitindo exibição ao cliente
+            (ex: preço riscado no front).
+        totalPrice:
+          type: number
+          format: double
+          description: Valor total do item após desconto, se houver.
+        origin:
+          type: string
+          enum: [ORDERING_APPLICATION, PDV, OTHER]
+          description: Origem lógica da inclusão do item.
+        addedAt:
+          type: string
+          format: date-time
+          description: Data/hora de entrada do item na conta.
+        status:
+          type: string
+          enum: [ACTIVE, CANCELLED, PAID]
+          description: Status atual do item.
+        notes:
+          type: string
+          description: Observações livres associadas ao item.
+        seat:
+          type: string
+          description: Lugar, assento ou posição associada ao item.
+        options:
+          type: array
+          description: >
+            Opcionais/complementos selecionados para este item, reutilizando a
+            estrutura de options do Open Delivery.
+          items:
+            $ref: '#/components/schemas/AccountItemOption'
+
+    AccountItemOption:
+      type: object
+      required: [name, quantity]
+      properties:
+        externalCode:
+          type: string
+          description: Código externo do opcional no sistema de origem.
+        name:
+          type: string
+          description: Nome do opcional selecionado.
+        quantity:
+          type: number
+          format: double
+          description: Quantidade selecionada do opcional.
+        unitPrice:
+          type: number
+          format: double
+          description: Preço unitário do opcional.
+        totalPrice:
+          type: number
+          format: double
+          description: Valor total do opcional.
+        options:
+          type: array
+          description: Sub-opcionais aninhados, para estruturas de combos.
+          items:
+            $ref: '#/components/schemas/AccountItemOption'
+
+    PaymentCreateRequest:
+      type: object
+      required: [amount, methodInfo]
+      properties:
+        amount:
+          type: number
+          format: double
+          description: Valor do lançamento de pagamento.
+        methodInfo:
+          $ref: '#/components/schemas/PaymentMethodInfo'
+        serviceCharge:
+          $ref: '#/components/schemas/ChargeAmount'
+        tip:
+          type: number
+          format: double
+          description: Gorjeta adicional ao pagamento.
+        items:
+          type: array
+          description: Lista opcional de itens quitados por este pagamento.
+          items:
+            type: string
+        seat:
+          type: string
+          description: Posição do cliente associada ao pagamento, quando aplicável.
+
+    Payment:
+      allOf:
+        - $ref: '#/components/schemas/PaymentCreateRequest'
+        - type: object
+          required: [paymentId, paidAt]
+          properties:
+            paymentId:
+              type: string
+              description: Identificador único do pagamento.
+            paidAt:
+              type: string
+              format: date-time
+              description: Data/hora de confirmação do pagamento.
+
+    PaymentMethodInfo:
+      type: object
+      required: [method]
+      properties:
+        method:
+          type: string
+          enum: [CASH, CREDIT_CARD, DEBIT_CARD, PIX, VOUCHER, OTHER]
+          description: Meio de pagamento utilizado.
+        brand:
+          type: string
+          enum: [VISA, MASTERCARD, AMEX, ELO, HIPERCARD, AURA, SODEXO, VR, BENEFIT, OTHER]
+          description: Bandeira ou marca do meio de pagamento, quando aplicável.
+        nsu:
+          type: string
+          description: NSU/identificador da transação, quando aplicável ou exigido.
+
+    ChargeAmount:
+      type: object
+      properties:
+        rate:
+          type: number
+          format: double
+          description: Percentual aplicado da taxa.
+        amount:
+          type: number
+          format: double
+          description: Valor monetário efetivo da taxa.
+
+    AccountTotals:
+      type: object
+      properties:
+        itemsSubtotal:
+          type: number
+          format: double
+          description: Soma dos itens ativos da conta.
+        serviceCharge:
+          $ref: '#/components/schemas/ChargeAmount'
+        taxes:
+          type: object
+          properties:
+            amount:
+              type: number
+              format: double
+              description: Valor total de tributos calculados para a conta.
+        discount:
+          type: number
+          format: double
+          description: >
+            Desconto total aplicado no fechamento da conta. Representa o valor
+            concedido sobre o subtotal dos itens no momento do fechamento.
+        paid:
+          type: number
+          format: double
+          description: Total pago até o momento.
+        due:
+          type: number
+          format: double
+          description: Saldo em aberto da conta.
+
+    TransferRequest:
+      type: object
+      required: [transferType, target]
+      properties:
+        transferType:
+          type: string
+          enum: [ITEMS, FULL_ACCOUNT]
+          description: 'Tipo de transferência: parcial por itens ou total.'
+        itemIds:
+          type: array
+          description: Lista de itens a transferir quando transferType = ITEMS.
+          items:
+            type: string
+        target:
+          $ref: '#/components/schemas/OperationalAccountRef'
+        reason:
+          type: string
+          description: Motivo opcional da transferência para histórico ou relatório.
+
+    TransferResponse:
+      type: object
+      properties:
+        sourceAccountId:
+          type: string
+          description: Conta de origem.
+        targetAccountId:
+          type: string
+          description: Conta de destino.
+        transferredItemIds:
+          type: array
+          items:
+            type: string
+          description: Itens efetivamente transferidos.
+        transferredAt:
+          type: string
+          format: date-time
+          description: Data/hora da transferência.
+
+    # TransferHistoryEntry: comentado — aguardando decisão do comitê sobre rastreabilidade de transferências (debate em 02/06/2026)
+    # TransferHistoryEntry:
+    #   type: object
+    #   properties:
+    #     fromAccountId:
+    #       type: string
+    #       description: Conta de origem anterior.
+    #     toAccountId:
+    #       type: string
+    #       description: Conta de destino.
+    #     reason:
+    #       type: string
+    #       description: Motivo da transferência.
+    #     transferredAt:
+    #       type: string
+    #       format: date-time
+    #       description: Data/hora do movimento.
+
+    OperationalAccountRef:
+      type: object
+      required: [operationMode, identifier]
+      properties:
+        accountId:
+          type: string
+          description: Conta alvo, quando o accountId já for conhecido.
+        operationMode:
+          $ref: '#/components/schemas/OperationMode'
+        identifier:
+          type: string
+          description: Identificador operacional da conta alvo.
+
+    FiscalRequest:
+      type: object
+      properties:
+        printDocument:
+          type: boolean
+          description: Indica se a impressão física do documento foi solicitada.
+        paymentNSURequiredForNFCE:
+          type: boolean
+          description: Indica se o NSU do pagamento é exigido para a emissão da NFC-e.
+
+    FiscalDocument:
+      type: object
+      properties:
+        documentId:
+          type: string
+          description: Identificador único do documento fiscal.
+        documentStatus:
+          type: string
+          enum: [NAO_EMITIDA, PENDENTE, EMITIDA, ERRO]
+          description: Status atual do documento fiscal.
+        num_nota:
+          type: string
+          description: Número da nota fiscal.
+        serie_docto:
+          type: string
+          description: Série do documento fiscal.
+        chave_docto:
+          type: string
+          description: Chave do documento fiscal.
+        ambiente:
+          type: string
+          enum: ['1', '2']
+          description: >
+            Ambiente fiscal. 1 = produção. 2 = homologação.
+        protocolo:
+          type: string
+          description: Protocolo de autorização do documento fiscal.
+        modelo:
+          type: string
+          description: Modelo do documento fiscal.
+        data_hora_emissao:
+          type: string
+          format: date-time
+          description: Data/hora de emissão do documento.
+        data_hora_saida:
+          type: string
+          format: date-time
+          description: Data/hora de saída associada ao documento.
+        codigo_status_docto:
+          type: string
+          description: Código de status retornado pela SEFAZ.
+        motivo_docto:
+          type: string
+          description: Descrição do status retornado pela SEFAZ.
+        data_hora_contingencia:
+          type: string
+          format: date-time
+          description: Data/hora de contingência, quando aplicável.
+        tipo_emissao:
+          type: string
+          enum: ['1', '9']
+          description: >
+            Tipo de emissão. 1 = normal. 9 = contingência.
+        xml:
+          type: string
+          description: Conteúdo XML do documento fiscal, quando retornado.
+        pdfBase64:
+          type: string
+          description: Representação base64 do DANFE/Cupom, quando retornada.
+        imageBase64:
+          type: string
+          description: Representação base64 em imagem do documento, quando retornada.
+
+    OrderFiscalInfo:
+      type: object
+      properties:
+        shouldIssueDocument:
+          type: boolean
+          description: Indica se o pedido/conta deverá gerar documento fiscal.
+        documentStatus:
+          type: string
+          enum: [NAO_EMITIDA, PENDENTE, EMITIDA]
+          description: Status fiscal conhecido no momento do pedido.
+        printDocument:
+          type: boolean
+          description: Indica se o documento deverá ser impresso.
+        paymentNSURequiredForNFCE:
+          type: boolean
+          description: Indica se NSU do pagamento será exigido para emissão de NFC-e.
+
+    AccountFiscalSummary:
+      type: object
+      properties:
+        documentIssued:
+          type: boolean
+          description: Indica se ao menos um documento fiscal foi emitido para a conta.
+        documentId:
+          type: string
+          description: Identificador do documento fiscal principal associado à conta.
+
+    OriginChannel:
+      type: object
+      required: [type]
+      properties:
+        type:
+          type: string
+          enum:
+            - TOTEM
+            - QR_CODE
+            - TABLET_CLIENTE
+            - TABLET_GARCOM
+            - FRENTE_DE_CAIXA
+            - PDV
+            - APLICATIVO
+            - WHATSAPP
+            - OUTRO
+          description: Canal de origem do pedido indoor.
+        id:
+          type: string
+          description: Identificador específico do canal/dispositivo/origem.
+        obs:
+          type: string
+          description: Observação livre sobre o canal de origem.
+
+    FulfillmentInfo:
+      type: object
+      properties:
+        tipo:
+          type: string
+          enum: [DESPACHO, CHAMADA]
+          description: Forma de entrega/retirada do pedido.
+        chamada:
+          $ref: '#/components/schemas/CallInfo'
+        despacho:
+          $ref: '#/components/schemas/DispatchInfo'
+
+    CallInfo:
+      type: object
+      properties:
+        notificarOriginador:
+          type: boolean
+          description: Indica se o originador deve ser notificado quando o item/pedido estiver pronto.
+        tipo:
+          type: string
+          enum: [SENHA, PAGER, CALL_NAME, WHATSAPP, OUTRO]
+          description: Tipo de identificação usada para chamar o cliente.
+        label:
+          type: string
+          description: Valor visível da chamada, como senha, nome ou rótulo equivalente.
+
+    DispatchInfo:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identificador do ponto/local de despacho.
+        label:
+          type: string
+          description: Nome amigável do ponto/local de despacho.
+        sector:
+          type: string
+          description: Setor, praça ou área operacional relacionada ao despacho.
+        seat:
+          $ref: '#/components/schemas/SeatRef'
+
+    SeatRef:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identificador do assento, lugar ou posição.
+        label:
+          type: string
+          description: Nome amigável do assento, lugar ou posição.
+
+    ServiceInfo:
+      type: object
+      properties:
+        waiterCode:
+          type: string
+          description: Código do garçom/atendente responsável.
+        waiterName:
+          type: string
+          description: Nome do garçom/atendente responsável.
+        peopleCount:
+          type: integer
+          description: Quantidade de pessoas associadas à conta.
+
+    Notifications:
+      type: object
+      properties:
+        whatsAppId:
+          type: string
+          description: Identificador de WhatsApp vinculado à conta ou ao cliente.
+
+    AccountPreCloseRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          description: Motivo opcional do pré-fechamento.
+        requestedBy:
+          type: string
+          description: Sistema ou ator que solicitou o pré-fechamento.
+
+    AccountUnlockRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          description: Motivo opcional do desbloqueio.
+
+    AccountCloseRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          description: Motivo opcional do fechamento final.
+        discount:
+          type: number
+          format: double
+          description: >
+            Desconto aplicado no fechamento da conta, quando informado pelo originador.
+            Se presente, deve ser refletido em AccountTotals.discount.
+
+    ItemCancelRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          description: Motivo do cancelamento do item.
+
+    AsyncAcceptedResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ACCEPTED]
+          description: Confirmação de que a solicitação foi aceita para processamento assíncrono.
+        correlationId:
+          type: string
+          description: Identificador de correlação da operação assíncrona.
+
+    EventNotification:
+      type: object
+      required: [eventId, eventType, occurredAt]
+      properties:
+        eventId:
+          type: string
+          description: Identificador único do evento.
+        eventType:
+          $ref: '#/components/schemas/EventType'
+        occurredAt:
+          type: string
+          format: date-time
+          description: Data/hora em que o evento ocorreu.
+        accountId:
+          type: string
+          description: Conta relacionada ao evento.
+        orderId:
+          type: string
+          description: Pedido relacionado ao evento, quando aplicável.
+        paymentId:
+          type: string
+          description: Pagamento relacionado ao evento, quando aplicável.
+        documentId:
+          type: string
+          description: Documento fiscal relacionado ao evento, quando aplicável.
+        payload:
+          type: object
+          additionalProperties: true
+          description: Payload complementar do evento.
+
+    EventType:
+      type: string
+      enum:
+        - ACCOUNT_OPENED
+        - ACCOUNT_UPDATED
+        - ACCOUNT_ITEM_ADDED
+        - ACCOUNT_ITEM_REMOVED
+        - ACCOUNT_ITEM_CANCELLED
+        - ACCOUNT_PRE_CLOSED
+        - ACCOUNT_UNLOCKED
+        - ACCOUNT_CLOSED
+        - PAYMENT_CREATED
+        - PAYMENT_UPDATED
+        - FISCAL_ISSUED
+        - FISCAL_ERROR
+
+    OperationMode:
+      type: string
+      enum: [MESA, COMANDA, BALCAO]
+      description: Modo operacional principal do atendimento indoor.
+
+    ConsumptionType:
+      type: string
+      enum: [CONSUMIR_NO_LOCAL, LEVAR]
+      description: Intenção de consumo associada ao pedido indoor.
+
+    AccountStatus:
+      type: string
+      enum: [AVAILABLE, IN_USE, BLOCKED, IN_PAYMENT, CLOSED]
+      description: Status operacional da conta.
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Código de erro padronizado.
+        message:
+          type: string
+          description: Mensagem descritiva do erro.
+        details:
+          type: array
+          items:
+            type: string
+          description: Lista opcional de detalhes adicionais.

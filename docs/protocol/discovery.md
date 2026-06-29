@@ -1,126 +1,273 @@
-# Discovery and Well-Known
+# Discovery
 
-This section defines how participants publish discoverable protocol support before productive coordination.
+Before any capability operation can happen, each participant publishes a public, machine-readable document that tells the other side exactly what it supports. That document is the **discovery manifest**, served at a well-known URL.
 
-In The Open Delivery Protocol (ODP), Discovery is a mandatory protocol mechanism, not a capability.
-It allows one participant to understand another participant before any capability operation.
-Discovery always uses a REST endpoint, even when capability operations use other transport bindings.
+This page explains what discovery is for, how each side of the integration uses it, and how to read and publish a manifest. Normative rules and the full field reference are in the [Discovery API spec](../reference/discovery.md).
 
-## What Discovery Is For
+---
 
-Discovery allows participants to determine:
+## The problem discovery solves
 
-- Whether a participant supports a given capability
-- Which operations are available inside that capability
-- Which side originates or receives each operation
-- Which protocol version/profile is supported
+In V1, there was no standard way to know what a counterpart supported before calling it. Integrators found out through trial and error: they called an endpoint, got a `404` or an unexpected error, and then went back to their counterpart asking what was actually implemented. This was slow, expensive, and led to divergent implementations where each pair of participants had their own set of informal bilateral agreements.
 
-## Well-Known Endpoint
+Discovery eliminates that. Instead of discovering capabilities indirectly through failed calls, each participant declares its capabilities upfront in a single, always-available document.
 
-ODP uses a REST well-known endpoint for discovery in the same general spirit seen in standards such as OAuth, OpenAPI-related ecosystem conventions, and UCP.
+---
 
-The reason is practical: discovery must be simple, predictable, and retrievable before any participant-specific transport assumptions are made.
+## How it works
 
-This means the protocol has two layers:
-
-- A mandatory REST well-known endpoint for discovery
-- One or more transport bindings for capability operations
-
-Before any productive capability coordination, a participant MUST publish a machine-readable discovery document in this endpoint.
-
-**Required URL suffix:**
+The manifest is served over a standard HTTP `GET` at a URL that always ends with `/.well-known/opendelivery`:
 
 ```
-/.well-known/opendelivery
+GET https://dominio.com/.well-known/opendelivery
 ```
 
-Every discovery URL MUST end with this suffix.
+The endpoint is always public — no authentication required. The response is a JSON document that describes everything a counterpart needs to know before sending a single capability request: which capabilities are active, what operations are supported, which events are emitted, how to deliver messages (webhook or polling), and what operational limits to respect.
 
-Using the domain root is recommended for consistency, but not mandatory.
+The two parties can sit at opposite ends of this exchange:
 
-A participant MAY expose discovery at any HTTPS-accessible host or path prefix, as long as the URL keeps the mandatory suffix.
+- **The publisher** is the participant who implements and serves the manifest.
+- **The consumer** is the counterpart who reads the manifest before starting the integration.
 
-- The exact URL **MUST** be communicated to the other participant through out-of-band channels (e.g., configuration, registration, or manual setup) before any capability operation begins.
-- The endpoint **MUST** be publicly accessible without authenticated requests.
-- The endpoint **MUST** use HTTPS (SSL/TLS).
-- The endpoint response **MUST** include proper CORS headers if accessed from browser contexts.
+In practice, both sides are usually publishers and consumers — each side has its own manifest, and each reads the other's before coordinating.
 
-Accepted examples:
+---
 
-- `https://dominio.com/.well-known/opendelivery` (recommended)
-- `https://api.dominio.com/.well-known/opendelivery`
-- `https://dominio.com/api/.well-known/opendelivery`
+## The integration flow
 
-Transport-specific implementation details are defined in [REST/HTTP Discovery Binding](../transport-bindings/rest-http-discovery.md).
+Discovery is always step zero. The sequence looks like this:
 
-## Discovery Fields
+```
+Consumer                                 Publisher
+   |                                         |
+   |  GET /.well-known/opendelivery          |
+   |---------------------------------------->|
+   |                                         |
+   |  200 OK  { manifest }                   |
+   |<----------------------------------------|
+   |                                         |
+   |  [reads capabilities, limits, events]   |
+   |  [configures integration accordingly]   |
+   |                                         |
+   |  POST /orders   (or webhook, etc.)      |
+   |---------------------------------------->|
+```
 
-A valid discovery payload MUST include all fields marked as `YES` and MUST NOT declare operations or behaviors the participant cannot execute.
-When `discovery.compatibility` is provided, it SHOULD include backward-compatibility guidance.
+The consumer reads the manifest once (or periodically to detect changes) and uses it to decide how to behave. Only after reading the manifest does it begin capability operations.
 
-| name | type | required | description |
-|---|---|---|---|
-| `discovery.participantId` | string | YES | Unique participant identifier |
-| `discovery.protocolVersion` | string | YES | Protocol version string |
-| `discovery.capabilities[].name` | string | YES | Capability name (`orders`, `merchant`, `customer`, `logistics`) |
-| `discovery.capabilities[].operations[]` | array[string] | YES | Supported operation identifiers in that capability |
-| `discovery.capabilities[].role` | string | YES | Participant role in operations (`ORIGINATOR`, `RECEIVER`, `BOTH`) |
-| `discovery.capabilities[].profiles[]` | array[string] | NO | Supported profiles/variants for that capability |
-| `discovery.compatibility` | string | NO | Compatibility statement |
-| `discovery.notes` | string | NO | Informative notes |
+The full discovery URL is exchanged out-of-band — through registration, configuration, or manual setup — before the integration starts. The manifest itself is not the place to learn the URL; the URL is shared through your onboarding process.
 
-## Discovery Example
+---
+
+## What the manifest contains
+
+The manifest is a single JSON object with five top-level sections. Here is a quick tour of each one, using the full example from the spec as reference.
+
+### Identity and protocol version
 
 ```json
 {
+  "appId": "550e8400-e29b-41d4-a716-446655440000",
+  "openDelivery": {
+    "currentVersion": "2.0",
+    "supportedVersions": ["2.0"]
+  },
   "discovery": {
-    "participantId": "software-service-123",
-    "protocolVersion": "v1.7.0",
-    "capabilities": [
-      {
-        "name": "merchant",
-        "role": "ORIGINATOR",
-        "operations": ["publishMerchant", "notifyMerchantUpdate"]
-      },
-      {
-        "name": "orders",
-        "role": "RECEIVER",
-        "operations": ["receiveOrder", "acknowledgeOrderEvent", "resolveCancellation"]
-      },
-      {
-        "name": "customer",
-        "role": "BOTH",
-        "operations": ["ingestCustomer", "getCustomers", "receiveCustomerEvent"]
-      },
-      {
-        "name": "logistics",
-        "role": "BOTH",
-        "operations": ["quoteDelivery", "createDelivery", "publishDeliveryEvent"]
-      }
-    ],
-    "compatibility": "backward-compatible"
+    "version": "1.0.0"
   }
 }
 ```
 
-## Normative Statements
+`appId` is the stable identifier for the participant application, issued during onboarding. The consumer uses it to correlate the manifest with the credentials it already has.
 
-- Participant MUST publish a machine-readable discovery document before productive capability coordination.
-- Discovery endpoint MUST be public — no authentication required.
-- Discovery endpoint MUST use HTTPS (SSL/TLS).
-- Discovery endpoint URL MUST end with `/.well-known/opendelivery`.
-- Participant MUST communicate the full discovery URL to partners before capability operations.
-- Discovery payload MUST include all required fields and MUST NOT declare unsupported behaviors.
-- If `discovery.compatibility` is present, it SHOULD include backward-compatibility guidance.
+`openDelivery.supportedVersions` tells the consumer which protocol versions this participant can interoperate with. If there is no version overlap, the integration cannot proceed.
 
-!!! tip "Implementation Checklist"
-    - Publish a machine-readable discovery document before productive coordination.
-    - Use a public HTTPS endpoint for discovery.
-    - Ensure the discovery URL ends with `/.well-known/opendelivery`.
-    - Communicate the full discovery URL to partners before any capability operation.
-    - Declare supported capabilities, operations, and participant role per operation.
-    - Do not declare behaviors that are not actually supported.
-    - If provided, include backward-compatibility guidance in `discovery.compatibility`.
+`discovery.version` identifies which version of the discovery format this manifest follows.
 
-    Conformance requirements are defined in `Well-Known Endpoint` and `Discovery Fields`.
-    For REST/HTTP mapping and OpenAPI artifact, see `transport-bindings/rest-http-discovery.md` and `reference/v2/rest-http-discovery.openapi.yaml`.
+---
+
+### Authentication
+
+```json
+{
+  "authentication": {
+    "supportedGrantTypes": ["client_credentials", "authorization_code"],
+    "clientIdGeneration": ["by_app", "by_merchant"]
+  }
+}
+```
+
+This section tells the consumer which OAuth 2.0 grant types to use and how credentials are issued:
+
+- `client_credentials` — the standard application-level flow.
+- `authorization_code` — used when a merchant must explicitly grant consent. Only implement this if it is declared here.
+- `by_app` — one credential pair covers all merchants (recommended for V2).
+- `by_merchant` — separate credentials per merchant (V1 legacy, still supported for migration).
+
+The consumer looks at this section and configures its authentication client accordingly before making any protected capability call.
+
+---
+
+### Capabilities
+
+Capabilities are the core of the manifest. Each capability key (`orders`, `merchant`, `customer`, `logistics`, `indoor`) is present only if the participant actively supports it. Omitting a key means the capability is not supported — no need to guess.
+
+#### Orders and Logistics — originator and receiver
+
+Orders and Logistics have two sub-roles that can exist independently:
+
+```json
+{
+  "capabilities": {
+    "orders": {
+      "version": "1.0.0",
+      "supported": true,
+      "originator": {
+        "supported": true,
+        "supportedEvents": ["ORDER_CREATED", "ORDER_CONFIRMED", "ORDER_CANCELLED", "ORDER_COMPLETED"],
+        "unsupportedEvents": ["ORDER_DISPATCHED"],
+        "supportsWebhook": true,
+        "supportsPolling": false
+      },
+      "receiver": {
+        "supported": true,
+        "supportedOperations": ["createOrder", "confirmOrder", "cancelOrder", "updateOrderStatus"],
+        "unsupportedOperations": ["dispatchOrder"],
+        "supportsWebhook": true,
+        "supportsPolling": true
+      }
+    }
+  }
+}
+```
+
+**Originator** means this participant emits order events. The consumer knows exactly which events will arrive (`supportedEvents`) and which will never arrive (`unsupportedEvents`). This eliminates the classic ambiguity of "does this partner send `ORDER_DISPATCHED` or not?" — it is declared explicitly.
+
+**Receiver** means this participant accepts incoming order operations. The consumer knows which operations it can call and which it should not attempt.
+
+`supportsWebhook` and `supportsPolling` tell the consumer how to deliver or retrieve messages. If only `supportsWebhook: true` and `supportsPolling: false`, the consumer must push events; it cannot poll for them.
+
+The same structure applies to Logistics.
+
+---
+
+#### Merchant — synchronization flags
+
+```json
+{
+  "capabilities": {
+    "merchant": {
+      "version": "1.0.0",
+      "supported": true,
+      "supportsPartialUpdate": true,
+      "supportsFullGetByOriginator": true
+    }
+  }
+}
+```
+
+`supportsPartialUpdate` tells the consumer whether it can send patch-style updates or must always send the full merchant payload. `supportsFullGetByOriginator` tells whether the originator side exposes a GET endpoint for the consumer to fetch the current state — useful for reconciliation and initial loads.
+
+---
+
+#### Indoor — fiscal and table configuration
+
+```json
+{
+  "capabilities": {
+    "indoor": {
+      "version": "1.0.0",
+      "supported": true,
+      "invoiceIssuer": "pos",
+      "invoiceIssueMoment": "account_closing",
+      "usesAccountId": true
+    }
+  }
+}
+```
+
+Indoor (table service) has operational characteristics that vary significantly between implementations. The manifest declares who issues the fiscal invoice (`pos`, `app`, or `platform`), when it is issued, and whether the integration uses an `accountId` to track open table sessions. Without this, consumers would have to negotiate these details bilaterally for every deployment.
+
+---
+
+#### Customer — operational limits
+
+```json
+{
+  "capabilities": {
+    "customer": {
+      "version": "1.0.0",
+      "supported": true,
+      "supportsBatchGet": true,
+      "supportsBatchPost": true,
+      "maxBatchSize": 100,
+      "maxGetPeriodDays": 30,
+      "requestsPerSecond": 10,
+      "maxPayloadSizeKb": 1024,
+      "acceptedGetPeriodicity": "daily"
+    }
+  }
+}
+```
+
+The Customer capability declares the operational limits the consumer must respect. This is where the manifest acts as a live configuration document: instead of hunting through separate documentation to find rate limits and batch sizes, the consumer reads them here and adapts its behavior automatically.
+
+- `maxBatchSize` — never send more items than this in a single POST.
+- `maxGetPeriodDays` — never query a date range wider than this.
+- `requestsPerSecond` — throttle accordingly.
+- `acceptedGetPeriodicity` — how often the consumer should poll (e.g., `daily` means once per day is enough and more frequent polling is discouraged).
+
+---
+
+## The publisher's perspective
+
+If you are implementing the manifest endpoint, here is what to keep in mind:
+
+**Declare what you actually support, not what you aspire to support.** A consumer reading `supportedEvents: [ORDER_CREATED, ORDER_CONFIRMED]` will build its integration around those two events. If `ORDER_CONFIRMED` never actually arrives, the consumer's flow breaks.
+
+**Be explicit about what you do not support.** Use `unsupportedEvents` and `unsupportedOperations` to declare gaps clearly. An empty list `[]` is a valid value and means "all standard items in this category are supported."
+
+**Keep the manifest up to date.** If your implementation changes — you add polling support, raise a batch limit, or start emitting a new event — update the manifest. Consumers may re-read it periodically to detect changes.
+
+**Serve it fast and reliably.** The manifest is read before the integration starts. A slow or intermittent discovery endpoint can block an entire onboarding.
+
+---
+
+## The consumer's perspective
+
+If you are reading a counterpart's manifest before connecting, here is how to use it:
+
+**Read the manifest before any capability call.** Do not assume what the counterpart supports. Read the manifest first, then configure your integration accordingly.
+
+**Check protocol version compatibility.** If `openDelivery.supportedVersions` does not include your version, coordinate with the counterpart before proceeding.
+
+**Adapt to the declared delivery mode.** If the manifest says `supportsWebhook: true, supportsPolling: false` for a capability, set up your webhook receiver — do not build a polling loop.
+
+**Respect operational limits.** The `customer` capability's limits (`maxBatchSize`, `requestsPerSecond`, `maxGetPeriodDays`) are declarations, not suggestions. Exceeding them will result in errors or throttling.
+
+**Handle missing capabilities gracefully.** If a capability key is absent from the manifest, treat it as unsupported and do not call it. Log it clearly so the integration owner understands what is and is not available.
+
+**Re-read periodically.** Manifests change rarely, but they do change. Re-reading the manifest on startup and periodically in production lets you detect changes (new capabilities, updated limits, added events) without manual reconfiguration.
+
+---
+
+!!! tip "Quick checklist for publishers"
+    - The endpoint URL ends with `/.well-known/opendelivery`.
+    - The endpoint is public — no authentication required.
+    - The endpoint uses HTTPS.
+    - Only capabilities you actively support are listed.
+    - `unsupportedEvents` and `unsupportedOperations` are populated explicitly.
+    - Operational limits (batch sizes, rate limits, query windows) are accurate.
+    - The full URL has been shared with your counterpart out-of-band.
+
+!!! tip "Quick checklist for consumers"
+    - Read the manifest before the first capability call.
+    - Verify protocol version compatibility.
+    - Configure delivery mode (webhook vs. polling) from `supportsWebhook` / `supportsPolling`.
+    - Apply operational limits from the `customer` (or other) capability section.
+    - Treat absent capability keys as unsupported.
+    - Plan to re-read the manifest periodically.
+
+---
+
+**Full field reference and normative rules:** [Discovery API →](../reference/discovery.md)

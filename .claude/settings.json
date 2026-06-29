@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Move-Item \"c:\\\\OpenDelivery\\\\opendelivery-v2\\\\docs\\\\overrides\" \"c:\\\\OpenDelivery\\\\opendelivery-v2\\\\overrides\")",
+      "PowerShell(Select-String -Path \"c:\\\\OpenDelivery\\\\opendelivery-v2\\\\site\\\\reference\\\\authentication\\\\index.html\" -Pattern \"redoc-container|Redoc.init|openapi_spec\" | Select-Object -First 10 | ForEach-Object { $_.Line.Trim\\(\\) })",
+      "PowerShell(Select-String -Path \"c:\\\\OpenDelivery\\\\opendelivery-v2\\\\site\\\\reference\\\\authentication\\\\index.html\" -Pattern \"authentication\\\\.openapi\\\\.yaml|reference/v2\" | Select-Object -First 5 | ForEach-Object { $_.Line.Trim\\(\\) })",
+      "PowerShell(Select-String -Path \"c:\\\\OpenDelivery\\\\opendelivery-v2\\\\site\\\\reference\\\\authentication\\\\index.html\" -Pattern '\"\\\\.\\\\./v2/' | Select-Object -First 3 | ForEach-Object { $_.Line.Trim\\(\\) })",
+      "PowerShell(Select-String -Path \"c:\\\\OpenDelivery\\\\opendelivery-v2\\\\site\\\\index.html\" -Pattern \"buildDropdowns\\\\\\(\\\\\\)\" | ForEach-Object { $_.Line.Trim\\(\\) })",
+      "Bash(python -c \"import yaml,sys; d=yaml.safe_load\\(open\\('docs/reference/v2/discovery.openapi.yaml',encoding='utf-8'\\)\\); print\\('openapi', d['openapi']\\); print\\('paths', list\\(d['paths']\\)\\); print\\('schemas', list\\(d['components']['schemas']\\)\\); print\\('OK'\\)\")",
+      "Bash(npm view *)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:www.npmjs.com)",
+      "Bash(python -c ' *)",
+      "Bash(python -c \"import yaml; d=yaml.safe_load\\(open\\('docs/reference/v2/discovery.openapi.yaml',encoding='utf-8'\\)\\); print\\('OK — schemas:', len\\(d['components']['schemas']\\)\\)\")",
+      "Bash(python -c \"import yaml; d=yaml.safe_load\\(open\\('docs/reference/v2/discovery.openapi.yaml',encoding='utf-8'\\)\\); print\\('OK'\\)\")",
+      "Bash(python -m mkdocs build --quiet)",
+      "Bash(python -c \"import mkdocs; print\\('mkdocs', mkdocs.__version__\\)\")",
+      "Bash(node -e \"console.log\\('node', process.version\\)\")",
+      "Bash(npm ls *)",
+      "Bash(.venv/Scripts/mkdocs build *)",
+      "Bash(.venv/Scripts/mkdocs serve *)",
+      "Bash(echo \"serve pid $!\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://127.0.0.1:8123/reference/customer/)",
+      "Read(//tmp/**)",
+      "Bash(curl -s -o /dev/null -w \"root=%{http_code}\\\\n\" http://127.0.0.1:8123/)",
+      "Bash(curl -s -o /dev/null -w \"cust=%{http_code}\\\\n\" http://127.0.0.1:8123/reference/customer/)",
+      "Bash(curl -s -o /dev/null -w \"cust=%{http_code}\\\\n\" http://127.0.0.1:8123/opendelivery-v2/reference/customer/)",
+      "Read(//c/Users/ABRASE~1/AppData/Local/Temp/claude/c--OpenDelivery-opendelivery-v2/7c94dcb4-3daa-4bea-ac46-8b8faf319e5c/scratchpad/**)",
+      "Bash(npm init *)",
+      "Bash(npm i *)",
+      "Bash(npx playwright *)",
+      "Bash(node probe.js)"
+    ]
+  }
+}
