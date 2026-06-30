@@ -18,35 +18,12 @@
   display: flex;
   align-items: center;
   gap: 56px;
-  padding: 72px 0 56px;
+  padding: 24px 0 56px;
 }
 
 .hero-content {
   flex: 1 1 0;
   min-width: 0;
-}
-
-.hero-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(139, 197, 63, 0.16);
-  color: var(--od-green-dark);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  padding: 5px 12px;
-  border-radius: 999px;
-  margin: 0 0 18px;
-}
-
-.hero-badge::before {
-  content: "";
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--od-accent);
 }
 
 .hero-content h1 {
@@ -353,7 +330,7 @@
   .hero-wrapper {
     flex-direction: column-reverse;
     gap: 32px;
-    padding: 40px 0 36px;
+    padding: 16px 0 36px;
   }
   .hero-image {
     flex: unset;

@@ -78,6 +78,14 @@
   box-shadow: 0 .2rem .6rem rgba(0, 70, 33, .18), 0 0 .05rem rgba(0, 70, 33, .3);
 }
 
+/* ── Sidebar esquerda: encostar no topo ───────────────────────────────
+   O Material reserva 1.2rem de padding-top por padrão (.md-sidebar) antes
+   do primeiro item — com a busca custom ocupando esse topo, o respiro
+   ficava grande demais em relação à barra de tabs. */
+.md-sidebar--primary {
+  padding-top: 0.3rem;
+}
+
 /* ── Medida de leitura ──────────────────────────────────────────────
    Telas largas deixavam o texto corrido esticado demais. Limitamos
    só o conteúdo de prosa (não mexe no grid geral, então não afeta o
@@ -185,7 +193,7 @@
   display: block;
   position: relative;
   z-index: 999;
-  padding: 0.5rem 0 0.4rem;
+  padding: 0.15rem 0 0.4rem;
 }
 
 .md-search.od-sidebar-search .md-search__inner {
