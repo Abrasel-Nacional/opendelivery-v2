@@ -1,0 +1,289 @@
+/* ============================================================
+   Open Delivery – Design tokens
+   Verde escuro (Pantone 3425C) e verde claro (Pantone 375C),
+   extraídos do logo oficial em docs/assets/Logo/SVG.
+   Única fonte da paleta do site: landing.css consome estas
+   mesmas variáveis em vez de redefini-las.
+   ============================================================ */
+
+:root {
+  --od-green:         #00652e;
+  --od-green-dark:    #004621;
+  --od-green-soft:    #2f8a52;
+  --od-accent:        #8bc53f;
+  --od-accent-hover:  #7ab52e;
+
+  --od-text:          #24332a;
+  --od-text-soft:     #4a6151;
+  --od-bg-soft:       #f4f9f5;
+  --od-border:        #d3e4d6;
+
+  /* Neutros adicionais para bordas/fundos fora da landing page */
+  --od-gray-50:       #f7faf8;
+  --od-gray-100:      #eef3f0;
+  --od-gray-200:      #dde6e1;
+  --od-gray-600:      #5b6b62;
+
+  --od-radius-sm:     6px;
+  --od-radius-md:     10px;
+  --od-radius-lg:     14px;
+
+  --od-shadow-sm:      0 1px 2px rgba(0, 70, 33, 0.06);
+  --od-shadow-md:      0 4px 14px rgba(0, 70, 33, 0.10);
+  --od-shadow-lg:      0 12px 32px rgba(0, 70, 33, 0.16);
+}
+
+/* ============================================================
+   Material custom palette
+   primary/accent: custom no mkdocs.yml exige que estas
+   variáveis sejam definidas manualmente — o Material não as
+   deriva automaticamente como faz com as cores nomeadas.
+   ============================================================ */
+
+[data-md-color-scheme="default"] {
+  --md-primary-fg-color:             var(--od-green);
+  --md-primary-fg-color--light:      var(--od-green-soft);
+  --md-primary-fg-color--dark:       var(--od-green-dark);
+  --md-primary-bg-color:             #ffffff;
+  --md-primary-bg-color--light:      #ffffff;
+
+  --md-accent-fg-color:              var(--od-green-soft);
+  --md-accent-fg-color--transparent: rgba(139, 197, 63, 0.1);
+  --md-accent-bg-color:              #ffffff;
+  --md-accent-bg-color--light:       #ffffff;
+
+  --md-typeset-a-color:              var(--od-green);
+}
+
+/* ── Header logo: maior e com mais destaque que o padrão do Material ── */
+:root {
+  --md-header-height: 3.6rem;
+}
+
+.md-header__button.md-logo {
+  margin: 0.2rem 0.6rem 0.2rem 0.4rem;
+  padding: 0.2rem;
+}
+
+.md-header__button.md-logo img,
+.md-header__button.md-logo svg {
+  height: 2.6rem;
+  width: auto;
+}
+
+/* Sombra do header ao rolar: o Material já alterna a classe
+   `.md-header--shadow` sozinho via bundle.js; só afinamos a cor
+   pra ficar coerente com a marca em vez do cinza padrão. */
+.md-header--shadow {
+  box-shadow: 0 .2rem .6rem rgba(0, 70, 33, .18), 0 0 .05rem rgba(0, 70, 33, .3);
+}
+
+/* ── Medida de leitura ──────────────────────────────────────────────
+   Telas largas deixavam o texto corrido esticado demais. Limitamos
+   só o conteúdo de prosa (não mexe no grid geral, então não afeta o
+   layout full-bleed do ReDoc nem a largura da landing page). */
+.md-typeset {
+  font-size: 0.74rem;
+  line-height: 1.7;
+}
+
+.md-content__inner > p,
+.md-content__inner > ul,
+.md-content__inner > ol {
+  max-width: 46rem;
+}
+
+/* ── Blocos de código ──────────────────────────────────────────────── */
+.md-typeset pre,
+.md-typeset .highlight {
+  border-radius: var(--od-radius-md);
+}
+
+.md-typeset code {
+  border-radius: 4px;
+  background-color: var(--od-gray-100);
+}
+
+.md-typeset pre > code {
+  background-color: transparent;
+}
+
+.md-typeset .highlight {
+  background-color: #f6faf7;
+  border: 1px solid var(--od-gray-200);
+}
+
+.md-clipboard {
+  color: var(--od-text-soft);
+}
+
+.md-clipboard:hover {
+  color: var(--od-green);
+}
+
+/* ── Tabelas ───────────────────────────────────────────────────────── */
+.md-typeset table:not([class]) {
+  border-radius: var(--od-radius-md);
+  border: 1px solid var(--od-border);
+  box-shadow: none;
+}
+
+.md-typeset table:not([class]) th {
+  background-color: var(--od-bg-soft);
+  color: var(--od-green-dark);
+}
+
+.md-typeset table:not([class]) tr:nth-child(even) {
+  background-color: var(--od-gray-50);
+}
+
+/* ── Admonitions: "tip"/"note" puxados pra cor da marca ──────────────
+   Mantém as cores semânticas padrão do Material para warning/danger/etc;
+   só reforça a identidade nos tipos informativos. */
+.md-typeset .admonition.tip,
+.md-typeset details.tip,
+.md-typeset .admonition.note,
+.md-typeset details.note {
+  border-color: var(--od-green-soft);
+}
+
+.md-typeset .tip > .admonition-title,
+.md-typeset .tip > summary,
+.md-typeset .note > .admonition-title,
+.md-typeset .note > summary {
+  background-color: rgba(0, 101, 46, 0.08);
+}
+
+.md-typeset .tip > .admonition-title::before,
+.md-typeset .tip > summary::before,
+.md-typeset .note > .admonition-title::before,
+.md-typeset .note > summary::before {
+  background-color: var(--od-green-soft);
+}
+
+/* ── Busca: migrada do cabeçalho para o topo do menu lateral ──────────
+   O ícone de busca original do cabeçalho fica escondido; o componente
+   real (.md-search) é movido via JS em main.html para dentro da
+   sidebar primária. Por isso as regras nativas do Material que regem
+   o estado "aberto" (`[data-md-toggle=search]:checked~.md-header ...`)
+   não se aplicam mais — replicamos aqui o equivalente, trocando o
+   ancestral por `.md-container`, que continua sendo irmão do checkbox
+   #__search no <body>. */
+.md-header__button.md-icon[for="__search"] {
+  display: none;
+}
+
+/* Visual inspirado no campo de busca do próprio ReDoc (extraído do
+   bundle: input.search-input) — sem caixa preenchida, só uma linha
+   inferior, fundo transparente e respiro nas laterais, bem menos
+   chamativo que o input padrão do Material. */
+/* position:relative + z-index eleva o stacking deste bloco; sem isso o
+   .md-search__output (position:fixed) é pintado atrás do conteúdo da
+   página e os resultados "somem". Não tem relação com a máscara antiga
+   (já removida) — é o que mantém o dropdown visível por cima de tudo. */
+.md-search.od-sidebar-search {
+  display: block;
+  position: relative;
+  z-index: 999;
+  padding: 0.5rem 0 0.4rem;
+}
+
+.md-search.od-sidebar-search .md-search__inner {
+  position: static;
+  float: none;
+  width: 100% !important;
+  padding: 0;
+  transform: none;
+  opacity: 1;
+  height: auto;
+}
+
+.md-search.od-sidebar-search .md-search__form {
+  margin: 0 1rem;
+  width: auto;
+  background-color: transparent;
+  border: none;
+  border-bottom: 1px solid var(--od-border);
+  border-radius: 0;
+  height: 1.7rem;
+  box-shadow: none;
+}
+
+.md-search.od-sidebar-search .md-search__form:hover {
+  background-color: transparent;
+  border-bottom-color: var(--od-green);
+}
+
+.md-search.od-sidebar-search .md-search__input {
+  color: var(--od-text);
+  font-weight: 600;
+  font-size: 0.72rem;
+  height: 1.7rem;
+}
+
+.md-search.od-sidebar-search .md-search__input::placeholder {
+  color: var(--od-text);
+  opacity: 0.5;
+}
+
+.md-search.od-sidebar-search .md-search__input ~ .md-search__icon,
+.md-search.od-sidebar-search .md-search__icon[for="__search"] {
+  color: var(--od-text);
+  opacity: 0.65;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.md-search.od-sidebar-search .md-search__icon svg {
+  height: 0.9rem;
+  width: 0.9rem;
+}
+
+.md-search.od-sidebar-search .md-search__options {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* position:fixed escapa do overflow-y:auto do .md-sidebar__scrollwrap
+   (que recortaria o dropdown na largura do menu). left/top são
+   calculados via JS em main.html, a partir do retângulo real da caixa
+   de busca — não dá pra resolver isso só com CSS porque a posição
+   muda com o scroll (.md-sidebar é position:sticky). */
+.md-search.od-sidebar-search .md-search__output {
+  position: fixed;
+  left: var(--od-search-left, 0);
+  top: var(--od-search-top, 0);
+  /* Sobrescreve o width:100% nativo do Material (pensado pra viver
+     dentro da caixa de busca no cabeçalho). Em position:fixed, 100%
+     vira 100% da viewport — sem isso a sombra/borda do dropdown se
+     estica até a borda da página mesmo o conteúdo visível (que segue
+     a largura própria do .md-search__scrollwrap) terminando antes. */
+  width: auto;
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  border-radius: var(--od-radius-sm);
+  transition: opacity 0.15s, max-height 0.15s;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+#__search:checked ~ .md-container .od-sidebar-search.md-search .md-search__output {
+  opacity: 1;
+  max-height: 60vh;
+  pointer-events: auto;
+  box-shadow: var(--od-shadow-lg);
+}
+
+#__search:checked ~ .md-container .od-sidebar-search.md-search .md-search__scrollwrap {
+  max-height: 60vh;
+}
+
+@media screen and (max-width: 59.984375em) {
+  .md-search.od-sidebar-search .md-search__inner {
+    position: static;
+    height: auto;
+    opacity: 1;
+    transform: none;
+  }
+}

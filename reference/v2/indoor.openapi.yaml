@@ -1,0 +1,1867 @@
+openapi: 3.1.0
+x-spectral-ignore:
+  - owasp:api4:2023-string-restricted
+info:
+  title: Open Delivery V2 - Salão / Indoor API
+  version: 2.0.0-rc
+  summary: API proposta para operações de salão/indoor no Open Delivery V2
+  description: >
+    Contratos de transporte do protocolo Open Delivery para gestão de conta de
+    salão (mesa, comanda ou balcão), pagamentos, fechamento e integração fiscal.
+
+servers:
+  - url: https://api.example.com/od/v2
+    description: Ambiente de production
+    x-internal: false
+  - url: https://sandbox.example.com/od/v2
+    description: Ambiente de staging/homologação
+    x-internal: true
+
+security:
+  - bearerAuth: []
+
+tags:
+  # ── Visão Geral ──────────────────────────────────────────────────────────────
+  - name: CapabilityOverview
+    x-displayName: Visão Geral
+    x-traitTag: true
+    description: |-
+      ## Salão / Indoor Capability
+
+      Esta especificação descreve os contratos de transporte do protocolo Open Delivery
+      para operações de **salão e consumo no local** (indoor). O pedido é o canal de
+      entrada de itens; a **conta** é a entidade central para agrupamento operacional,
+      pagamentos, fechamento e integração fiscal.
+
+      > **Indoor não é só atendimento de mesa com garçom.** A especificação cobre
+      > qualquer modelo de consumo no local — mesa, comanda ou balcão — incluindo
+      > **autoatendimento completo** via totem, QR Code ou tablet, sem intervenção
+      > de um atendente.
+
+      > **Open Delivery é um protocolo, não uma API de produto.**
+      > Não há servidor central nem ambiente de produção. Cada implementação hospeda
+      > os endpoints em sua própria infraestrutura.
+
+      ---
+
+      ## ⚠ Pré-requisito: protocolo de Orders
+
+      **Indoor é uma extensão do protocolo de Orders do Open Delivery — não uma
+      capability autônoma.** Esta especificação pressupõe que ambas as partes
+      (Ordering Application e Software Service) já implementaram o fluxo de pedidos
+      base do protocolo.
+
+      O protocolo de Orders define:
+
+      - **Ciclo de vida do pedido** — estados `CREATED`, `CONFIRMED`, `PREPARING`,
+        `READY_FOR_PICKUP`, `DISPATCHED`, `DELIVERED`, `CANCELLED`
+      - **Recepção de eventos** — via polling (`GET /events`) ou webhook (`POST /orderUpdate`)
+      - **Acknowledgment** — confirmação de eventos recebidos via polling
+      - **Detalhes do pedido** — consulta via `GET /orders/{orderId}`
+      - **Atualizações de estado** — `confirm`, `preparing`, `readyForPickup`, `dispatch`, `delivered`
+      - **Cancelamento** — fluxo de solicitação, aceite e recusa entre as partes
+
+      Um pedido indoor (`orderType: INDOOR`) trafega pelo mesmo ciclo de vida e pelos
+      mesmos mecanismos de eventos que qualquer outro pedido do protocolo. A capability
+      Indoor adiciona sobre esse fluxo base a **gestão de conta de salão** — agrupando
+      pedidos, pagamentos e documentos fiscais numa sessão de consumo.
+
+      > **Implementações que não possuem o protocolo de Orders ativo não podem
+      > utilizar esta capability.**
+
+      ---
+
+      ## Modos de operação e canais
+
+      O `operationMode` define como a conta é agrupada; o `originChannel` de cada
+      pedido define por onde ele entrou. São independentes — uma mesma conta pode
+      acumular pedidos vindos de canais diferentes:
+
+      | `operationMode` | Uso típico | Canais de origem comuns |
+      |---|---|---|
+      | `TABLE` | Atendimento de mesa | `WAITER_TABLET`, `CUSTOMER_TABLET`, `QR_CODE`, `FRONT_DESK` |
+      | `TAB` | Comanda numerada/nominal, sem mesa fixa | `POS`, `FRONT_DESK`, `TOTEM`, `APP` |
+      | `COUNTER` | Autoatendimento com retirada no balcão | `TOTEM`, `QR_CODE`, `APP` |
+
+      `originChannel.type` aceita: `TOTEM`, `QR_CODE`, `CUSTOMER_TABLET`, `WAITER_TABLET`,
+      `FRONT_DESK`, `POS`, `APP`, `WHATSAPP`, `OTHER`. Um cliente pode abrir
+      a conta pelo QR Code e o garçom completar com itens adicionais pelo tablet — ambos
+      os pedidos se acumulam na mesma conta porque compartilham `operationMode` +
+      `identifier`; o canal é só metadado do pedido.
+
+      ## Partes envolvidas
+
+      | Papel | Responsabilidade nesta capability |
+      |---|---|
+      | **Software Service** | Sistema de gestão do salão. Hospeda e implementa todos os endpoints desta especificação. **Deve ter o protocolo de Orders implementado.** |
+      | **Ordering Application** | Aplicação de pedido — totem de autoatendimento, tablet (cliente ou garçom), QR Code, frente de caixa ou app. Consome os endpoints para criar pedidos, consultar contas, registrar pagamentos e solicitar documentos fiscais. **Deve ter o protocolo de Orders implementado.** |
+
+      ## Autenticação
+
+      Todos os endpoints desta especificação exigem um Bearer Token. Os modelos de
+      concessão OAuth 2.0 suportados, os escopos e o mecanismo de assinatura de
+      webhooks (HMAC-SHA256) são comuns a todo o protocolo Open Delivery e estão
+      documentados na [especificação de Autenticação](../authentication/) — não
+      duplicados aqui.
+
+      <SecurityDefinitions />
+
+  # ── Conta de Salão ───────────────────────────────────────────────────────────
+  - name: AccountOverview
+    x-displayName: Visão Geral da Conta
+    x-traitTag: true
+    description: |-
+      ## A Conta como entidade central
+
+      No protocolo Indoor, a **Account** (conta) é o agrupador operacional de todos os
+      pedidos, itens, pagamentos e documentos fiscais de uma sessão de consumo.
+      Cada conta está associada a uma combinação de `operationMode` + `identifier`
+      (ex.: `TABLE` + `"5"`, `TAB` + `"A102"` ou `COUNTER` + `"3"`). A combinação
+      independe do canal de origem do pedido — totem, tablet, QR Code ou frente de
+      caixa podem alimentar a mesma conta.
+
+      ## Como a conta é criada
+
+      A conta **não é criada por um endpoint desta especificação**. Ela nasce
+      automaticamente no Software Service quando o protocolo de Orders processa
+      um pedido com `orderType: INDOOR`. Ao receber esse pedido, o Software Service
+      cria a conta de salão associada à combinação `operationMode` + `identifier`
+      presente no pedido.
+
+      > A Ordering Application não chama nenhum endpoint indoor para criar a conta —
+      > isso é uma responsabilidade interna do Software Service, desencadeada pelo
+      > fluxo de Orders.
+
+      ## Ciclo de vida da conta e eventos
+
+      A cada transição relevante, o Software Service **DEVE** notificar a Ordering
+      Application via webhook ([`accountEvent`](#operation/receiveAccountEvent) — ver seção *Eventos*). Não há
+      mecanismo de polling para eventos Indoor: a entrega é exclusivamente via
+      webhook, e a Ordering Application **DEVE** expor um endpoint para recebê-los.
+
+      ```mermaid
+      sequenceDiagram
+          participant OA as Ordering Application
+          participant SS as Software Service
+
+          OA->>SS: POST /orders (orderType: INDOOR)
+          SS-->>OA: 201 Created
+          SS-)OA: ACCOUNT_OPENED — status: IN_USE
+
+          opt pagamento antecipado (opcional, a qualquer momento)
+              OA->>SS: POST /accounts/{id}/payments
+              SS-->>OA: 200 OK
+              SS-)OA: PAYMENT_CREATED
+          end
+
+          OA->>SS: POST /accounts/{id}/pre-close
+          SS-->>OA: 202 Accepted
+          SS-)OA: ACCOUNT_PRE_CLOSED — status: IN_PAYMENT
+
+          OA->>SS: POST /accounts/{id}/payments (quitação final)
+          SS-->>OA: 200 OK
+          SS-)OA: PAYMENT_CREATED
+
+          OA->>SS: POST /accounts/{id}/close
+          SS-->>OA: 202 Accepted
+          SS-)OA: ACCOUNT_CLOSED — status: CLOSED
+      ```
+
+      > **Pagamento não depende de pré-fechamento.** [`POST /accounts/payments`](#operation/createPayment) pode ser
+      > chamado a qualquer momento com a conta `IN_USE` ou `IN_PAYMENT`. O pré-fechamento
+      > é um lock que bloqueia novos itens e metadados, sinalizando que chegou a hora da
+      > quitação final — não é o gatilho que "libera" o pagamento.
+
+      Para fluxos detalhados (pagamentos parciais, emissão fiscal, cancelamento de itens,
+      transferências e desbloqueio), consulte o [guia de fluxos Indoor](../../protocol/indoor/).
+
+      ### Tabela de eventos
+
+      | Evento | Gatilho | Status da conta após |
+      |---|---|---|
+      | `ACCOUNT_OPENED` | Conta criada pelo fluxo de Orders (`orderType: INDOOR`) | `IN_USE` |
+      | `ACCOUNT_ITEM_ADDED` | Novo pedido INDOOR adiciona itens à conta | `IN_USE` |
+      | `ACCOUNT_ITEM_REMOVED` | Itens transferidos para outra conta | `IN_USE` |
+      | `ACCOUNT_ITEM_CANCELLED` | Item cancelado via [`POST /accounts/items/{itemId}/cancel`](#operation/cancelAccountItem) | `IN_USE` |
+      | `ACCOUNT_PRE_CLOSED` | Conta bloqueada para pagamento via [`POST /accounts/pre-close`](#operation/preCloseAccount) | `IN_PAYMENT` |
+      | `ACCOUNT_UNLOCKED` | Bloqueio revertido via [`POST /accounts/unlock`](#operation/unlockAccount) | `IN_USE` |
+      | `ACCOUNT_CLOSED` | Conta fechada definitivamente via [`POST /accounts/close`](#operation/closeAccount) | `CLOSED` |
+      | `PAYMENT_CREATED` | Pagamento lançado via [`POST /accounts/payments`](#operation/createPayment) — em `IN_USE` ou `IN_PAYMENT` | — |
+      | `PAYMENT_UPDATED` | Status de pagamento atualizado internamente | — |
+      | `FISCAL_ISSUED` | Documento fiscal emitido com sucesso | — |
+      | `FISCAL_ERROR` | Falha na emissão do documento fiscal | — |
+
+      ### Operações permitidas por status
+
+      | Operação | `IN_USE` | `IN_PAYMENT` |
+      |---|---|---|
+      | Adicionar itens (via Orders) | ✅ | ❌ |
+      | Cancelar item | ✅ | ❌ |
+      | Transferir itens | ✅ | ❌ |
+      | **Registrar pagamento** ([`POST /accounts/payments`](#operation/createPayment)) | ✅ | ✅ |
+      | Pré-fechar ([`POST /accounts/pre-close`](#operation/preCloseAccount)) | ✅ | — |
+      | Desbloquear ([`POST /accounts/unlock`](#operation/unlockAccount)) | — | ✅ |
+      | Fechar ([`POST /accounts/close`](#operation/closeAccount)) | ❌ | ✅ |
+
+      ## Responsabilidades por endpoint
+
+      > Os endpoints de criação e consulta de pedidos pertencem ao **protocolo de Orders**,
+      > não a esta especificação. A tabela abaixo cobre apenas os endpoints Indoor.
+
+      | Endpoint | Hospedado por | Chamado por |
+      |---|---|---|
+      | [`GET /accounts`](#operation/getAccount) | Software Service | Ordering Application |
+      | [`GET /accounts/{accountId}`](#operation/getAccountById) | Software Service | Ordering Application |
+      | [`POST /accounts/pre-close`](#operation/preCloseAccount) | Software Service | Ordering Application |
+      | [`POST /accounts/unlock`](#operation/unlockAccount) | Software Service | Ordering Application |
+      | [`POST /accounts/close`](#operation/closeAccount) | Software Service | Ordering Application |
+      | [`POST /accounts/items/{itemId}/cancel`](#operation/cancelAccountItem) | Software Service | Ordering Application |
+      | [`POST /accounts/transfers`](#operation/transferAccountContent) | Software Service | Ordering Application |
+      | [`POST /accounts/payments`](#operation/createPayment) | Software Service | Ordering Application |
+      | [`GET /accounts/payments`](#operation/listAccountPayments) | Software Service | Ordering Application |
+      | [`POST /accounts/fiscal`](#operation/requestFiscalDocument) | Software Service | Ordering Application |
+      | [`GET /accounts/fiscal`](#operation/listAccountFiscalDocuments) | Software Service | Ordering Application |
+      | Webhook [`accountEvent`](#operation/receiveAccountEvent) | Ordering Application | Software Service *(notificação assíncrona)* |
+
+  - name: Accounts
+    description: |-
+      Operações sobre a conta de salão: consulta, cancelamento de itens,
+      transferência entre contas, pré-fechamento, desbloqueio e fechamento
+      definitivo.
+
+  - name: Payments
+    description: |-
+      Lançamentos de pagamento sobre a conta. Uma conta pode receber múltiplos
+      pagamentos parciais antes do fechamento.
+
+  - name: Fiscal
+    description: |-
+      Solicitação e consulta de documentos fiscais associados à conta.
+
+  # ── Eventos ──────────────────────────────────────────────────────────────────
+  - name: Events
+    description: |-
+      Notificação de eventos do ciclo de vida da conta, pagamento e fiscal.
+      A entrega é **exclusivamente via webhook** — não há endpoint de polling
+      para eventos Indoor. A Ordering Application DEVE implementar e registrar
+      um endpoint compatível com o contrato [`accountEvent`](#operation/receiveAccountEvent) definido em
+      `webhooks` para receber as notificações em tempo real.
+
+x-tagGroups:
+  - name: Visão Geral
+    tags:
+      - CapabilityOverview
+  - name: Conta de Salão
+    tags:
+      - AccountOverview
+      - Accounts
+      - Payments
+      - Fiscal
+  - name: Eventos
+    tags:
+      - Events
+
+paths:
+  /accounts:
+    get:
+      tags: [Accounts]
+      operationId: getAccount
+      summary: Consultar conta por chave operacional
+      description: |-
+        Recupera a conta ativa usando a chave operacional (operationMode + identifier).
+        Esta é a forma primária de acessar e operar sobre uma conta.
+
+        | **Hospedado por** | Software Service |
+        |---|---|
+        | **Chamado por** | Ordering Application |
+
+        ```mermaid
+        graph LR
+            OA["Ordering Application"] -- GET --> SS["Software Service"]
+            style OA fill:#e0f2f1,stroke:#0f6f73,color:#0f6f73
+            style SS fill:#fff3e0,stroke:#ef6c00,color:#ef6c00
+        ```
+      parameters:
+        - $ref: '#/components/parameters/OperationModeQuery'
+        - $ref: '#/components/parameters/IdentifierQuery'
+      responses:
+        '200':
+          description: Conta encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /accounts/{accountId}:
+    get:
+      tags: [Accounts]
+      operationId: getAccountById
+      summary: Consultar conta por accountId
+      description: |-
+        Recupera a conta usando o identificador interno (accountId), retornado
+        previamente por outra chamada. Alternativa ao acesso pela chave operacional.
+
+        | **Hospedado por** | Software Service |
+        |---|---|
+        | **Chamado por** | Ordering Application |
+
+        ```mermaid
+        graph LR
+            OA["Ordering Application"] -- GET --> SS["Software Service"]
+            style OA fill:#e0f2f1,stroke:#0f6f73,color:#0f6f73
+            style SS fill:#fff3e0,stroke:#ef6c00,color:#ef6c00
+        ```
+      parameters:
+        - $ref: '#/components/parameters/AccountId'
+      responses:
+        '200':
+          description: Conta encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /accounts/pre-close:
+    post:
+      tags: [Accounts]
+      operationId: preCloseAccount
+      summary: Pré-fechar / bloquear conta para pagamento
+      description: |-
+        Solicita o pré-fechamento da conta — um lock operacional que impede novos
+        itens e alterações de metadados, sinalizando que a conta está pronta para o
+        checkout final. **Não é um pré-requisito para registrar pagamento** — pagamentos
+        podem ter ocorrido antes deste chamado, ou ainda estarem pendentes. É o momento
+        em que se espera o **pagamento final**: o saldo restante, se já houve pagamentos
+        anteriores, ou o valor total, se nenhum pagamento foi feito até aqui.
+
+        > **Evento emitido:** `ACCOUNT_PRE_CLOSED` — status da conta passa para `IN_PAYMENT`.
+        > Novos itens e alterações de metadados são bloqueados até o desbloqueio ou
+        > fechamento. Pagamentos continuam sendo aceitos normalmente.
+
+        | **Hospedado por** | Software Service |
+        |---|---|
+        | **Chamado por** | Ordering Application |
+
+        ```mermaid
+        graph LR
+            OA["Ordering Application"] -- POST --> SS["Software Service"]
+            style OA fill:#e0f2f1,stroke:#0f6f73,color:#0f6f73
+            style SS fill:#fff3e0,stroke:#ef6c00,color:#ef6c00
+        ```
+      parameters:
+        - $ref: '#/components/parameters/OperationModeQuery'
+        - $ref: '#/components/parameters/IdentifierQuery'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountPreCloseRequest'
+      responses:
+        '202':
+          description: Solicitação de pré-fechamento aceita
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AsyncAcceptedResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /accounts/unlock:
+    post:
+      tags: [Accounts]
+      operationId: unlockAccount
+      summary: Desbloquear conta
+      description: |-
+        Remove o lock/pre-close da conta quando o PDV permitir reabertura do fluxo
+        operacional antes do fechamento final.
+
+        > **Evento emitido:** `ACCOUNT_UNLOCKED` — status da conta retorna para `IN_USE`.
+
+        | **Hospedado por** | Software Service |
+        |---|---|
+        | **Chamado por** | Ordering Application |
+
+        ```mermaid
+        graph LR
+            OA["Ordering Application"] -- POST --> SS["Software Service"]
+            style OA fill:#e0f2f1,stroke:#0f6f73,color:#0f6f73
+            style SS fill:#fff3e0,stroke:#ef6c00,color:#ef6c00
+        ```
+      parameters:
+        - $ref: '#/components/parameters/OperationModeQuery'
+        - $ref: '#/components/parameters/IdentifierQuery'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountUnlockRequest'
+      responses:
+        '202':
+          description: Solicitação de desbloqueio aceita
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AsyncAcceptedResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /accounts/close:
+    post:
+      tags: [Accounts]
+      operationId: closeAccount
+      summary: Fechar conta definitivamente
+      description: |-
+        Fecha a conta definitivamente. Espera-se que, neste ponto, o total já
+        registrado em pagamentos cubra o valor da conta — a validação exata é
+        responsabilidade do Software Service. O fechamento final representa o marco
+        operacional absoluto e irreversível da conta.
+
+        > **Evento emitido:** `ACCOUNT_CLOSED` — status da conta passa para `CLOSED`.
+        > Operação irreversível: nenhuma alteração adicional — **incluindo novos
+        > pagamentos** — é aceita após o fechamento.
+
+        | **Hospedado por** | Software Service |
+        |---|---|
+        | **Chamado por** | Ordering Application |
+
+        ```mermaid
+        graph LR
+            OA["Ordering Application"] -- POST --> SS["Software Service"]
+            style OA fill:#e0f2f1,stroke:#0f6f73,color:#0f6f73
+            style SS fill:#fff3e0,stroke:#ef6c00,color:#ef6c00
+        ```
+      parameters:
+        - $ref: '#/components/parameters/OperationModeQuery'
+        - $ref: '#/components/parameters/IdentifierQuery'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountCloseRequest'
+      responses:
+        '202':
+          description: Solicitação de fechamento aceita
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AsyncAcceptedResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /accounts/items/{itemId}/cancel:
+    post:
+      tags: [Accounts]
+      operationId: cancelAccountItem
+      summary: Cancelar item da conta
+      description: |-
+        Cancela um item já lançado na conta. Alterações semânticas de item devem
+        ser tratadas como cancelamento e novo lançamento, e não edição direta do item.
+
+        > **Evento emitido:** `ACCOUNT_ITEM_CANCELLED`.
+
+        | **Hospedado por** | Software Service |
+        |---|---|
+        | **Chamado por** | Ordering Application |
+
+        ```mermaid
+        graph LR
+            OA["Ordering Application"] -- POST --> SS["Software Service"]
+            style OA fill:#e0f2f1,stroke:#0f6f73,color:#0f6f73
+            style SS fill:#fff3e0,stroke:#ef6c00,color:#ef6c00
+        ```
+      parameters:
+        - $ref: '#/components/parameters/OperationModeQuery'
+        - $ref: '#/components/parameters/IdentifierQuery'
+        - $ref: '#/components/parameters/ItemId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemCancelRequest'
+      responses:
+        '200':
+          description: Item cancelado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountItem'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /accounts/transfers:
+    post:
+      tags: [Accounts]
+      operationId: transferAccountContent
+      summary: Transferir itens ou conta completa
+      description: |-
+        Executa operação atômica de transferência entre contas/operações — independente
+        de modo operacional (mesa, comanda ou balcão).
+        Permite transferência parcial por item ou transferência total da conta.
+
+        > **Eventos emitidos:** `ACCOUNT_ITEM_REMOVED` na conta de origem e
+        > `ACCOUNT_ITEM_ADDED` na conta de destino.
+
+        | **Hospedado por** | Software Service |
+        |---|---|
+        | **Chamado por** | Ordering Application |
+
+        ```mermaid
+        graph LR
+            OA["Ordering Application"] -- POST --> SS["Software Service"]
+            style OA fill:#e0f2f1,stroke:#0f6f73,color:#0f6f73
+            style SS fill:#fff3e0,stroke:#ef6c00,color:#ef6c00
+        ```
+      parameters:
+        - $ref: '#/components/parameters/OperationModeQuery'
+        - $ref: '#/components/parameters/IdentifierQuery'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferRequest'
+      responses:
+        '200':
+          description: Transferência concluída
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /accounts/payments:
+    post:
+      tags: [Payments]
+      operationId: createPayment
+      summary: Lançar pagamento na conta
+      description: |-
+        Registra um lançamento de pagamento na conta. O pagamento pode ser total
+        ou parcial, por valor, e opcionalmente por item, conforme capacidade do PDV.
+
+        > **Pagamento não depende de pré-fechamento.** Esta operação pode ser chamada
+        > a qualquer momento enquanto a conta estiver `IN_USE` ou `IN_PAYMENT` — o
+        > pré-fechamento ([`pre-close`](#operation/preCloseAccount)) não é um pré-requisito para registrar pagamento,
+        > apenas o ponto em que se espera a quitação final. A única restrição é a
+        > conta já estar `CLOSED`.
+
+        > **Evento emitido:** `PAYMENT_CREATED`.
+
+        | **Hospedado por** | Software Service |
+        |---|---|
+        | **Chamado por** | Ordering Application |
+
+        ```mermaid
+        graph LR
+            OA["Ordering Application"] -- POST --> SS["Software Service"]
+            style OA fill:#e0f2f1,stroke:#0f6f73,color:#0f6f73
+            style SS fill:#fff3e0,stroke:#ef6c00,color:#ef6c00
+        ```
+      parameters:
+        - $ref: '#/components/parameters/OperationModeQuery'
+        - $ref: '#/components/parameters/IdentifierQuery'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentCreateRequest'
+      responses:
+        '200':
+          description: Pagamento lançado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      tags: [Payments]
+      operationId: listAccountPayments
+      summary: Listar pagamentos da conta
+      description: |-
+        Retorna todos os lançamentos de pagamento registrados na conta identificada
+        pela chave operacional.
+
+        | **Hospedado por** | Software Service |
+        |---|---|
+        | **Chamado por** | Ordering Application |
+
+        ```mermaid
+        graph LR
+            OA["Ordering Application"] -- GET --> SS["Software Service"]
+            style OA fill:#e0f2f1,stroke:#0f6f73,color:#0f6f73
+            style SS fill:#fff3e0,stroke:#ef6c00,color:#ef6c00
+        ```
+      parameters:
+        - $ref: '#/components/parameters/OperationModeQuery'
+        - $ref: '#/components/parameters/IdentifierQuery'
+      responses:
+        '200':
+          description: Lista de pagamentos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  payments:
+                    type: array
+                    maxItems: 1000
+                    description: Lista de pagamentos registrados na conta.
+                    items:
+                      $ref: '#/components/schemas/Payment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # /payments/{paymentId}:
+    # get:                               # comentado por solicitação
+    #   tags: [Payments]
+    #   operationId: getPaymentById
+    #   summary: Consultar pagamento por ID
+    #   parameters:
+    #     - $ref: '#/components/parameters/PaymentId'
+    #   responses:
+    #     '200':
+    #       description: Pagamento encontrado
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: '#/components/schemas/Payment'
+    #     '400':
+    #       $ref: '#/components/responses/BadRequest'
+    #     '404':
+    #       $ref: '#/components/responses/NotFound'
+    #     '401':
+    #       $ref: '#/components/responses/Unauthorized'
+    #     '429':
+    #       $ref: '#/components/responses/TooManyRequests'
+    #     '500':
+    #       $ref: '#/components/responses/InternalServerError'
+
+  /accounts/fiscal:
+    post:
+      tags: [Fiscal]
+      operationId: requestFiscalDocument
+      summary: Solicitar emissão/associação fiscal da conta
+      description: |-
+        Solicita a emissão ou recuperação do documento fiscal associado à conta.
+        O processamento é assíncrono e deve ser acompanhado via webhook e/ou GET de fallback.
+
+        > **Evento emitido:** `FISCAL_ISSUED` em caso de sucesso ou `FISCAL_ERROR` em caso de
+        > falha, notificado via webhook ([`accountEvent`](#operation/receiveAccountEvent)), pois a emissão pode levar tempo
+        > variável.
+
+        | **Hospedado por** | Software Service |
+        |---|---|
+        | **Chamado por** | Ordering Application |
+
+        ```mermaid
+        graph LR
+            OA["Ordering Application"] -- POST --> SS["Software Service"]
+            style OA fill:#e0f2f1,stroke:#0f6f73,color:#0f6f73
+            style SS fill:#fff3e0,stroke:#ef6c00,color:#ef6c00
+        ```
+      parameters:
+        - $ref: '#/components/parameters/OperationModeQuery'
+        - $ref: '#/components/parameters/IdentifierQuery'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FiscalRequest'
+      responses:
+        '202':
+          description: Solicitação fiscal aceita
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AsyncAcceptedResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      tags: [Fiscal]
+      operationId: listAccountFiscalDocuments
+      summary: Listar documentos fiscais vinculados à conta
+      description: |-
+        Retorna todos os documentos fiscais associados à conta identificada pela
+        chave operacional.
+
+        | **Hospedado por** | Software Service |
+        |---|---|
+        | **Chamado por** | Ordering Application |
+
+        ```mermaid
+        graph LR
+            OA["Ordering Application"] -- GET --> SS["Software Service"]
+            style OA fill:#e0f2f1,stroke:#0f6f73,color:#0f6f73
+            style SS fill:#fff3e0,stroke:#ef6c00,color:#ef6c00
+        ```
+      parameters:
+        - $ref: '#/components/parameters/OperationModeQuery'
+        - $ref: '#/components/parameters/IdentifierQuery'
+      responses:
+        '200':
+          description: Lista de documentos fiscais
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  documents:
+                    type: array
+                    maxItems: 1000
+                    description: Lista de documentos fiscais associados à conta.
+                    items:
+                      $ref: '#/components/schemas/FiscalDocument'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # /fiscal/{documentId}:
+    # get:                               # comentado por solicitação
+    #   tags: [Fiscal]
+    #   operationId: getFiscalDocumentById
+    #   summary: Consultar documento fiscal por ID
+    #   parameters:
+    #     - $ref: '#/components/parameters/DocumentId'
+    #   responses:
+    #     '200':
+    #       description: Documento fiscal encontrado
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: '#/components/schemas/FiscalDocument'
+    #     '400':
+    #       $ref: '#/components/responses/BadRequest'
+    #     '404':
+    #       $ref: '#/components/responses/NotFound'
+    #     '401':
+    #       $ref: '#/components/responses/Unauthorized'
+    #     '429':
+    #       $ref: '#/components/responses/TooManyRequests'
+    #     '500':
+    #       $ref: '#/components/responses/InternalServerError'
+
+  # /events:
+    # get:                                # polling comentado por solicitação
+    #   tags: [Events]
+    #   operationId: pollEvents
+    #   summary: Consultar eventos por polling
+    #   description: >
+    #     Permite recuperar eventos de conta, pagamento e fiscal por consulta,
+    #     como fallback ou alternativa ao webhook.
+    #   parameters:
+    #     - in: query
+    #       name: since
+    #       required: false
+    #       schema:
+    #         type: string
+    #         format: date-time
+    #         maxLength: 64
+    #       description: Momento inicial para filtrar eventos mais recentes.
+    #     - in: query
+    #       name: eventTypes
+    #       required: false
+    #       schema:
+    #         type: array
+    #         maxItems: 50
+    #         items:
+    #           $ref: '#/components/schemas/EventType'
+    #       style: form
+    #       explode: false
+    #       description: Lista opcional de tipos de evento a retornar.
+    #   responses:
+    #     '200':
+    #       description: Eventos encontrados
+    #       content:
+    #         application/json:
+    #           schema:
+    #             type: object
+    #             properties:
+    #               events:
+    #                 type: array
+    #                 maxItems: 1000
+    #                 items:
+    #                   $ref: '#/components/schemas/EventNotification'
+    #     '400':
+    #       $ref: '#/components/responses/BadRequest'
+    #     '401':
+    #       $ref: '#/components/responses/Unauthorized'
+    #     '429':
+    #       $ref: '#/components/responses/TooManyRequests'
+    #     '500':
+    #       $ref: '#/components/responses/InternalServerError'
+
+webhooks:
+  accountEvent:
+    post:
+      tags: [Events]
+      operationId: receiveAccountEvent
+      summary: Webhook para notificação de eventos
+      description: |-
+        Webhook consumido pelo originador para receber eventos de conta, pagamento e fiscal.
+        Como todo webhook do protocolo, a requisição DEVE carregar os headers de
+        assinatura HMAC-SHA256 (`X-App-Id`, `X-App-MerchantId`, `X-App-Signature`)
+        definidos na [especificação de Autenticação](../authentication/).
+
+        | **Hospedado por** | Ordering Application (endpoint de webhook) |
+        |---|---|
+        | **Chamado por** | Software Service |
+
+        ```mermaid
+        graph LR
+            SS["Software Service"] -- POST --> OA["Ordering Application"]
+            style OA fill:#e0f2f1,stroke:#0f6f73,color:#0f6f73
+            style SS fill:#fff3e0,stroke:#ef6c00,color:#ef6c00
+        ```
+      parameters:
+        - $ref: '#/components/parameters/XAppId'
+        - $ref: '#/components/parameters/XAppMerchantId'
+        - $ref: '#/components/parameters/XAppSignature'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventNotification'
+      responses:
+        '204':
+          description: Evento recebido
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: >
+        Bearer Token emitido via OAuth 2.0. Consulte a
+        [especificação de Autenticação](../authentication/) para os modelos de
+        concessão suportados (`client_credentials_merchant`,
+        `client_credentials_application`, `authorization_code`).
+
+  parameters:
+    OrderId:
+      in: path
+      name: orderId
+      required: true
+      schema:
+        type: string
+      description: Identificador único do pedido.
+    AccountId:
+      in: path
+      name: accountId
+      required: true
+      schema:
+        type: string
+      description: Identificador interno da conta quando já existente.
+    ItemId:
+      in: path
+      name: itemId
+      required: true
+      schema:
+        type: string
+      description: Identificador único do item dentro da conta.
+    PaymentId:
+      in: path
+      name: paymentId
+      required: true
+      schema:
+        type: string
+      description: Identificador único do pagamento.
+    DocumentId:
+      in: path
+      name: documentId
+      required: true
+      schema:
+        type: string
+      description: Identificador único do documento fiscal.
+    OperationModeQuery:
+      in: query
+      name: operationMode
+      required: true
+      schema:
+        $ref: '#/components/schemas/OperationMode'
+      description: Modo operacional da conta indoor.
+    IdentifierQuery:
+      in: query
+      name: identifier
+      required: true
+      schema:
+        type: string
+      description: Identificador operacional da mesa, comanda ou balcão.
+    XAppId:
+      in: header
+      name: X-App-Id
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: >
+        Identificador único do Software Service que envia o webhook. Detalhado na
+        [especificação de Autenticação](../authentication/).
+    XAppMerchantId:
+      in: header
+      name: X-App-MerchantId
+      required: true
+      schema:
+        type: string
+      description: >
+        Identificador único do merchant associado a este evento. Detalhado na
+        [especificação de Autenticação](../authentication/).
+    XAppSignature:
+      in: header
+      name: X-App-Signature
+      required: true
+      schema:
+        type: string
+      description: >
+        Assinatura HMAC-SHA256 do corpo bruto da requisição, usando o `client_secret`
+        compartilhado como chave (hexadecimal minúsculo). Algoritmo detalhado na
+        [especificação de Autenticação](../authentication/).
+
+  responses:
+    BadRequest:
+      description: Requisição inválida
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Recurso não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Conflito de estado da operação
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Requisição sem credenciais válidas de autenticação.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    TooManyRequests:
+      description: Limite de requisições excedido.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalServerError:
+      description: Erro interno inesperado no processamento da requisição.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    OrderCreateRequest:
+      type: object
+      description: Corpo de criação de um pedido indoor (orderType INDOOR).
+      required: [orderType, items, indoor]
+      properties:
+        orderType:
+          type: string
+          enum: [INDOOR]
+          description: Tipo do pedido. Para este módulo, sempre INDOOR.
+        items:
+          type: array
+          minItems: 1
+          description: Lista de itens incluídos neste lançamento de pedido.
+          items:
+            $ref: '#/components/schemas/OrderItemInput'
+        indoor:
+          allOf:
+            - $ref: '#/components/schemas/Indoor'
+          description: Dados específicos da extensão Indoor para o pedido.
+
+    OrderCreateResponse:
+      type: object
+      description: Resposta retornada após a criação de um pedido indoor.
+      required: [orderId, status]
+      properties:
+        orderId:
+          type: string
+          description: Identificador do pedido criado.
+        accountId:
+          type: string
+          description: >
+            Identificador da conta, quando já existir ou tiver sido gerado
+            durante o processamento do pedido.
+        status:
+          type: string
+          enum: [ACCEPTED, REJECTED, PENDING]
+          description: Resultado do processamento inicial do pedido.
+
+    Order:
+      description: Representação completa de um pedido indoor já criado.
+      allOf:
+        - $ref: '#/components/schemas/OrderCreateRequest'
+        - type: object
+          properties:
+            orderId:
+              type: string
+              description: Identificador do pedido.
+            accountId:
+              type: string
+              description: Conta relacionada ao pedido.
+            createdAt:
+              type: string
+              format: date-time
+              description: Data/hora de criação do pedido.
+
+    Indoor:
+      type: object
+      description: Extensão indoor anexada ao pedido — chave operacional, canal e preferências de atendimento.
+      required: [operationMode, identifier, originChannel, consumptionType]
+      properties:
+        operationMode:
+          allOf:
+            - $ref: '#/components/schemas/OperationMode'
+          description: Modo operacional da conta (mesa, comanda ou balcão).
+        identifier:
+          type: string
+          description: >
+            Identificador operacional da mesa, comanda ou balcão utilizado para localizar
+            a operação ativa antes, durante ou após a criação do pedido.
+        accountId:
+          type: string
+          description: >
+            Identificador interno da conta, quando já conhecido. Não deve ser obrigatório
+            no primeiro POST do pedido.
+        originChannel:
+          allOf:
+            - $ref: '#/components/schemas/OriginChannel'
+          description: Canal de origem do pedido.
+        consumptionType:
+          allOf:
+            - $ref: '#/components/schemas/ConsumptionType'
+          description: Intenção de consumo do pedido (no local ou para levar).
+        fulfillment:
+          allOf:
+            - $ref: '#/components/schemas/FulfillmentInfo'
+          description: Forma de entrega ou retirada do pedido.
+        service:
+          allOf:
+            - $ref: '#/components/schemas/ServiceInfo'
+          description: Dados do atendimento, como garçom responsável e número de pessoas.
+        notifications:
+          allOf:
+            - $ref: '#/components/schemas/Notifications'
+          description: Canais de notificação vinculados à conta ou ao cliente.
+        fiscal:
+          allOf:
+            - $ref: '#/components/schemas/OrderFiscalInfo'
+          description: Preferências fiscais informadas no pedido.
+
+    OrderItemInput:
+      type: object
+      description: Item informado na criação de um pedido indoor.
+      required: [externalCode, name, quantity]
+      properties:
+        externalCode:
+          type: string
+          description: Código externo do item no sistema de origem.
+        name:
+          type: string
+          description: Nome comercial do item.
+        quantity:
+          type: number
+          format: double
+          description: Quantidade solicitada do item.
+        unitPrice:
+          type: number
+          format: double
+          description: Preço unitário informado no pedido, quando aplicável.
+        notes:
+          type: string
+          description: Observações livres do item.
+        seat:
+          type: string
+          description: Posição, lugar ou referência do cliente associada ao item.
+        options:
+          type: array
+          description: Opcionais/complementos selecionados para este item.
+          items:
+            $ref: '#/components/schemas/AccountItemOption'
+
+    Account:
+      type: object
+      description: Conta de salão — agrupador de pedidos, itens, pagamentos e documentos fiscais de uma sessão de consumo.
+      required: [operationMode, identifier, status, openedAt]
+      properties:
+        accountId:
+          type: string
+          description: Identificador interno da conta/ticket/sale quando existir.
+        operationMode:
+          allOf:
+            - $ref: '#/components/schemas/OperationMode'
+          description: Modo operacional da conta (mesa, comanda ou balcão).
+        identifier:
+          type: string
+          description: Identificador operacional atual da conta.
+        status:
+          allOf:
+            - $ref: '#/components/schemas/AccountStatus'
+          description: Status operacional atual da conta.
+        lastEvent:
+          allOf:
+            - $ref: '#/components/schemas/EventType'
+          description: >
+            Tipo do último evento emitido para esta conta — espelha o último
+            webhook enviado à Ordering Application. Útil para sincronização e
+            depuração quando a entrega do webhook é incerta (ex.: após reconexão).
+        openedAt:
+          type: string
+          format: date-time
+          description: Data/hora de abertura operacional da conta.
+        closedAt:
+          type: string
+          format: date-time
+          description: Data/hora de fechamento definitivo da conta.
+        orders:
+          type: array
+          description: Lista resumida dos pedidos associados à conta.
+          items:
+            $ref: '#/components/schemas/AccountOrderRef'
+        items:
+          type: array
+          description: Itens agregados da conta.
+          items:
+            $ref: '#/components/schemas/AccountItem'
+        payments:
+          type: array
+          description: Lançamentos de pagamento associados à conta.
+          items:
+            $ref: '#/components/schemas/Payment'
+        totals:
+          allOf:
+            - $ref: '#/components/schemas/AccountTotals'
+          description: Totais consolidados da conta (subtotal, taxas, pago, saldo).
+        fiscal:
+          allOf:
+            - $ref: '#/components/schemas/AccountFiscalSummary'
+          description: Resumo da situação fiscal da conta.
+
+    AccountOrderRef:
+      type: object
+      description: Referência resumida de um pedido associado à conta.
+      required: [orderId, createdAt]
+      properties:
+        orderId:
+          type: string
+          description: Identificador do pedido.
+        originChannel:
+          type: string
+          description: Canal resumido de origem do pedido.
+        createdAt:
+          type: string
+          format: date-time
+          description: Data/hora de criação do pedido.
+
+    AccountItem:
+      type: object
+      description: Item lançado na conta.
+      required: [itemId, name, quantity, status, addedAt]
+      properties:
+        itemId:
+          type: string
+          description: Identificador único do item na conta.
+        externalCode:
+          type: string
+          description: Código externo do item no sistema de origem (PDV).
+        name:
+          type: string
+          description: Nome do item.
+        quantity:
+          type: number
+          format: double
+          description: Quantidade do item na conta.
+        unitPrice:
+          type: number
+          format: double
+          description: Preço unitário do item.
+        discount:
+          type: number
+          format: double
+          description: >
+            Desconto aplicado a este item. Representa a diferença entre o preço
+            original e o preço efetivamente cobrado, permitindo exibição ao cliente
+            (ex: preço riscado no front).
+        totalPrice:
+          type: number
+          format: double
+          description: Valor total do item após desconto, se houver.
+        origin:
+          type: string
+          enum: [ORDERING_APPLICATION, POS, OTHER]
+          description: Origem lógica da inclusão do item.
+        addedAt:
+          type: string
+          format: date-time
+          description: Data/hora de entrada do item na conta.
+        status:
+          type: string
+          enum: [ACTIVE, CANCELLED, PAID]
+          description: Status atual do item.
+        notes:
+          type: string
+          description: Observações livres associadas ao item.
+        seat:
+          type: string
+          description: Lugar, assento ou posição associada ao item.
+        options:
+          type: array
+          description: >
+            Opcionais/complementos selecionados para este item, reutilizando a
+            estrutura de options do Open Delivery.
+          items:
+            $ref: '#/components/schemas/AccountItemOption'
+
+    AccountItemOption:
+      type: object
+      description: Opcional/complemento selecionado para um item da conta.
+      required: [name, quantity]
+      properties:
+        externalCode:
+          type: string
+          description: Código externo do opcional no sistema de origem.
+        name:
+          type: string
+          description: Nome do opcional selecionado.
+        quantity:
+          type: number
+          format: double
+          description: Quantidade selecionada do opcional.
+        unitPrice:
+          type: number
+          format: double
+          description: Preço unitário do opcional.
+        totalPrice:
+          type: number
+          format: double
+          description: Valor total do opcional.
+        options:
+          type: array
+          description: Sub-opcionais aninhados, para estruturas de combos.
+          items:
+            $ref: '#/components/schemas/AccountItemOption'
+
+    PaymentCreateRequest:
+      type: object
+      description: Corpo de criação de um lançamento de pagamento na conta.
+      required: [amount, methodInfo]
+      properties:
+        amount:
+          type: number
+          format: double
+          description: Valor do lançamento de pagamento.
+        methodInfo:
+          allOf:
+            - $ref: '#/components/schemas/PaymentMethodInfo'
+          description: Meio de pagamento utilizado neste lançamento.
+        serviceCharge:
+          allOf:
+            - $ref: '#/components/schemas/ChargeAmount'
+          description: Taxa de serviço aplicada a este pagamento, quando houver.
+        tip:
+          type: number
+          format: double
+          description: Gorjeta adicional ao pagamento.
+        items:
+          type: array
+          description: Lista opcional de itens quitados por este pagamento.
+          items:
+            type: string
+        seat:
+          type: string
+          description: Posição do cliente associada ao pagamento, quando aplicável.
+
+    Payment:
+      description: Pagamento já registrado na conta.
+      allOf:
+        - $ref: '#/components/schemas/PaymentCreateRequest'
+        - type: object
+          required: [paymentId, paidAt]
+          properties:
+            paymentId:
+              type: string
+              description: Identificador único do pagamento.
+            paidAt:
+              type: string
+              format: date-time
+              description: Data/hora de confirmação do pagamento.
+
+    PaymentMethodInfo:
+      type: object
+      description: Detalhes do meio de pagamento utilizado.
+      required: [method]
+      properties:
+        method:
+          type: string
+          enum: [CASH, CREDIT_CARD, DEBIT_CARD, PIX, VOUCHER, OTHER]
+          description: Meio de pagamento utilizado.
+        brand:
+          type: string
+          enum: [VISA, MASTERCARD, AMEX, ELO, HIPERCARD, AURA, SODEXO, VR, BENEFIT, OTHER]
+          description: Bandeira ou marca do meio de pagamento, quando aplicável.
+        nsu:
+          type: string
+          description: NSU/identificador da transação, quando aplicável ou exigido.
+
+    ChargeAmount:
+      type: object
+      description: Taxa monetária expressa por percentual e/ou valor efetivo.
+      properties:
+        rate:
+          type: number
+          format: double
+          description: Percentual aplicado da taxa.
+        amount:
+          type: number
+          format: double
+          description: Valor monetário efetivo da taxa.
+
+    AccountTotals:
+      type: object
+      description: Totais consolidados da conta.
+      properties:
+        itemsSubtotal:
+          type: number
+          format: double
+          description: Soma dos itens ativos da conta.
+        serviceCharge:
+          allOf:
+            - $ref: '#/components/schemas/ChargeAmount'
+          description: Taxa de serviço aplicada ao total da conta, quando houver.
+        taxes:
+          type: object
+          description: Tributos calculados sobre a conta.
+          properties:
+            amount:
+              type: number
+              format: double
+              description: Valor total de tributos calculados para a conta.
+        discount:
+          type: number
+          format: double
+          description: >
+            Desconto total aplicado no fechamento da conta. Representa o valor
+            concedido sobre o subtotal dos itens no momento do fechamento.
+        paid:
+          type: number
+          format: double
+          description: Total pago até o momento.
+        due:
+          type: number
+          format: double
+          description: Saldo em aberto da conta.
+
+    TransferRequest:
+      type: object
+      description: Corpo da solicitação de transferência de itens ou de conta completa.
+      required: [transferType, target]
+      properties:
+        transferType:
+          type: string
+          enum: [ITEMS, FULL_ACCOUNT]
+          description: 'Tipo de transferência: parcial por itens ou total.'
+        itemIds:
+          type: array
+          description: Lista de itens a transferir quando transferType = ITEMS.
+          items:
+            type: string
+        target:
+          allOf:
+            - $ref: '#/components/schemas/OperationalAccountRef'
+          description: Conta de destino da transferência.
+        reason:
+          type: string
+          description: Motivo opcional da transferência para histórico ou relatório.
+
+    TransferResponse:
+      type: object
+      description: Resultado de uma transferência de itens ou de conta completa.
+      properties:
+        sourceAccountId:
+          type: string
+          description: Conta de origem.
+        targetAccountId:
+          type: string
+          description: Conta de destino.
+        transferredItemIds:
+          type: array
+          items:
+            type: string
+          description: Itens efetivamente transferidos.
+        transferredAt:
+          type: string
+          format: date-time
+          description: Data/hora da transferência.
+
+    # TransferHistoryEntry: comentado — aguardando decisão do comitê sobre rastreabilidade de transferências (debate em 02/06/2026)
+    # TransferHistoryEntry:
+    #   type: object
+    #   properties:
+    #     fromAccountId:
+    #       type: string
+    #       description: Conta de origem anterior.
+    #     toAccountId:
+    #       type: string
+    #       description: Conta de destino.
+    #     reason:
+    #       type: string
+    #       description: Motivo da transferência.
+    #     transferredAt:
+    #       type: string
+    #       format: date-time
+    #       description: Data/hora do movimento.
+
+    OperationalAccountRef:
+      type: object
+      description: Referência a uma conta pela chave operacional ou pelo accountId.
+      required: [operationMode, identifier]
+      properties:
+        accountId:
+          type: string
+          description: Conta alvo, quando o accountId já for conhecido.
+        operationMode:
+          allOf:
+            - $ref: '#/components/schemas/OperationMode'
+          description: Modo operacional da conta alvo (mesa, comanda ou balcão).
+        identifier:
+          type: string
+          description: Identificador operacional da conta alvo.
+
+    FiscalRequest:
+      type: object
+      description: Corpo da solicitação de emissão/associação fiscal da conta.
+      properties:
+        printDocument:
+          type: boolean
+          description: Indica se a impressão física do documento foi solicitada.
+        paymentNSURequiredForNFCE:
+          type: boolean
+          description: Indica se o NSU do pagamento é exigido para a emissão da NFC-e.
+
+    FiscalDocument:
+      type: object
+      description: Documento fiscal emitido ou em processamento para a conta.
+      properties:
+        documentId:
+          type: string
+          description: Identificador único do documento fiscal.
+        documentStatus:
+          type: string
+          enum: [NOT_ISSUED, PENDING, ISSUED, ERROR]
+          description: Status atual do documento fiscal.
+        documentNumber:
+          type: string
+          description: Número da nota fiscal.
+        documentSeries:
+          type: string
+          description: Série do documento fiscal.
+        documentKey:
+          type: string
+          description: Chave do documento fiscal.
+        environment:
+          type: string
+          enum: ['1', '2']
+          description: >
+            Ambiente fiscal. 1 = produção. 2 = homologação.
+        authorizationProtocol:
+          type: string
+          description: Protocolo de autorização do documento fiscal.
+        model:
+          type: string
+          description: Modelo do documento fiscal.
+        issuedAt:
+          type: string
+          format: date-time
+          description: Data/hora de emissão do documento.
+        exitAt:
+          type: string
+          format: date-time
+          description: Data/hora de saída associada ao documento.
+        statusCode:
+          type: string
+          description: Código de status retornado pela SEFAZ.
+        statusReason:
+          type: string
+          description: Descrição do status retornado pela SEFAZ.
+        contingencyAt:
+          type: string
+          format: date-time
+          description: Data/hora de contingência, quando aplicável.
+        issuanceType:
+          type: string
+          enum: ['1', '9']
+          description: >
+            Tipo de emissão. 1 = normal. 9 = contingência.
+        xml:
+          type: string
+          description: Conteúdo XML do documento fiscal, quando retornado.
+        pdfBase64:
+          type: string
+          description: Representação base64 do DANFE/Cupom, quando retornada.
+        imageBase64:
+          type: string
+          description: Representação base64 em imagem do documento, quando retornada.
+
+    OrderFiscalInfo:
+      type: object
+      description: Preferências fiscais informadas no pedido indoor.
+      properties:
+        shouldIssueDocument:
+          type: boolean
+          description: Indica se o pedido/conta deverá gerar documento fiscal.
+        documentStatus:
+          type: string
+          enum: [NOT_ISSUED, PENDING, ISSUED]
+          description: Status fiscal conhecido no momento do pedido.
+        printDocument:
+          type: boolean
+          description: Indica se o documento deverá ser impresso.
+        paymentNSURequiredForNFCE:
+          type: boolean
+          description: Indica se NSU do pagamento será exigido para emissão de NFC-e.
+
+    AccountFiscalSummary:
+      type: object
+      description: Resumo da situação fiscal da conta.
+      properties:
+        documentIssued:
+          type: boolean
+          description: Indica se ao menos um documento fiscal foi emitido para a conta.
+        documentId:
+          type: string
+          description: Identificador do documento fiscal principal associado à conta.
+
+    OriginChannel:
+      type: object
+      description: Canal de origem do pedido indoor.
+      required: [type]
+      properties:
+        type:
+          type: string
+          enum:
+            - TOTEM
+            - QR_CODE
+            - CUSTOMER_TABLET
+            - WAITER_TABLET
+            - FRONT_DESK
+            - POS
+            - APP
+            - WHATSAPP
+            - OTHER
+          description: Canal de origem do pedido indoor.
+        id:
+          type: string
+          description: Identificador específico do canal/dispositivo/origem.
+        notes:
+          type: string
+          description: Observação livre sobre o canal de origem.
+
+    FulfillmentInfo:
+      type: object
+      description: Forma de entrega ou retirada do pedido.
+      properties:
+        type:
+          type: string
+          enum: [DISPATCH, CALL]
+          description: Forma de entrega/retirada do pedido.
+        call:
+          allOf:
+            - $ref: '#/components/schemas/CallInfo'
+          description: Dados de chamada do cliente, quando type = CALL.
+        dispatch:
+          allOf:
+            - $ref: '#/components/schemas/DispatchInfo'
+          description: Dados de despacho do pedido, quando type = DISPATCH.
+
+    CallInfo:
+      type: object
+      description: Forma como o cliente é chamado para retirada do pedido.
+      properties:
+        notifyOriginator:
+          type: boolean
+          description: Indica se o originador deve ser notificado quando o item/pedido estiver pronto.
+        type:
+          type: string
+          enum: [TICKET_NUMBER, PAGER, CALL_NAME, WHATSAPP, OTHER]
+          description: Tipo de identificação usada para chamar o cliente.
+        label:
+          type: string
+          description: Valor visível da chamada, como senha, nome ou rótulo equivalente.
+
+    DispatchInfo:
+      type: object
+      description: Dados do ponto de despacho do pedido.
+      properties:
+        id:
+          type: string
+          description: Identificador do ponto/local de despacho.
+        label:
+          type: string
+          description: Nome amigável do ponto/local de despacho.
+        sector:
+          type: string
+          description: Setor, praça ou área operacional relacionada ao despacho.
+        seat:
+          allOf:
+            - $ref: '#/components/schemas/SeatRef'
+          description: Assento, lugar ou posição associada ao despacho.
+
+    SeatRef:
+      type: object
+      description: Referência a um assento, lugar ou posição.
+      properties:
+        id:
+          type: string
+          description: Identificador do assento, lugar ou posição.
+        label:
+          type: string
+          description: Nome amigável do assento, lugar ou posição.
+
+    ServiceInfo:
+      type: object
+      description: Dados do atendimento associado ao pedido.
+      properties:
+        waiterCode:
+          type: string
+          description: Código do garçom/atendente responsável.
+        waiterName:
+          type: string
+          description: Nome do garçom/atendente responsável.
+        peopleCount:
+          type: integer
+          description: Quantidade de pessoas associadas à conta.
+
+    Notifications:
+      type: object
+      description: Canais de notificação vinculados à conta ou ao cliente.
+      properties:
+        whatsAppId:
+          type: string
+          description: Identificador de WhatsApp vinculado à conta ou ao cliente.
+
+    AccountPreCloseRequest:
+      type: object
+      description: Corpo opcional da solicitação de pré-fechamento da conta.
+      properties:
+        reason:
+          type: string
+          description: Motivo opcional do pré-fechamento.
+        requestedBy:
+          type: string
+          description: Sistema ou ator que solicitou o pré-fechamento.
+
+    AccountUnlockRequest:
+      type: object
+      description: Corpo opcional da solicitação de desbloqueio da conta.
+      properties:
+        reason:
+          type: string
+          description: Motivo opcional do desbloqueio.
+
+    AccountCloseRequest:
+      type: object
+      description: Corpo opcional da solicitação de fechamento definitivo da conta.
+      properties:
+        reason:
+          type: string
+          description: Motivo opcional do fechamento final.
+        discount:
+          type: number
+          format: double
+          description: >
+            Desconto aplicado no fechamento da conta, quando informado pelo originador.
+            Se presente, deve ser refletido em AccountTotals.discount.
+
+    ItemCancelRequest:
+      type: object
+      description: Corpo opcional da solicitação de cancelamento de item.
+      properties:
+        reason:
+          type: string
+          description: Motivo do cancelamento do item.
+
+    AsyncAcceptedResponse:
+      type: object
+      description: Confirmação de aceite de uma operação processada de forma assíncrona.
+      properties:
+        status:
+          type: string
+          enum: [ACCEPTED]
+          description: Confirmação de que a solicitação foi aceita para processamento assíncrono.
+        correlationId:
+          type: string
+          description: Identificador de correlação da operação assíncrona.
+
+    EventNotification:
+      type: object
+      description: Notificação de evento entregue via webhook (accountEvent).
+      required: [eventId, eventType, occurredAt]
+      properties:
+        eventId:
+          type: string
+          description: Identificador único do evento.
+        eventType:
+          allOf:
+            - $ref: '#/components/schemas/EventType'
+          description: Tipo do evento notificado.
+        occurredAt:
+          type: string
+          format: date-time
+          description: Data/hora em que o evento ocorreu.
+        accountId:
+          type: string
+          description: Conta relacionada ao evento.
+        orderId:
+          type: string
+          description: Pedido relacionado ao evento, quando aplicável.
+        paymentId:
+          type: string
+          description: Pagamento relacionado ao evento, quando aplicável.
+        documentId:
+          type: string
+          description: Documento fiscal relacionado ao evento, quando aplicável.
+        payload:
+          type: object
+          additionalProperties: true
+          description: Payload complementar do evento.
+
+    EventType:
+      type: string
+      description: Tipo de evento do ciclo de vida da conta, pagamento ou fiscal.
+      enum:
+        - ACCOUNT_OPENED
+        - ACCOUNT_ITEM_ADDED
+        - ACCOUNT_ITEM_REMOVED
+        - ACCOUNT_ITEM_CANCELLED
+        - ACCOUNT_PRE_CLOSED
+        - ACCOUNT_UNLOCKED
+        - ACCOUNT_CLOSED
+        - PAYMENT_CREATED
+        - PAYMENT_UPDATED
+        - FISCAL_ISSUED
+        - FISCAL_ERROR
+
+    OperationMode:
+      type: string
+      enum: [TABLE, TAB, COUNTER]
+      description: Modo operacional principal do atendimento indoor.
+
+    ConsumptionType:
+      type: string
+      enum: [DINE_IN, TAKEAWAY]
+      description: Intenção de consumo associada ao pedido indoor.
+
+    AccountStatus:
+      type: string
+      enum: [AVAILABLE, IN_USE, BLOCKED, IN_PAYMENT, CLOSED]
+      description: Status operacional da conta.
+
+    ErrorResponse:
+      type: object
+      description: Corpo padrão de resposta de erro.
+      properties:
+        code:
+          type: string
+          description: Código de erro padronizado.
+        message:
+          type: string
+          description: Mensagem descritiva do erro.
+        details:
+          type: array
+          items:
+            type: string
+          description: Lista opcional de detalhes adicionais.

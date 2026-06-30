@@ -1,0 +1,2064 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open standard for ordering, fulfillment, and delivery interoperability">
+      
+      
+      
+        <link rel="canonical" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/orders/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/opendelivery-logo.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Orders Capability - Open Delivery Protocol</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/theme.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/landing.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+
+<style>
+  /* Seta no tab que tem dropdown */
+  .od-tab-has-dropdown > .md-tabs__link::after {
+    content: " ▾";
+    font-size: .55rem;
+    opacity: .65;
+    vertical-align: middle;
+    transition: transform .15s ease;
+    display: inline-block;
+  }
+
+  .od-tab-has-dropdown:hover > .md-tabs__link::after {
+    transform: translateY(1px);
+    opacity: .9;
+  }
+
+  /* Dropdown renderizado como filho de <body> (padrão portal).
+     position: fixed + z-index alto escapa de qualquer stacking context
+     do Material e do container do ReDoc. A classe od-dropdown--visible
+     só anima opacidade/posição: quem decide se o menu existe no
+     fluxo (display:none/block) continua sendo showPortal/scheduleHide,
+     inalterados — a classe é puramente cosmética. */
+  .od-dropdown {
+    display: none;
+    position: fixed;
+    margin: 0;
+    padding: .4rem 0;
+    list-style: none;
+    background: var(--md-primary-fg-color--dark, #004621);
+    border-radius: 0 0 var(--od-radius-md, .6rem) var(--od-radius-md, .6rem);
+    box-shadow: var(--od-shadow-lg, 0 .8rem 2rem rgba(0, 0, 0, .25));
+    min-width: 15rem;
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(-6px);
+    transition: opacity .14s ease, transform .14s ease;
+  }
+
+  .od-dropdown.od-dropdown--visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .od-dropdown li { margin: 0; }
+
+  .od-dropdown a {
+    display: block;
+    padding: .55rem 1.2rem;
+    color: rgba(255, 255, 255, .82);
+    font-size: .72rem;
+    font-weight: 500;
+    letter-spacing: .01em;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background .12s, color .12s;
+  }
+
+  .od-dropdown a:hover {
+    background: rgba(255, 255, 255, .12);
+    color: #fff;
+  }
+
+  .od-dropdown a.od-active {
+    color: #fff;
+    background: rgba(255, 255, 255, .1);
+    font-weight: 700;
+  }
+
+  /* Cabeçalho de seção aninhada (ex.: Capabilities) */
+  .od-dropdown .od-group-label {
+    padding: .55rem 1.2rem .25rem;
+    margin-top: .25rem;
+    font-size: .58rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, .55);
+    border-top: 1px solid rgba(255, 255, 255, .12);
+    white-space: nowrap;
+  }
+
+  .od-dropdown .od-group-label:first-child {
+    border-top: none;
+    margin-top: 0;
+  }
+
+  /* Itens dentro de uma seção aninhada: recuo extra */
+  .od-dropdown a.od-nested {
+    padding-left: 1.8rem;
+  }
+</style>
+
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#orders-capability" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Open Delivery Protocol" class="md-header__button md-logo" aria-label="Open Delivery Protocol" data-md-component="logo">
+      
+  <img src="../../assets/images/opendelivery-logo-header.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Open Delivery Protocol
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Orders Capability
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Abrasel-Nacional/opendelivery-v2" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Abrasel-Nacional/opendelivery-v2
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../.." class="md-tabs__link">
+          
+  
+  
+    
+  
+  Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../reference/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Open Delivery Protocol" class="md-nav__button md-logo" aria-label="Open Delivery Protocol" data-md-component="logo">
+      
+  <img src="../../assets/images/opendelivery-logo-header.png" alt="logo">
+
+    </a>
+    Open Delivery Protocol
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Abrasel-Nacional/opendelivery-v2" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Abrasel-Nacional/opendelivery-v2
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../.." class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guide
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_1" id="__nav_1_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../documentation/core-concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../discovery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Discovery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_1_4" id="__nav_1_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Capabilities
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Capabilities
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../indoor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Indoor / Salão
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../documentation/roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../reference/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/discovery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Discovery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Capabilities
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Capabilities
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/customer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Customer & Loyalty
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/indoor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Indoor / Salão
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-concepts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Concepts
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Data Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scope-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scope Boundary
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#participants" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Participants
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Participants">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#providerconsumer-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Provider/Consumer Mapping
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schema
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Schema">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#order-top-level" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Order (Top Level)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Events
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Events">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#event-and-status-matrix-delivery-profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Event and Status Matrix - DELIVERY Profile
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#event-and-status-matrix-takeout-profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Event and Status Matrix - TAKEOUT Profile
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#event-and-status-matrix-indoor-profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Event and Status Matrix - INDOOR Profile
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#capability-discovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Capability Discovery
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#authorization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authorization
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conformance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conformance
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/Abrasel-Nacional/opendelivery-v2/edit/main/docs/protocol/orders.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="orders-capability">Orders Capability<a class="headerlink" href="#orders-capability" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Capability Name: <code>orders</code></li>
+</ul>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>Orders Capability defines interoperable order lifecycle coordination across ordering, merchant operation, and delivery participants.</p>
+<h3 id="key-concepts">Key Concepts<a class="headerlink" href="#key-concepts" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Order state is a current business condition and MUST be explicit.</li>
+<li>Order events are immutable lifecycle facts and MUST NOT be interpreted as commands.</li>
+<li>Profile-specific behavior MAY exist, but unsupported transitions MUST NOT be inferred.</li>
+<li>Indoor behavior MUST be modeled through <a href="../../extensions/indoor/">Indoor Extension (Orders)</a>, not as an independent capability.</li>
+</ul>
+<h2 id="data-model">Data Model<a class="headerlink" href="#data-model" title="Permanent link">&para;</a></h2>
+<p>Orders Capability models the order as a lifecycle entity with transport-neutral semantics.</p>
+<h3 id="scope-boundary">Scope Boundary<a class="headerlink" href="#scope-boundary" title="Permanent link">&para;</a></h3>
+<p>Orders Capability covers:</p>
+<ul>
+<li>Order creation and acceptance</li>
+<li>Preparation and readiness progression</li>
+<li>Dispatch and delivery progression (when applicable)</li>
+<li>Cancellation and logical closure</li>
+</ul>
+<p>Orders Capability does not cover:</p>
+<ul>
+<li>On-premise account management details (Indoor extension)</li>
+<li>Merchant catalog publication structures</li>
+<li>Logistics orchestration policy internals</li>
+</ul>
+<h3 id="participants">Participants<a class="headerlink" href="#participants" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>ORDERING_APPLICATION</code>: originates and tracks order lifecycle interactions</li>
+<li><code>SOFTWARE_SERVICE</code>: merchant operational source of truth for order execution</li>
+<li><code>DELIVERY_PLATFORM</code> (optional): provides delivery lifecycle updates when logistics is externalized</li>
+</ul>
+<p>Participants MUST preserve profile obligations and asynchronous interaction semantics.</p>
+<h4 id="providerconsumer-mapping">Provider/Consumer Mapping<a class="headerlink" href="#providerconsumer-mapping" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>participant</th>
+<th>typical role as Provider</th>
+<th>typical role as Consumer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ORDERING_APPLICATION</code></td>
+<td>Exposes order-origin context or callbacks when applicable</td>
+<td>Calls order operations and consumes lifecycle updates</td>
+</tr>
+<tr>
+<td><code>SOFTWARE_SERVICE</code></td>
+<td>Exposes core order lifecycle operations and state updates</td>
+<td>Consumes order requests and downstream acknowledgements</td>
+</tr>
+<tr>
+<td><code>DELIVERY_PLATFORM</code></td>
+<td>Exposes delivery-progress updates when delegated</td>
+<td>Consumes dispatch/order-delivery context</td>
+</tr>
+</tbody>
+</table>
+<h2 id="schema">Schema<a class="headerlink" href="#schema" title="Permanent link">&para;</a></h2>
+<h3 id="order-top-level">Order (Top Level)<a class="headerlink" href="#order-top-level" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>type</th>
+<th>required</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>order.id</code></td>
+<td>string</td>
+<td>YES</td>
+<td>Order identifier</td>
+</tr>
+<tr>
+<td><code>order.displayId</code></td>
+<td>string</td>
+<td>YES</td>
+<td>Human-readable code</td>
+</tr>
+<tr>
+<td><code>order.createdAt</code></td>
+<td>string</td>
+<td>YES</td>
+<td>Creation timestamp (ISO 8601 date-time)</td>
+</tr>
+<tr>
+<td><code>order.orderTiming</code></td>
+<td>string</td>
+<td>YES</td>
+<td>Timing mode</td>
+</tr>
+<tr>
+<td><code>order.merchant</code></td>
+<td>object</td>
+<td>YES</td>
+<td>Merchant reference</td>
+</tr>
+<tr>
+<td><code>order.items</code></td>
+<td>array[object]</td>
+<td>YES</td>
+<td>Ordered items</td>
+</tr>
+<tr>
+<td><code>order.total</code></td>
+<td>object</td>
+<td>YES</td>
+<td>Total amount</td>
+</tr>
+<tr>
+<td><code>order.customer</code></td>
+<td>object</td>
+<td>NO</td>
+<td>Customer context</td>
+</tr>
+<tr>
+<td><code>order.payments</code></td>
+<td>array[object]</td>
+<td>NO</td>
+<td>Payment context</td>
+</tr>
+<tr>
+<td><code>order.metadata</code></td>
+<td>object</td>
+<td>NO</td>
+<td>Additional context</td>
+</tr>
+</tbody>
+</table>
+<h2 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;order&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;order-123&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;displayId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;A123&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;createdAt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-03-17T12:00:00Z&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;orderTiming&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;INSTANT&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;merchant&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;merchant-123&quot;</span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;items&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">    </span><span class="nt">&quot;total&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;currency&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;BRL&quot;</span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="operations">Operations<a class="headerlink" href="#operations" title="Permanent link">&para;</a></h2>
+<p>Logical operations in this capability are profile-dependent and mapped by transport bindings.</p>
+<table>
+<thead>
+<tr>
+<th>operation</th>
+<th>provider</th>
+<th>consumer</th>
+<th>intent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>createOrder</code></td>
+<td><code>SOFTWARE_SERVICE</code></td>
+<td><code>ORDERING_APPLICATION</code></td>
+<td>Create order lifecycle entity</td>
+</tr>
+<tr>
+<td><code>confirmOrder</code></td>
+<td><code>SOFTWARE_SERVICE</code></td>
+<td><code>ORDERING_APPLICATION</code></td>
+<td>Accept order for processing</td>
+</tr>
+<tr>
+<td><code>updateOrderLifecycle</code></td>
+<td><code>SOFTWARE_SERVICE</code> or <code>DELIVERY_PLATFORM</code></td>
+<td><code>ORDERING_APPLICATION</code></td>
+<td>Publish lifecycle progression facts</td>
+</tr>
+<tr>
+<td><code>cancelOrder</code></td>
+<td><code>SOFTWARE_SERVICE</code></td>
+<td><code>ORDERING_APPLICATION</code></td>
+<td>Resolve cancellation request</td>
+</tr>
+<tr>
+<td><code>concludeOrder</code></td>
+<td><code>SOFTWARE_SERVICE</code> or <code>ORDERING_APPLICATION</code> (profile-dependent)</td>
+<td><code>ORDERING_APPLICATION</code> or counterpart</td>
+<td>Mark logical completion</td>
+</tr>
+</tbody>
+</table>
+<p>Transport-specific contracts are documented in REST Binding pages.</p>
+<h2 id="events">Events<a class="headerlink" href="#events" title="Permanent link">&para;</a></h2>
+<p>Event consumers MUST deduplicate by event identifier.
+Event producers SHOULD include monotonic timestamps.
+Participants MUST support asynchronous delivery and MUST NOT assume strict delivery ordering.</p>
+<h3 id="event-and-status-matrix-delivery-profile">Event and Status Matrix - DELIVERY Profile<a class="headerlink" href="#event-and-status-matrix-delivery-profile" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Action Origin</th>
+<th>Endpoint</th>
+<th>Requirement</th>
+<th>Projected Status</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CREATED</code></td>
+<td>ORIGINATOR</td>
+<td>-</td>
+<td>MUST</td>
+<td><code>CREATED</code></td>
+<td>Order created by the customer</td>
+</tr>
+<tr>
+<td><code>CONFIRMED</code></td>
+<td>POS</td>
+<td><code>/confirm</code></td>
+<td>MUST</td>
+<td><code>CONFIRMED</code></td>
+<td>Merchant acceptance</td>
+</tr>
+<tr>
+<td><code>PREPARATION_REQUESTED</code></td>
+<td>ORIGINATOR</td>
+<td>-</td>
+<td>MAY</td>
+<td>(unchanged)</td>
+<td>Requests/authorizes preparation start</td>
+</tr>
+<tr>
+<td><code>PREPARING</code></td>
+<td>POS</td>
+<td><code>/preparing</code></td>
+<td>MAY</td>
+<td><code>PREPARING</code></td>
+<td>Preparation started</td>
+</tr>
+<tr>
+<td><code>READY_FOR_PICKUP</code></td>
+<td>POS</td>
+<td><code>/readyForPickup</code></td>
+<td>MAY</td>
+<td><code>READY</code></td>
+<td>Order ready</td>
+</tr>
+<tr>
+<td><code>PICKUP_ONGOING</code></td>
+<td>ORIGINATOR</td>
+<td>-</td>
+<td>MAY</td>
+<td><code>READY</code></td>
+<td>Courier assigned</td>
+</tr>
+<tr>
+<td><code>RIDER_ARRIVED_AT_STORE</code></td>
+<td>ORIGINATOR</td>
+<td>-</td>
+<td>MAY</td>
+<td><code>READY</code></td>
+<td>Courier arrived at store</td>
+</tr>
+<tr>
+<td><code>DISPATCHED</code></td>
+<td>POS</td>
+<td><code>/dispatch</code></td>
+<td>MAY</td>
+<td><code>IN_DELIVERY</code></td>
+<td>Order dispatched</td>
+</tr>
+<tr>
+<td><code>ORDER_COLLECTED</code></td>
+<td>ORIGINATOR</td>
+<td>-</td>
+<td>MAY</td>
+<td><code>IN_DELIVERY</code></td>
+<td>Order left store custody</td>
+</tr>
+<tr>
+<td><code>DELIVERY_ONGOING</code></td>
+<td>ORIGINATOR</td>
+<td>-</td>
+<td>MAY</td>
+<td><code>IN_DELIVERY</code></td>
+<td>In transit</td>
+</tr>
+<tr>
+<td><code>ARRIVED_AT_CUSTOMER</code></td>
+<td>ORIGINATOR</td>
+<td>-</td>
+<td>MAY</td>
+<td><code>IN_DELIVERY</code></td>
+<td>Arrival at customer location</td>
+</tr>
+<tr>
+<td><code>DELIVERED</code></td>
+<td>POS or ORIGINATOR</td>
+<td><code>/delivered</code></td>
+<td>MUST</td>
+<td><code>DELIVERED</code></td>
+<td>Customer received the order</td>
+</tr>
+<tr>
+<td><code>CANCELLED</code></td>
+<td>ORIGINATOR</td>
+<td>-</td>
+<td>MUST</td>
+<td><code>CANCELLED</code></td>
+<td>Final cancellation</td>
+</tr>
+<tr>
+<td><code>CONCLUDED</code></td>
+<td>ORIGINATOR</td>
+<td>-</td>
+<td>MUST</td>
+<td><code>CONCLUDED</code></td>
+<td>Closure by originator</td>
+</tr>
+</tbody>
+</table>
+<h3 id="event-and-status-matrix-takeout-profile">Event and Status Matrix - TAKEOUT Profile<a class="headerlink" href="#event-and-status-matrix-takeout-profile" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Action Origin</th>
+<th>Endpoint</th>
+<th>Requirement</th>
+<th>Projected Status</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CREATED</code></td>
+<td>ORIGINATOR</td>
+<td>-</td>
+<td>MUST</td>
+<td><code>CREATED</code></td>
+<td>Order created by the customer</td>
+</tr>
+<tr>
+<td><code>CONFIRMED</code></td>
+<td>POS</td>
+<td><code>/confirm</code></td>
+<td>MUST</td>
+<td><code>CONFIRMED</code></td>
+<td>Acceptance</td>
+</tr>
+<tr>
+<td><code>PREPARATION_REQUESTED</code></td>
+<td>ORIGINATOR</td>
+<td>-</td>
+<td>MAY</td>
+<td>(unchanged)</td>
+<td>Requests preparation</td>
+</tr>
+<tr>
+<td><code>PREPARING</code></td>
+<td>POS</td>
+<td><code>/preparing</code></td>
+<td>MAY</td>
+<td><code>PREPARING</code></td>
+<td>Optional</td>
+</tr>
+<tr>
+<td><code>READY_FOR_PICKUP</code></td>
+<td>POS</td>
+<td><code>/readyForPickup</code></td>
+<td>MUST</td>
+<td><code>READY</code></td>
+<td>Awaiting pickup</td>
+</tr>
+<tr>
+<td><code>PICKUP_ONGOING</code></td>
+<td>ORIGINATOR</td>
+<td>-</td>
+<td>MUST NOT</td>
+<td><code>READY</code></td>
+<td>Courier assigned</td>
+</tr>
+<tr>
+<td><code>RIDER_ARRIVED_AT_STORE</code></td>
+<td>ORIGINATOR</td>
+<td>-</td>
+<td>MUST NOT</td>
+<td><code>READY</code></td>
+<td>Courier arrived at store</td>
+</tr>
+<tr>
+<td><code>ORDER_COLLECTED</code></td>
+<td>-</td>
+<td><code>/pickedUp</code></td>
+<td>MUST NOT</td>
+<td>-</td>
+<td>No logistics pickup exists</td>
+</tr>
+<tr>
+<td><code>DELIVERED</code></td>
+<td>POS</td>
+<td><code>/delivered</code></td>
+<td>MUST</td>
+<td><code>DELIVERED</code></td>
+<td>Customer picked up at counter</td>
+</tr>
+<tr>
+<td><code>DELIVERY_ONGOING</code></td>
+<td>-</td>
+<td>-</td>
+<td>MUST NOT</td>
+<td>-</td>
+<td>No delivery stage</td>
+</tr>
+<tr>
+<td><code>ARRIVED_AT_CUSTOMER</code></td>
+<td>-</td>
+<td>-</td>
+<td>MUST NOT</td>
+<td>-</td>
+<td>No delivery stage</td>
+</tr>
+<tr>
+<td><code>CANCELLED</code></td>
+<td>ORIGINATOR</td>
+<td>-</td>
+<td>MUST</td>
+<td><code>CANCELLED</code></td>
+<td>Cancellation</td>
+</tr>
+<tr>
+<td><code>CONCLUDED</code></td>
+<td>ORIGINATOR</td>
+<td>-</td>
+<td>MUST</td>
+<td><code>CONCLUDED</code></td>
+<td>Closure by originator</td>
+</tr>
+</tbody>
+</table>
+<h3 id="event-and-status-matrix-indoor-profile">Event and Status Matrix - INDOOR Profile<a class="headerlink" href="#event-and-status-matrix-indoor-profile" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Action Origin</th>
+<th>Endpoint</th>
+<th>Requirement</th>
+<th>Projected Status</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CREATED</code></td>
+<td>ORIGINATOR</td>
+<td>-</td>
+<td>MUST</td>
+<td><code>CREATED</code></td>
+<td>Order created</td>
+</tr>
+<tr>
+<td><code>CONFIRMED</code></td>
+<td>POS</td>
+<td><code>/confirm</code></td>
+<td>MUST</td>
+<td><code>CONFIRMED</code></td>
+<td>Acceptance</td>
+</tr>
+<tr>
+<td><code>PREPARATION_REQUESTED</code></td>
+<td>ORIGINATOR</td>
+<td>-</td>
+<td>MAY</td>
+<td>(unchanged)</td>
+<td>On-demand flow</td>
+</tr>
+<tr>
+<td><code>PREPARING</code></td>
+<td>POS</td>
+<td><code>/preparing</code></td>
+<td>MAY</td>
+<td><code>PREPARING</code></td>
+<td>Optional</td>
+</tr>
+<tr>
+<td><code>READY_FOR_PICKUP</code></td>
+<td>POS</td>
+<td><code>/readyForPickup</code></td>
+<td>MAY</td>
+<td><code>READY</code></td>
+<td>Ready to serve</td>
+</tr>
+<tr>
+<td><code>PICKUP_ONGOING</code></td>
+<td>ORIGINATOR</td>
+<td>-</td>
+<td>MUST NOT</td>
+<td><code>READY</code></td>
+<td>Courier assigned</td>
+</tr>
+<tr>
+<td><code>RIDER_ARRIVED_AT_STORE</code></td>
+<td>ORIGINATOR</td>
+<td>-</td>
+<td>MUST NOT</td>
+<td><code>READY</code></td>
+<td>Courier arrived at store</td>
+</tr>
+<tr>
+<td><code>ORDER_COLLECTED</code></td>
+<td>-</td>
+<td><code>/pickedUp</code></td>
+<td>MUST NOT</td>
+<td>-</td>
+<td>No logistics stage</td>
+</tr>
+<tr>
+<td><code>DELIVERED</code></td>
+<td>POS</td>
+<td><code>/delivered</code></td>
+<td>MAY</td>
+<td><code>DELIVERED</code></td>
+<td>Order delivered to customer in-store</td>
+</tr>
+<tr>
+<td><code>DELIVERY_ONGOING</code></td>
+<td>-</td>
+<td>-</td>
+<td>MUST NOT</td>
+<td>-</td>
+<td>No delivery stage</td>
+</tr>
+<tr>
+<td><code>ARRIVED_AT_CUSTOMER</code></td>
+<td>-</td>
+<td>-</td>
+<td>MUST NOT</td>
+<td>-</td>
+<td>No delivery stage</td>
+</tr>
+<tr>
+<td><code>CANCELLED</code></td>
+<td>ORIGINATOR</td>
+<td>-</td>
+<td>MUST</td>
+<td><code>CANCELLED</code></td>
+<td>Cancellation</td>
+</tr>
+<tr>
+<td><code>CONCLUDED</code></td>
+<td>ORIGINATOR</td>
+<td>-</td>
+<td>MUST</td>
+<td><code>CONCLUDED</code></td>
+<td>Logical closure</td>
+</tr>
+</tbody>
+</table>
+<p>Rows marked as <code>MUST NOT</code> indicate events/operations that are forbidden for that profile and MUST NOT be emitted or accepted.</p>
+<h2 id="capability-discovery">Capability Discovery<a class="headerlink" href="#capability-discovery" title="Permanent link">&para;</a></h2>
+<p>Implementations exposing Orders Capability MUST declare capability name <code>orders</code> through discovery.</p>
+<p>Capability declaration SHOULD include:</p>
+<ul>
+<li>Supported interaction mode (<code>push</code>, <code>pull</code>, or <code>hybrid</code>)</li>
+<li>Binding endpoint references</li>
+<li>Supported extensions (including Indoor when available)</li>
+</ul>
+<p>Order interactions MUST only be assumed after counterpart discovery metadata is validated.</p>
+<h2 id="authorization">Authorization<a class="headerlink" href="#authorization" title="Permanent link">&para;</a></h2>
+<p>All Orders operations require authenticated access.</p>
+<p>Implementations MUST enforce scope-based authorization per <a href="../authentication/">Authentication and Authorization</a>.</p>
+<p>Recommended minimum scope families:</p>
+<ul>
+<li><code>orders.read</code></li>
+<li><code>orders.write</code></li>
+<li><code>orders.events.write</code></li>
+</ul>
+<h2 id="conformance">Conformance<a class="headerlink" href="#conformance" title="Permanent link">&para;</a></h2>
+<p>Participants implementing Orders Capability:</p>
+<ul>
+<li>MUST preserve lifecycle semantics defined in this specification across all bindings.</li>
+<li>MUST treat event payloads as authoritative lifecycle facts at publication time.</li>
+<li>SHOULD prioritize event-driven updates and use polling for reconciliation/fallback.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "navigation.indexes", "navigation.footer", "content.code.copy", "content.tooltips", "content.tabs.link", "content.action.edit", "toc.follow", "search.suggest", "search.highlight", "search.share"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+      
+    
+
+<script>
+  /* Move (não clona) o componente de busca do Material para o topo do
+     menu lateral esquerdo. É um "move" de verdade — o mesmo nó de DOM
+     que o bundle.js do Material já vai inicializar — porque mover um
+     elemento via insertBefore preserva os listeners e a referência que
+     o JS do tema guarda; só a posição no documento muda. Como o nó
+     passa a viver dentro de #__sidebar-primary, ele herda o atributo
+     `hidden` que o Material aplica nessa sidebar via `page.meta.hide`
+     (ver docs/reference/*.md), então a busca some sozinha nas páginas
+     do ReDoc — sem precisar de lógica extra por rota. O CSS que
+     reestiliza esse componente está em stylesheets/theme.css: as
+     regras nativas de "aberto/foco" do Material exigem `.md-header`
+     como ancestral, o que deixa de ser verdade aqui. */
+  (function () {
+    var search = document.querySelector('[data-md-component="search"]');
+    var sidebarInner = document.querySelector('.md-sidebar--primary .md-sidebar__inner');
+    if (!search || !sidebarInner) return;
+    search.classList.add('od-sidebar-search');
+    sidebarInner.insertBefore(search, sidebarInner.firstChild);
+
+    /* O dropdown de resultados (.md-search__output) é position:fixed
+       (ver theme.css) para escapar do overflow-y:auto do menu, que do
+       contrário recortaria o painel na largura da coluna. Como ele
+       saiu do fluxo normal, a posição precisa ser calculada a partir
+       do retângulo real da caixa de busca — e recalculada sempre que
+       a página rola, porque .md-sidebar é position:sticky. */
+    var form = search.querySelector('.md-search__form');
+    var output = search.querySelector('.md-search__output');
+    var input = search.querySelector('.md-search__input');
+    if (!form || !output) return;
+
+    function positionOutput() {
+      var r = form.getBoundingClientRect();
+      output.style.setProperty('--od-search-left', r.left + 'px');
+      output.style.setProperty('--od-search-top', (r.bottom + 6) + 'px');
+      output.style.maxWidth = Math.max(280, window.innerWidth - r.left - 16) + 'px';
+    }
+
+    positionOutput();
+    window.addEventListener('resize', positionOutput);
+    window.addEventListener('scroll', positionOutput, true);
+    if (input) input.addEventListener('input', positionOutput);
+    search.addEventListener('focusin', positionOutput);
+
+    /* Fechar ao clicar fora. Tentamos antes uma máscara full-screen
+       (div transparente cobrindo a tela, clique nela fecha), mas
+       .md-sidebar--primary é position:sticky com z-index:auto — então
+       TUDO dentro dela (form e output, não importa o z-index que a
+       gente desse a eles) fica preso na "fatia" auto dessa sidebar no
+       stacking context da página, sempre abaixo de qualquer elemento
+       com z-index explícito como a máscara. Resultado: a máscara
+       cobria até o próprio dropdown e bloqueava cliques e scroll nele.
+       Detectar o clique fora pelo alvo do evento não depende de
+       camadas/z-index, então não tem esse problema. */
+    var checkbox = document.getElementById('__search');
+
+    function closeSearch() {
+      if (!checkbox.checked) return;
+      checkbox.checked = false;
+      checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    document.addEventListener('click', function (e) {
+      if (!checkbox.checked) return;
+      /* Ao clicar no ícone de lupa (um <label for="__search">), o
+         navegador dispara DOIS cliques que chegam aqui: o do próprio
+         label e um clique sintético no checkbox #__search (a ativação
+         que alterna o estado). Esse clique sintético tem target = o
+         checkbox, que vive fora de .md-search — sem ignorá-lo, ele era
+         lido como "clique fora" e fechava a busca no mesmo gesto que a
+         abria. search.contains() cobre form, output e o label interno;
+         o `=== checkbox` cobre o clique sintético. */
+      if (e.target === checkbox) return;
+      if (search.contains(e.target)) return;
+      closeSearch();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeSearch();
+    });
+  })();
+</script><script>
+(function () {
+  var NAV = [
+    
+    {
+      title: "Guide",
+      children: [{
+      title: "Home",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/",
+      active: false
+    },{
+      title: "Core Concepts",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/documentation/core-concepts/",
+      active: false
+    },{
+      title: "Discovery",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/discovery/",
+      active: false
+    },{
+      title: "Capabilities",
+      children: [{
+      title: "Indoor / Sal\u00e3o",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/indoor/",
+      active: false
+    }]
+    },{
+      title: "Roadmap",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/documentation/roadmap/",
+      active: false
+    }]
+    },
+    
+    {
+      title: "API Reference",
+      children: [{
+      title: "Overview",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/",
+      active: false
+    },{
+      title: "Authentication",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/authentication/",
+      active: false
+    },{
+      title: "Discovery",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/discovery/",
+      active: false
+    },{
+      title: "Capabilities",
+      children: [{
+      title: "Customer \u0026 Loyalty",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/customer/",
+      active: false
+    },{
+      title: "Indoor / Sal\u00e3o",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/indoor/",
+      active: false
+    }]
+    }]
+    }
+    
+  ];
+
+  /* Um único dropdown compartilhado, filho direto de <body> */
+  var portal = document.createElement("ul");
+  portal.className = "od-dropdown";
+  document.body.appendChild(portal);
+
+  var hideTimer = null;
+
+  function appendItems(children, nested) {
+    children.forEach(function (child) {
+      /* Seção aninhada (sem url, mas com filhos): cabeçalho + itens recuados */
+      if (child.children) {
+        var label = document.createElement("li");
+        label.className = "od-group-label";
+        label.textContent = child.title;
+        portal.appendChild(label);
+        appendItems(child.children, true);
+        return;
+      }
+
+      if (!child.url) return;
+
+      var li = document.createElement("li");
+      var a  = document.createElement("a");
+      a.href = child.url;
+      a.textContent = child.title;
+      if (nested) a.classList.add("od-nested");
+      if (child.active) a.classList.add("od-active");
+
+      li.appendChild(a);
+      portal.appendChild(li);
+    });
+  }
+
+  function fillPortal(children) {
+    portal.innerHTML = "";
+    appendItems(children, false);
+  }
+
+  function showPortal(tab, children) {
+    clearTimeout(hideTimer);
+    fillPortal(children);
+    var r = tab.getBoundingClientRect();
+    portal.style.left = r.left + "px";
+    portal.style.top  = r.bottom + "px";
+    portal.style.display = "block";
+    /* rAF garante que o navegador já pintou display:block antes de
+       ligar a transição — sem isso opacity/transform pulam direto
+       pro estado final e não animam. */
+    requestAnimationFrame(function () {
+      portal.classList.add("od-dropdown--visible");
+    });
+  }
+
+  function scheduleHide() {
+    /* A classe od-dropdown--visible só sai junto do display:none, no fim
+       do grace period — removê-la antes (ex.: no mouseleave da tab) fazia
+       o menu começar a sumir (fade) antes do usuário conseguir mover o
+       mouse até ele, mesmo cancelando o timer a tempo. */
+    hideTimer = setTimeout(function () {
+      portal.style.display = "none";
+      portal.classList.remove("od-dropdown--visible");
+    }, 150);
+  }
+
+  /* Manter aberto enquanto o mouse está sobre o próprio dropdown */
+  portal.addEventListener("mouseenter", function () { clearTimeout(hideTimer); });
+  portal.addEventListener("mouseleave", scheduleHide);
+
+  function wireTabs() {
+    document.querySelectorAll(".od-tab-has-dropdown").forEach(function (el) {
+      el.classList.remove("od-tab-has-dropdown");
+    });
+
+    document.querySelectorAll(".md-tabs__item").forEach(function (tab, i) {
+      var section = NAV[i];
+      if (!section || !section.children || section.children.length === 0) return;
+
+      tab.classList.add("od-tab-has-dropdown");
+
+      tab.addEventListener("mouseenter", function () {
+        showPortal(tab, section.children);
+      });
+      tab.addEventListener("mouseleave", scheduleHide);
+    });
+  }
+
+  wireTabs();
+})();
+</script>
+
+  </body>
+</html>

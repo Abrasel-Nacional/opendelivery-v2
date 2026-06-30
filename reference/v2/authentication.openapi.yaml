@@ -1,0 +1,280 @@
+openapi: 3.0.3
+info:
+  title: Open Delivery V2 — Authentication
+  version: 2.0.0-draft
+  description: |
+    Authentication mechanisms for the Open Delivery Protocol V2.
+
+    ODP V2 supports three OAuth 2.0 models. The active model MUST be declared in the
+    Discovery endpoint and agreed upon explicitly during onboarding.
+
+    | Model identifier | Description | Status |
+    |---|---|---|
+    | `client_credentials_merchant` | Per-merchant `client_id`/`client_secret` | V1 legacy / compat |
+    | `client_credentials_application` | Single credential per application | Recommended for V2 |
+    | `authorization_code` | Delegated merchant-consent flow | Optional |
+
+    **Scopes:** `od.orders`, `od.menu`, `od.logistics`, `od.crm`, `od.all`
+
+    **Webhook signing** uses HMAC-SHA256 (not OAuth 2.0). Every webhook request MUST carry
+    `X-App-Id`, `X-App-MerchantId`, and `X-App-Signature` headers. Receivers MUST verify
+    the signature on every incoming webhook.
+
+tags:
+  - name: OAuth
+    description: Token issuance and authorization endpoints
+  - name: Webhook Signing
+    description: |
+      Message signing headers required on every webhook request.
+      The receiver verifies authenticity using the shared `client_secret`.
+
+      **Algorithm:** HMAC-SHA256 of the raw request body, keyed with `client_secret`.
+      **Encoding:** lowercased hexadecimal string.
+
+paths:
+  /oauth/token:
+    post:
+      tags: [OAuth]
+      operationId: postOAuthToken
+      security: []
+      summary: Issue access token
+      description: |
+        Issues an OAuth 2.0 access token. The `grant_type` MUST match the model
+        declared in the Discovery endpoint.
+
+        The returned token MUST be cached and reused until `expires_in` elapses.
+        It MUST NOT be regenerated per request. Refresh Token is not supported.
+
+        Use the token in every protected request:
+        ```
+        Authorization: Bearer <access_token>
+        ```
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRequest'
+            examples:
+              client_credentials:
+                summary: Models 1 and 2 — client_credentials
+                value:
+                  client_id: "my-client-id"
+                  client_secret: "my-client-secret"
+                  grant_type: "client_credentials"
+              authorization_code:
+                summary: Model 3 — authorization_code
+                value:
+                  client_id: "my-client-id"
+                  client_secret: "my-client-secret"
+                  grant_type: "authorization_code"
+                  code: "auth-code-received-from-redirect"
+      responses:
+        '200':
+          description: Token issued successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /oauth/authorize:
+    get:
+      tags: [OAuth]
+      operationId: getOAuthAuthorize
+      security: []
+      summary: Authorization redirect (Model 3 only)
+      description: |
+        Authorization endpoint for the Authorization Code flow (Model 3).
+
+        MUST only be implemented when `authorization_code` is declared in the Discovery endpoint.
+        Redirects the merchant to an authorization UI for explicit consent. The merchant
+        authenticates and approves (or denies) access, after which the platform issues a
+        `code` that the application exchanges for an access token via `/oauth/token`.
+      parameters:
+        - in: query
+          name: response_type
+          required: true
+          schema:
+            type: string
+            enum: [code]
+          description: MUST be `code`.
+        - in: query
+          name: client_id
+          required: true
+          schema:
+            type: string
+          description: Client identifier of the requesting application.
+        - in: query
+          name: redirect_uri
+          required: false
+          schema:
+            type: string
+            format: uri
+          description: URI to redirect to after authorization.
+        - in: query
+          name: scope
+          required: false
+          schema:
+            type: string
+          description: Space-separated list of requested scopes (e.g., `od.orders od.menu`).
+      responses:
+        '302':
+          description: Redirect to authorization UI
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      description: |
+        OAuth 2.0 authentication. The active model MUST be declared in the Discovery endpoint.
+
+        ---
+
+        **Model 1 — `client_credentials_merchant` (V1 compat)**
+
+        A separate `client_id`/`client_secret` pair is issued for each merchant. This is the
+        V1 model, supported in V2 for backwards compatibility and migration scenarios.
+
+        The Ordering Application or Logistics Service MUST provide one set of credentials per
+        merchant, even when multiple merchants use the same Software Service.
+
+        ---
+
+        **Model 2 — `client_credentials_application` (recommended)**
+
+        A single `client_id`/`client_secret` pair is issued per application. Merchant
+        authorization is determined separately, outside the token.
+
+        Merchants MUST NOT be embedded in the token itself. Use `GET /merchants` to list
+        merchants authorized for the authenticated application.
+
+        ---
+
+        **Model 3 — `authorization_code` (optional)**
+
+        Merchant explicitly authorizes the application via an interactive consent flow.
+        Not mandatory — MUST be declared in Discovery if supported.
+
+      flows:
+        clientCredentials:
+          tokenUrl: /oauth/token
+          scopes:
+            od.orders: Orders capability
+            od.menu: Merchant / Menu capability
+            od.logistics: Logistics capability
+            od.crm: Customer / CRM capability
+            od.all: Full access to all capabilities
+        authorizationCode:
+          authorizationUrl: /oauth/authorize
+          tokenUrl: /oauth/token
+          scopes:
+            od.orders: Orders capability
+            od.menu: Merchant / Menu capability
+            od.logistics: Logistics capability
+            od.crm: Customer / CRM capability
+            od.all: Full access to all capabilities
+
+    ApiKey:
+      type: apiKey
+      in: header
+      name: X-API-KEY
+      description: |
+        Optional key-based authentication for endpoints that explicitly declare it
+        (e.g., `GET /merchant`). Issued by the endpoint host. Each client may hold
+        its own key. Creation and management are the responsibility of the endpoint host.
+
+  schemas:
+    TokenRequest:
+      type: object
+      required: [client_id, client_secret, grant_type]
+      properties:
+        client_id:
+          type: string
+          description: Client identifier provided by the Ordering Application or Logistics Service.
+        client_secret:
+          type: string
+          description: Client secret provided by the Ordering Application or Logistics Service.
+        grant_type:
+          type: string
+          enum: [client_credentials, authorization_code]
+          description: |
+            OAuth 2.0 grant type.
+            - `client_credentials`: Models 1 and 2.
+            - `authorization_code`: Model 3 only. Requires `code`.
+        code:
+          type: string
+          description: |
+            Authorization code received from the authorization server.
+            REQUIRED when `grant_type` is `authorization_code`.
+        redirect_uri:
+          type: string
+          description: |
+            Redirect URI used in the original authorization request.
+            REQUIRED when `grant_type` is `authorization_code` and a `redirect_uri`
+            was included in the original request.
+
+    TokenResponse:
+      type: object
+      required: [access_token, token_type]
+      properties:
+        access_token:
+          type: string
+          description: |
+            Bearer token. Include in every protected request:
+            `Authorization: Bearer <access_token>`
+        token_type:
+          type: string
+          enum: [bearer]
+          description: Token type. Always `bearer`.
+        expires_in:
+          type: integer
+          description: |
+            Token lifetime in seconds. The token MUST be cached and reused until expiry.
+            It MUST NOT be regenerated per request.
+
+  headers:
+    X-App-Id:
+      description: |
+        Unique identifier of the Ordering Application sending the webhook.
+        MUST be consistent across all webhooks sent by the same application.
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+    X-App-MerchantId:
+      description: Unique identifier of the merchant associated with this webhook event.
+      required: true
+      schema:
+        type: string
+
+    X-App-Signature:
+      description: |
+        HMAC-SHA256 signature of the raw request body, using the shared `client_secret`
+        as the key. Value MUST be a lowercased hexadecimal string.
+
+        Receivers MUST verify this header on every incoming webhook to confirm the request
+        originates from a known and authorized Ordering Application.
+
+        Signing algorithm: `HMAC-SHA256(body, client_secret)` → lowercase hex string.
+      required: true
+      schema:
+        type: string
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid credentials
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [code, message]
+            properties:
+              code:
+                type: string
+                description: Machine-readable error code.
+              message:
+                type: string
+                description: Human-readable error description.

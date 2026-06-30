@@ -1,0 +1,851 @@
+openapi: 3.0.3
+info:
+  title: Open Delivery Protocol V2 — Discovery (Well-Known Manifest)
+  version: 2.0.0-draft
+  x-logo:
+    altText: Open Delivery Protocol
+  description: |
+    The **Discovery manifest** is the mandatory first step of every ODP V2 integration.
+    Each participant publishes a single, public JSON document at a well-known URL so that
+    counterparts can determine — before sending a single capability request — what is supported,
+    how to authenticate, which events to expect, and which operational limits to respect.
+
+    Instead of discovering capabilities indirectly through trial, error, and `404` responses,
+    each side declares its support explicitly and machine-readably. The counterpart reads the
+    manifest once (and re-reads it periodically to detect changes), then configures the
+    integration accordingly.
+
+    The full discovery URL is always exchanged **out-of-band** — through registration or
+    configuration — before the integration starts. The URL always ends with the mandatory suffix
+    `/.well-known/opendelivery`, regardless of host or path prefix.
+
+    ---
+
+    ## Manifest sections
+
+    | Section | Purpose | Key fields |
+    |---|---|---|
+    | `appId` | Participant identity | Stable UUID issued at onboarding; used to correlate the manifest with out-of-band credentials |
+    | `openDelivery` | Protocol compatibility | `currentVersion` and `supportedVersions`; counterpart verifies overlap before proceeding |
+    | `discovery` | Format version | Identifies which version of this discovery spec the manifest follows |
+    | `authentication` | Credential model | `supportedGrantTypes` (`client_credentials`, `authorization_code`) and `clientIdGeneration` (`by_app`, `by_merchant`) |
+    | `capabilities` | Per-domain declarations | Operations, events, delivery mode (webhook / polling), and operational limits — one object per active capability |
+
+    Only capabilities the participant **actively supports** should appear under `capabilities`.
+    Omitting a capability key is equivalent to declaring it unsupported — no need to list it with `supported: false`.
+
+    ---
+
+    ## Normative rules
+
+    | Rule |
+    |---|
+    | Participant **MUST** publish the manifest before any capability coordination. |
+    | Endpoint **MUST** be public — no authentication or credentials required. |
+    | Endpoint **MUST** use HTTPS (TLS). |
+    | URL **MUST** end with the suffix `/.well-known/opendelivery`. |
+    | Full discovery URL **MUST** be shared with the counterpart out-of-band before operations begin. |
+    | Manifest **MUST NOT** declare operations, events, or behaviors the participant cannot execute. |
+    | `unsupportedEvents` and `unsupportedOperations` **SHOULD** be populated to make gaps explicit. |
+
+    ---
+
+    📖 **Implementation guide:** [Discovery — how it works and how to use it](../../protocol/discovery/)
+  license:
+    name: Proprietary Draft
+    url: https://opendelivery.io/licensing
+  contact:
+    name: Open Delivery Protocol
+    url: https://opendelivery.io
+
+servers:
+  - url: https://dominio.com
+    description: Recommended — discovery published at the domain root.
+  - url: https://api.dominio.com
+    description: Alternative — discovery published on a subdomain.
+  - url: https://dominio.com/api
+    description: Alternative — discovery published under a path prefix.
+
+tags:
+  - name: Discovery
+    x-displayName: Discovery (Well-Known Manifest)
+    description: Public endpoint that returns the participant's capability manifest.
+
+paths:
+  /.well-known/opendelivery:
+    get:
+      tags: [Discovery]
+      operationId: getDiscoveryManifest
+      summary: Get discovery manifest
+      description: |
+        Returns the participant's capability manifest. Public endpoint — no authentication required.
+      security: []
+      parameters:
+        - in: header
+          name: Accept
+          required: false
+          schema:
+            type: string
+            default: application/json
+          description: "Preferred response media type. Recommended and default: `application/json`."
+      responses:
+        '200':
+          description: The discovery manifest was returned successfully.
+          headers:
+            Content-Type:
+              description: MUST be `application/json`.
+              required: true
+              schema:
+                type: string
+                example: application/json
+            Cache-Control:
+              description: Optional cache directive.
+              required: false
+              schema:
+                type: string
+                example: public, max-age=300
+            Access-Control-Allow-Origin:
+              description: Required when the endpoint is consumed from browser contexts.
+              required: false
+              schema:
+                type: string
+                example: "*"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscoveryManifest'
+              examples:
+                minimal:
+                  summary: Minimal manifest — required fields only
+                  description: |
+                    The smallest valid manifest: app identity, protocol version,
+                    authentication, and at least one active capability.
+                  value:
+                    appId: "550e8400-e29b-41d4-a716-446655440000"
+                    openDelivery:
+                      currentVersion: "2.0"
+                      supportedVersions: ["2.0"]
+                    discovery:
+                      version: "1.0.0"
+                    authentication:
+                      supportedGrantTypes: [client_credentials]
+                      clientIdGeneration: [by_app]
+                    capabilities:
+                      orders:
+                        version: "1.0.0"
+                        supported: true
+                        receiver:
+                          supported: true
+                          supportedOperations: [createOrder, confirmOrder, cancelOrder]
+                          unsupportedOperations: []
+                          supportsWebhook: true
+                          supportsPolling: false
+                complete:
+                  summary: Complete manifest — all capabilities
+                  value:
+                    appId: "550e8400-e29b-41d4-a716-446655440000"
+                    openDelivery:
+                      currentVersion: "2.0"
+                      supportedVersions: ["2.0"]
+                    discovery:
+                      version: "1.0.0"
+                    authentication:
+                      supportedGrantTypes:
+                        - client_credentials
+                        - authorization_code
+                      clientIdGeneration:
+                        - by_app
+                        - by_merchant
+                    capabilities:
+                      orders:
+                        version: "1.0.0"
+                        supported: true
+                        originator:
+                          supported: true
+                          supportedEvents:
+                            - ORDER_CREATED
+                            - ORDER_CONFIRMED
+                            - ORDER_CANCELLED
+                            - ORDER_COMPLETED
+                          unsupportedEvents:
+                            - ORDER_DISPATCHED
+                          supportsWebhook: true
+                          supportsPolling: false
+                        receiver:
+                          supported: true
+                          supportedOperations:
+                            - createOrder
+                            - confirmOrder
+                            - cancelOrder
+                            - updateOrderStatus
+                          unsupportedOperations:
+                            - dispatchOrder
+                          supportsWebhook: true
+                          supportsPolling: true
+                      merchant:
+                        version: "1.0.0"
+                        supported: true
+                        supportsPartialUpdate: true
+                        supportsFullGetByOriginator: true
+                      indoor:
+                        version: "1.0.0"
+                        supported: true
+                        invoiceIssuer: pos
+                        invoiceIssueMoment: account_closing
+                        usesAccountId: true
+                      customer:
+                        version: "1.0.0"
+                        supported: true
+                        supportsBatchGet: true
+                        supportsBatchPost: true
+                        maxBatchSize: 100
+                        maxGetPeriodDays: 30
+                        requestsPerSecond: 10
+                        maxPayloadSizeKb: 1024
+                        acceptedGetPeriodicity: daily
+                      logistics:
+                        version: "1.0.0"
+                        supported: true
+                        originator:
+                          supported: true
+                          supportedEvents:
+                            - LOGISTICS_CREATED
+                            - LOGISTICS_ASSIGNED
+                            - LOGISTICS_PICKED_UP
+                            - LOGISTICS_DELIVERED
+                            - LOGISTICS_CANCELLED
+                          unsupportedEvents: []
+                          supportsWebhook: true
+                        receiver:
+                          supported: true
+                          supportedOperations:
+                            - createLogistics
+                            - cancelLogistics
+                            - updateLogisticsStatus
+                          unsupportedOperations: []
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '406':
+          $ref: '#/components/responses/NotAcceptable'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+
+    # -------------------------------------------------------------------------
+    # Root manifest
+    # -------------------------------------------------------------------------
+
+    DiscoveryManifest:
+      type: object
+      title: Discovery Manifest
+      description: |
+        The root object returned by the well-known endpoint. Declares the participant's
+        identity, protocol compatibility, authentication model, and all active capabilities.
+
+        The manifest MUST NOT declare any capability, operation, event, or behavior the
+        participant cannot actually execute at the time of reading.
+      required:
+        - appId
+        - openDelivery
+        - discovery
+        - authentication
+        - capabilities
+      properties:
+        appId:
+          type: string
+          format: uuid
+          description: |
+            Globally unique identifier for this participant application.
+            Issued during onboarding. Used by counterparts to correlate the manifest
+            with out-of-band credentials and configuration.
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        openDelivery:
+          $ref: '#/components/schemas/OpenDeliveryInfo'
+        discovery:
+          $ref: '#/components/schemas/DiscoveryInfo'
+        authentication:
+          $ref: '#/components/schemas/AuthenticationConfig'
+        capabilities:
+          $ref: '#/components/schemas/CapabilitiesMap'
+
+    # -------------------------------------------------------------------------
+    # Protocol version
+    # -------------------------------------------------------------------------
+
+    OpenDeliveryInfo:
+      type: object
+      title: Open Delivery Protocol Info
+      description: |
+        Declares which ODP protocol versions this participant supports.
+        Counterparts MUST verify that at least one `supportedVersions` entry
+        is compatible with their own version before proceeding.
+      required:
+        - currentVersion
+        - supportedVersions
+      properties:
+        currentVersion:
+          type: string
+          description: The primary ODP version this participant targets.
+          example: "2.0"
+        supportedVersions:
+          type: array
+          description: |
+            All ODP versions the participant can interoperate with.
+            MUST include `currentVersion`. MAY include older versions for
+            backward-compatibility scenarios.
+          minItems: 1
+          items:
+            type: string
+          example: ["2.0"]
+
+    # -------------------------------------------------------------------------
+    # Discovery spec version
+    # -------------------------------------------------------------------------
+
+    DiscoveryInfo:
+      type: object
+      title: Discovery Spec Info
+      description: Metadata about the discovery document format itself.
+      required:
+        - version
+      properties:
+        version:
+          type: string
+          description: Version of the discovery specification this manifest conforms to.
+          example: "1.0.0"
+
+    # -------------------------------------------------------------------------
+    # Authentication
+    # -------------------------------------------------------------------------
+
+    AuthenticationConfig:
+      type: object
+      title: Authentication Configuration
+      description: |
+        Declares which OAuth 2.0 grant types are accepted and how client IDs are
+        provisioned. Counterparts MUST use only the declared grant types.
+        The active model must be agreed during onboarding.
+      required:
+        - supportedGrantTypes
+        - clientIdGeneration
+      properties:
+        supportedGrantTypes:
+          type: array
+          description: |
+            OAuth 2.0 grant types this participant accepts.
+
+            - `client_credentials` — application-level credentials; single `client_id`
+              per app or per merchant (see `clientIdGeneration`).
+            - `authorization_code` — delegated merchant-consent flow; must be
+              implemented only when declared here.
+          minItems: 1
+          items:
+            type: string
+            enum:
+              - client_credentials
+              - authorization_code
+          example: [client_credentials, authorization_code]
+        clientIdGeneration:
+          type: array
+          description: |
+            How `client_id` credentials are issued:
+
+            - `by_app` — a single `client_id` is issued for the entire application.
+              Merchant scoping is handled outside the token (recommended for V2).
+            - `by_merchant` — a separate `client_id` is issued per merchant
+              (V1 legacy model, supported for migration scenarios).
+          minItems: 1
+          items:
+            type: string
+            enum:
+              - by_app
+              - by_merchant
+          example: [by_app]
+
+    # -------------------------------------------------------------------------
+    # Capabilities map
+    # -------------------------------------------------------------------------
+
+    CapabilitiesMap:
+      type: object
+      title: Capabilities Map
+      description: |
+        A map of capabilities the participant implements. Each key is a capability
+        domain name; only the capabilities the participant actively supports should
+        be included. Omitting a capability key is equivalent to declaring it unsupported.
+      minProperties: 1
+      properties:
+        orders:
+          $ref: '#/components/schemas/OrdersCapability'
+        merchant:
+          $ref: '#/components/schemas/MerchantCapability'
+        indoor:
+          $ref: '#/components/schemas/IndoorCapability'
+        customer:
+          $ref: '#/components/schemas/CustomerCapability'
+        logistics:
+          $ref: '#/components/schemas/LogisticsCapability'
+
+    # -------------------------------------------------------------------------
+    # Shared base for capabilities
+    # -------------------------------------------------------------------------
+
+    CapabilityBase:
+      type: object
+      description: Fields common to every capability declaration.
+      required:
+        - version
+        - supported
+      properties:
+        version:
+          type: string
+          description: Version of the capability specification this participant implements.
+          example: "1.0.0"
+        supported:
+          type: boolean
+          description: |
+            Whether this capability is active. MUST be `true` when the capability key
+            is present. A participant that does not support a capability SHOULD omit
+            the key entirely rather than setting `supported: false`.
+
+    # -------------------------------------------------------------------------
+    # Orders capability
+    # -------------------------------------------------------------------------
+
+    OrdersCapability:
+      allOf:
+        - $ref: '#/components/schemas/CapabilityBase'
+      title: Orders Capability
+      description: |
+        Declares support for the Orders capability. A participant MAY act as
+        **originator** (emits order events), **receiver** (accepts order operations),
+        or both. At least one of `originator` or `receiver` MUST be present and
+        `supported: true`.
+      properties:
+        originator:
+          $ref: '#/components/schemas/OrdersOriginatorConfig'
+        receiver:
+          $ref: '#/components/schemas/OrdersReceiverConfig'
+
+    OrdersOriginatorConfig:
+      type: object
+      title: Orders — Originator Configuration
+      description: |
+        Configuration for the participant acting as the **originator** of order events:
+        the side that emits lifecycle notifications (e.g. an Ordering Application pushing
+        order status changes to a Software Service).
+      required:
+        - supported
+        - supportedEvents
+        - unsupportedEvents
+        - supportsWebhook
+        - supportsPolling
+      properties:
+        supported:
+          type: boolean
+          description: Whether the participant acts as order event originator.
+        supportedEvents:
+          type: array
+          description: |
+            Order event types this participant emits. A counterpart can reliably
+            subscribe to these events.
+          items:
+            $ref: '#/components/schemas/OrderEventType'
+          example: [ORDER_CREATED, ORDER_CONFIRMED, ORDER_CANCELLED, ORDER_COMPLETED]
+        unsupportedEvents:
+          type: array
+          description: |
+            Order event types this participant explicitly does **not** emit.
+            Declaring these removes ambiguity for integrators — they know not to
+            wait for them. MAY be empty `[]` if all standard events are supported.
+          items:
+            $ref: '#/components/schemas/OrderEventType'
+          example: [ORDER_DISPATCHED]
+        supportsWebhook:
+          type: boolean
+          description: |
+            Whether the participant pushes order events to the counterpart via webhook.
+        supportsPolling:
+          type: boolean
+          description: |
+            Whether the counterpart may poll for order events instead of receiving
+            webhook pushes.
+
+    OrdersReceiverConfig:
+      type: object
+      title: Orders — Receiver Configuration
+      description: |
+        Configuration for the participant acting as the **receiver** of order operations:
+        the side that accepts incoming operations and acts on them (e.g. a Software Service
+        receiving and processing orders from an Ordering Application).
+      required:
+        - supported
+        - supportedOperations
+        - unsupportedOperations
+        - supportsWebhook
+        - supportsPolling
+      properties:
+        supported:
+          type: boolean
+          description: Whether the participant acts as order operations receiver.
+        supportedOperations:
+          type: array
+          description: Order operations this participant accepts and can process.
+          items:
+            $ref: '#/components/schemas/OrderOperationType'
+          example: [createOrder, confirmOrder, cancelOrder, updateOrderStatus]
+        unsupportedOperations:
+          type: array
+          description: |
+            Order operations this participant explicitly does **not** support.
+            MAY be empty `[]` if all standard operations are implemented.
+          items:
+            $ref: '#/components/schemas/OrderOperationType'
+          example: [dispatchOrder]
+        supportsWebhook:
+          type: boolean
+          description: Whether the participant receives operations via webhook (push).
+        supportsPolling:
+          type: boolean
+          description: Whether the participant exposes a polling endpoint for order retrieval.
+
+    OrderEventType:
+      type: string
+      title: Order Event Type
+      description: Standard order lifecycle event identifiers.
+      enum:
+        - ORDER_CREATED
+        - ORDER_CONFIRMED
+        - ORDER_CANCELLED
+        - ORDER_COMPLETED
+        - ORDER_DISPATCHED
+      example: ORDER_CREATED
+
+    OrderOperationType:
+      type: string
+      title: Order Operation Type
+      description: Standard order operations a receiver can be asked to handle.
+      enum:
+        - createOrder
+        - confirmOrder
+        - cancelOrder
+        - updateOrderStatus
+        - dispatchOrder
+      example: createOrder
+
+    # -------------------------------------------------------------------------
+    # Merchant capability
+    # -------------------------------------------------------------------------
+
+    MerchantCapability:
+      allOf:
+        - $ref: '#/components/schemas/CapabilityBase'
+      title: Merchant Capability
+      description: |
+        Declares support for the Merchant capability — menu, catalog, and merchant
+        data synchronization. Flags indicate which synchronization models are supported.
+      properties:
+        supportsPartialUpdate:
+          type: boolean
+          description: |
+            Whether the participant accepts partial (patch-style) merchant/catalog updates.
+            When `false`, the counterpart MUST send full replacement payloads.
+          example: true
+        supportsFullGetByOriginator:
+          type: boolean
+          description: |
+            Whether the originator can retrieve the full current merchant/catalog state
+            via a GET operation. Useful for reconciliation and initial load scenarios.
+          example: true
+
+    # -------------------------------------------------------------------------
+    # Indoor capability
+    # -------------------------------------------------------------------------
+
+    IndoorCapability:
+      allOf:
+        - $ref: '#/components/schemas/CapabilityBase'
+      title: Indoor Capability
+      description: |
+        Declares support for the Indoor (Table Service / Salão) capability.
+        Specifies who issues the invoice, when it is issued, and whether
+        account identifiers are used for table tracking.
+      properties:
+        invoiceIssuer:
+          type: string
+          description: |
+            Who is responsible for issuing the fiscal invoice:
+
+            - `pos` — the Point of Sale system issues the invoice.
+            - `app` — the Ordering Application issues the invoice.
+            - `platform` — the platform (ODP participant) issues the invoice.
+          enum:
+            - pos
+            - app
+            - platform
+          example: pos
+        invoiceIssueMoment:
+          type: string
+          description: |
+            When the fiscal invoice is issued during the table lifecycle:
+
+            - `account_closing` — at the moment the table account is closed (most common).
+            - `item_addition` — each time an item is added to the table order.
+            - `payment` — at the moment of payment.
+          enum:
+            - account_closing
+            - item_addition
+            - payment
+          example: account_closing
+        usesAccountId:
+          type: boolean
+          description: |
+            Whether the participant uses an `accountId` to track open table sessions.
+            When `true`, the counterpart MUST include `accountId` in order operations
+            for this capability.
+          example: true
+
+    # -------------------------------------------------------------------------
+    # Customer capability
+    # -------------------------------------------------------------------------
+
+    CustomerCapability:
+      allOf:
+        - $ref: '#/components/schemas/CapabilityBase'
+      title: Customer Capability
+      description: |
+        Declares support for the Customer (CRM) capability — customer ingestion,
+        retrieval, and synchronization. Includes all operational limits a counterpart
+        must respect when interacting with this capability.
+      properties:
+        supportsBatchGet:
+          type: boolean
+          description: |
+            Whether the participant supports retrieving customers in paginated batches
+            (GET with pagination). When `false`, only single-customer lookup is available.
+          example: true
+        supportsBatchPost:
+          type: boolean
+          description: |
+            Whether the participant accepts multiple customers in a single POST request.
+            When `false`, the counterpart MUST send one customer per request.
+          example: true
+        maxBatchSize:
+          type: integer
+          minimum: 1
+          description: |
+            Maximum number of customer records accepted in a single batch POST request.
+            The counterpart MUST NOT send more items than this value per request.
+          example: 100
+        maxGetPeriodDays:
+          type: integer
+          minimum: 1
+          description: |
+            Maximum time window, in calendar days, allowed for a single date-range query.
+            Queries spanning more than this value MUST be split into multiple requests.
+          example: 30
+        requestsPerSecond:
+          type: integer
+          minimum: 1
+          description: |
+            Rate limit: maximum number of requests per second this participant accepts
+            for the Customer capability. The counterpart MUST throttle accordingly.
+          example: 10
+        maxPayloadSizeKb:
+          type: integer
+          minimum: 1
+          description: |
+            Maximum accepted request payload size, in kilobytes, for this capability.
+            Requests exceeding this size will be rejected.
+          example: 1024
+        acceptedGetPeriodicity:
+          type: string
+          description: |
+            The minimum recommended periodicity for polling customer data:
+
+            - `real_time` — the participant supports continuous or near-real-time polling.
+            - `hourly` — the counterpart should poll at most once per hour.
+            - `daily` — the counterpart should poll at most once per day (recommended default).
+            - `weekly` — the counterpart should poll at most once per week.
+          enum:
+            - real_time
+            - hourly
+            - daily
+            - weekly
+          example: daily
+
+    # -------------------------------------------------------------------------
+    # Logistics capability
+    # -------------------------------------------------------------------------
+
+    LogisticsCapability:
+      allOf:
+        - $ref: '#/components/schemas/CapabilityBase'
+      title: Logistics Capability
+      description: |
+        Declares support for the Logistics capability — delivery quoting, creation,
+        and status tracking. A participant MAY act as **originator** (emits logistics
+        events), **receiver** (accepts logistics operations), or both.
+      properties:
+        originator:
+          $ref: '#/components/schemas/LogisticsOriginatorConfig'
+        receiver:
+          $ref: '#/components/schemas/LogisticsReceiverConfig'
+
+    LogisticsOriginatorConfig:
+      type: object
+      title: Logistics — Originator Configuration
+      description: |
+        Configuration for the participant acting as the **originator** of logistics events:
+        the side that emits delivery lifecycle notifications.
+      required:
+        - supported
+        - supportedEvents
+        - unsupportedEvents
+        - supportsWebhook
+      properties:
+        supported:
+          type: boolean
+          description: Whether the participant acts as logistics event originator.
+        supportedEvents:
+          type: array
+          description: Logistics event types this participant emits.
+          items:
+            $ref: '#/components/schemas/LogisticsEventType'
+          example:
+            - LOGISTICS_CREATED
+            - LOGISTICS_ASSIGNED
+            - LOGISTICS_PICKED_UP
+            - LOGISTICS_DELIVERED
+            - LOGISTICS_CANCELLED
+        unsupportedEvents:
+          type: array
+          description: |
+            Logistics event types this participant explicitly does **not** emit.
+            MAY be empty `[]` if all standard events are supported.
+          items:
+            $ref: '#/components/schemas/LogisticsEventType'
+          example: []
+        supportsWebhook:
+          type: boolean
+          description: Whether the participant pushes logistics events via webhook.
+
+    LogisticsReceiverConfig:
+      type: object
+      title: Logistics — Receiver Configuration
+      description: |
+        Configuration for the participant acting as the **receiver** of logistics
+        operations: the side that accepts and processes delivery requests.
+      required:
+        - supported
+        - supportedOperations
+        - unsupportedOperations
+      properties:
+        supported:
+          type: boolean
+          description: Whether the participant acts as logistics operations receiver.
+        supportedOperations:
+          type: array
+          description: Logistics operations this participant accepts and can process.
+          items:
+            $ref: '#/components/schemas/LogisticsOperationType'
+          example: [createLogistics, cancelLogistics, updateLogisticsStatus]
+        unsupportedOperations:
+          type: array
+          description: |
+            Logistics operations this participant explicitly does **not** support.
+            MAY be empty `[]` if all standard operations are implemented.
+          items:
+            $ref: '#/components/schemas/LogisticsOperationType'
+          example: []
+
+    LogisticsEventType:
+      type: string
+      title: Logistics Event Type
+      description: Standard logistics delivery lifecycle event identifiers.
+      enum:
+        - LOGISTICS_CREATED
+        - LOGISTICS_ASSIGNED
+        - LOGISTICS_PICKED_UP
+        - LOGISTICS_DELIVERED
+        - LOGISTICS_CANCELLED
+      example: LOGISTICS_CREATED
+
+    LogisticsOperationType:
+      type: string
+      title: Logistics Operation Type
+      description: Standard logistics operations a receiver can be asked to handle.
+      enum:
+        - createLogistics
+        - cancelLogistics
+        - updateLogisticsStatus
+      example: createLogistics
+
+    # -------------------------------------------------------------------------
+    # Error model
+    # -------------------------------------------------------------------------
+
+    Error:
+      type: object
+      title: Error
+      description: |
+        ODP error model. All non-2xx discovery responses SHOULD use this shape.
+        See `docs/protocol/error-handling.md` for normative error semantics.
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              description: Machine-readable, stable error code.
+              example: not_acceptable
+            message:
+              type: string
+              description: Human-readable error description.
+              example: The requested media type is not supported.
+            details:
+              type: object
+              additionalProperties: true
+              description: Optional structured context about the error.
+            retryable:
+              type: boolean
+              description: Whether retrying the request may succeed.
+            timestamp:
+              type: string
+              format: date-time
+              description: Server time when the error was produced.
+
+  responses:
+    BadRequest:
+      description: The request was malformed.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: |
+        No discovery manifest is configured at this path. Per protocol, the URL MUST end
+        with `/.well-known/opendelivery`; a `404` means the participant has not published
+        a discovery manifest at the requested location.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotAcceptable:
+      description: The `Accept` header requested a media type the endpoint cannot produce.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalServerError:
+      description: An unexpected server error occurred.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
