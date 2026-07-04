@@ -42,10 +42,12 @@
         
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
       
     
+    
+      <link rel="stylesheet" href="/opendelivery-v2/stylesheets/theme.css">
     
       <link rel="stylesheet" href="/opendelivery-v2/stylesheets/landing.css">
     
@@ -57,53 +59,122 @@
     
 
 <style>
-  /* Seta no tab que tem dropdown */
-  .od-tab-has-dropdown > .md-tabs__link::after {
-    content: " ▾";
-    font-size: .55rem;
-    opacity: .7;
+  /* Caixa da seta (borda estática, não gira) */
+  .od-chevron {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.35rem;
+    height: 1.35rem;
+    margin-left: 3px;
+    border: 1.5px solid transparent;
+    border-radius: 4px;
+    flex-shrink: 0;
     vertical-align: middle;
+    transition: border-color 0.18s ease;
   }
 
-  /* Dropdown renderizado como filho de <body> (padrão portal).
-     position: fixed + z-index alto escapa de qualquer stacking context
-     do Material e do container do ReDoc. */
+  /* A seta em si: chevron CSS (border), gira sem arrastar a caixa */
+  .od-chevron::after {
+    content: "";
+    display: block;
+    width: 7px;
+    height: 7px;
+    border-right: 2px solid var(--od-green-dark, #004621);
+    border-bottom: 2px solid var(--od-green-dark, #004621);
+    /* rotate(45deg) = canto inferior-direito aponta pra baixo → ∨
+       translateY(-1px) compensa centro visual sem sair do transition */
+    transform: rotate(45deg) translateY(-1px);
+    opacity: 0.5;
+    transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s;
+  }
+
+  /* Hover ou aberto: borda aparece na caixa; só a seta gira */
+  .od-tab-has-dropdown:hover .od-chevron,
+  .od-tab-has-dropdown.od-tab-open .od-chevron {
+    border-color: var(--od-green-dark, #004621);
+  }
+
+  /* -135° = 45° + 180° → canto aponta pra cima → ∧ */
+  .od-tab-has-dropdown:hover .od-chevron::after,
+  .od-tab-has-dropdown.od-tab-open .od-chevron::after {
+    transform: rotate(-135deg) translateY(-1px);
+    opacity: 1;
+  }
+
+  /* Dropdown — branco, borda, sombra suave */
   .od-dropdown {
     display: none;
     position: fixed;
     margin: 0;
-    padding: .3rem 0;
+    padding: 0.3rem 0;
     list-style: none;
-    background: var(--md-primary-fg-color--dark, #00695c);
-    border-radius: 0 0 .25rem .25rem;
-    box-shadow: 0 .4rem 1rem rgba(0, 0, 0, .25);
-    min-width: 14rem;
-    z-index: 1000;
+    background: #fff;
+    border: 1px solid var(--od-border, #d3e4d6);
+    border-top: none;
+    border-radius: 0 0 var(--od-radius-md, .6rem) var(--od-radius-md, .6rem);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.09);
+    min-width: 15rem;
+    /* abaixo do z-index do header (4) — header fica sempre por cima */
+    z-index: 3;
+    opacity: 0;
+    transform: translateY(-8px);
+    /* Fechar: rápido, sobe */
+    transition: opacity 0.13s ease-in, transform 0.13s ease-in;
+  }
+
+  /* Abrir: suave, desce */
+  .od-dropdown.od-dropdown--visible {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.18s ease-out, transform 0.22s cubic-bezier(0, 0, 0.2, 1);
   }
 
   .od-dropdown li { margin: 0; }
 
   .od-dropdown a {
     display: block;
-    padding: .5rem 1.1rem;
-    color: rgba(255, 255, 255, .8);
-    font-size: .7rem;
+    padding: 0.52rem 1.2rem;
+    color: var(--od-green-dark, #004621);
+    font-size: 0.75rem;
     font-weight: 500;
-    letter-spacing: .02em;
+    letter-spacing: 0.01em;
     text-decoration: none;
     white-space: nowrap;
-    transition: background .12s, color .12s;
+    transition: background 0.12s, color 0.12s;
   }
 
   .od-dropdown a:hover {
-    background: rgba(255, 255, 255, .12);
-    color: #fff;
+    background: var(--od-bg-soft, #f4f9f5);
+    color: var(--od-green, #00652e);
+    text-decoration: none;
   }
 
   .od-dropdown a.od-active {
-    color: #fff;
-    background: rgba(255, 255, 255, .08);
+    color: var(--od-green, #00652e);
+    background: rgba(0, 101, 46, 0.07);
     font-weight: 700;
+  }
+
+  .od-dropdown .od-group-label {
+    padding: 0.6rem 1.2rem 0.25rem;
+    margin-top: 0.2rem;
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--od-text-soft, #4a6151);
+    border-top: 1px solid var(--od-border, #d3e4d6);
+    white-space: nowrap;
+  }
+
+  .od-dropdown .od-group-label:first-child {
+    border-top: none;
+    margin-top: 0;
+  }
+
+  .od-dropdown a.od-nested {
+    padding-left: 1.8rem;
   }
 </style>
 
@@ -117,7 +188,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="lime">
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
@@ -139,7 +210,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="/opendelivery-v2/." title="Open Delivery Protocol" class="md-header__button md-logo" aria-label="Open Delivery Protocol" data-md-component="logo">
       
-  <img src="/opendelivery-v2/assets/images/opendelivery-logo.png" alt="logo">
+  <img src="/opendelivery-v2/assets/images/opendelivery-logo-header.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -169,7 +240,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="lime"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
     
   
 </form>
@@ -199,11 +270,18 @@
       </label>
       <nav class="md-search__options" aria-label="Search">
         
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
         <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
       </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
       
     </form>
     <div class="md-search__output">
@@ -255,10 +333,42 @@
   
     
   
-  Guide
+  Guia
 
         </a>
       </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="/opendelivery-v2/protocol/principles/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Protocolo
+
+        </a>
+      </li>
+    
+  
+
     
   
 
@@ -277,7 +387,7 @@
   
     
   
-  API Reference
+  Referência da API
 
         </a>
       </li>
@@ -315,7 +425,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="/opendelivery-v2/." title="Open Delivery Protocol" class="md-nav__button md-logo" aria-label="Open Delivery Protocol" data-md-component="logo">
       
-  <img src="/opendelivery-v2/assets/images/opendelivery-logo.png" alt="logo">
+  <img src="/opendelivery-v2/assets/images/opendelivery-logo-header.png" alt="logo">
 
     </a>
     Open Delivery Protocol
@@ -354,6 +464,8 @@
       
         
       
+        
+      
     
     
     
@@ -376,7 +488,7 @@
   <span class="md-ellipsis">
     
   
-    Guide
+    Guia
   
 
     
@@ -398,7 +510,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Guide
+    Guia
   
 
           </label>
@@ -413,14 +525,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/opendelivery-v2/documentation/core-concepts/" class="md-nav__link">
+      <a href="/opendelivery-v2/guide/getting-started/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Core Concepts
+    Primeiros Passos
   
 
     
@@ -441,14 +553,156 @@
   
   
     <li class="md-nav__item">
-      <a href="/opendelivery-v2/protocol/discovery/" class="md-nav__link">
+      <a href="/opendelivery-v2/documentation/core-concepts/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Discovery
+    Conceitos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="/opendelivery-v2/protocol/roles-and-responsibilities/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Papéis e Responsabilidades
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_1_5" id="__nav_1_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migração e Histórico
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Migração e Histórico
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="/opendelivery-v2/guide/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="/opendelivery-v2/guide/migration-v1-v2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migração V1→V2
   
 
     
@@ -496,6 +750,14 @@
     </li>
   
 
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
     
       
       
@@ -505,10 +767,6 @@
   
     
     
-      
-        
-          
-        
       
         
       
@@ -532,6 +790,579 @@
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
         
           
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protocolo
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Protocolo
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_1" id="__nav_2_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fundamentos
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Fundamentos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="/opendelivery-v2/protocol/principles/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Princípios
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="/opendelivery-v2/protocol/guidelines/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Regras Gerais
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="/opendelivery-v2/protocol/error-handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tratamento de Erros
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="/opendelivery-v2/protocol/flows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fluxos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="/opendelivery-v2/protocol/evolution/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evolução
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="/opendelivery-v2/protocol/discovery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Discovery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="/opendelivery-v2/protocol/authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Autenticação
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Capabilities
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Capabilities
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="/opendelivery-v2/protocol/merchant/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Merchant / Cardápio
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="/opendelivery-v2/protocol/orders/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orders / Pedidos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="/opendelivery-v2/protocol/logistics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logística
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="/opendelivery-v2/protocol/customer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Customer / CRM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="/opendelivery-v2/extensions/loyalty/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fidelidade
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="/opendelivery-v2/protocol/indoor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Indoor / Salão
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
           <div class="md-nav__link md-nav__container">
             <a href="/opendelivery-v2/reference/" class="md-nav__link ">
               
@@ -540,7 +1371,7 @@
   <span class="md-ellipsis">
     
   
-    API Reference
+    Referência da API
   
 
     
@@ -551,24 +1382,80 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
   
-    API Reference
+    Referência da API
   
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
               
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Infraestrutura
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Infraestrutura
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -584,7 +1471,7 @@
   <span class="md-ellipsis">
     
   
-    Authentication
+    Autenticação
   
 
     
@@ -626,6 +1513,160 @@
 
               
             
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Capabilities
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Capabilities
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="/opendelivery-v2/reference/merchant/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Merchant
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="/opendelivery-v2/reference/orders/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pedidos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="/opendelivery-v2/reference/logistics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logística
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
               
                 
   
@@ -640,7 +1681,7 @@
   <span class="md-ellipsis">
     
   
-    Customer & Loyalty
+    Customer & Fidelidade
   
 
     
@@ -668,7 +1709,7 @@
   <span class="md-ellipsis">
     
   
-    Indoor / Salão
+    Indoor
   
 
     
@@ -677,6 +1718,14 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -724,6 +1773,8 @@
             </div>
           
           
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
         
@@ -736,6 +1787,8 @@
       </main>
       
         <footer class="md-footer">
+  
+    
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
@@ -762,51 +1815,274 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "/opendelivery-v2/", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "navigation.indexes"], "search": "/opendelivery-v2/assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "/opendelivery-v2/", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "navigation.indexes", "navigation.footer", "content.code.copy", "content.tooltips", "content.tabs.link", "content.action.edit", "toc.follow", "search.suggest", "search.highlight", "search.share"], "search": "/opendelivery-v2/assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
 
       <script src="/opendelivery-v2/assets/javascripts/bundle.79ae519e.min.js"></script>
       
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+      
     
+
+<!-- Filtro SVG: converte o logo branco para o verde escuro da marca (#004621) -->
+<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"
+     style="position:absolute;width:0;height:0;overflow:hidden">
+  <defs>
+    <filter id="od-logo-color" color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix"
+        values="0 0 0 0 0
+                0 0 0 0 0.2745
+                0 0 0 0 0.1294
+                0 0 0 1 0"/>
+    </filter>
+  </defs>
+</svg>
+
 <script>
+  /* Move (não clona) o componente de busca do Material para o topo do
+     menu lateral esquerdo. É um "move" de verdade — o mesmo nó de DOM
+     que o bundle.js do Material já vai inicializar — porque mover um
+     elemento via insertBefore preserva os listeners e a referência que
+     o JS do tema guarda; só a posição no documento muda. Como o nó
+     passa a viver dentro de #__sidebar-primary, ele herda o atributo
+     `hidden` que o Material aplica nessa sidebar via `page.meta.hide`
+     (ver docs/reference/*.md), então a busca some sozinha nas páginas
+     do ReDoc — sem precisar de lógica extra por rota. O CSS que
+     reestiliza esse componente está em stylesheets/theme.css: as
+     regras nativas de "aberto/foco" do Material exigem `.md-header`
+     como ancestral, o que deixa de ser verdade aqui. */
+  (function () {
+    var search = document.querySelector('[data-md-component="search"]');
+    var sidebarInner = document.querySelector('.md-sidebar--primary .md-sidebar__inner');
+    if (!search || !sidebarInner) return;
+    search.classList.add('od-sidebar-search');
+    sidebarInner.insertBefore(search, sidebarInner.firstChild);
+
+    /* O dropdown de resultados (.md-search__output) é position:fixed
+       (ver theme.css) para escapar do overflow-y:auto do menu, que do
+       contrário recortaria o painel na largura da coluna. Como ele
+       saiu do fluxo normal, a posição precisa ser calculada a partir
+       do retângulo real da caixa de busca — e recalculada sempre que
+       a página rola, porque .md-sidebar é position:sticky. */
+    var form = search.querySelector('.md-search__form');
+    var output = search.querySelector('.md-search__output');
+    var input = search.querySelector('.md-search__input');
+    if (!form || !output) return;
+
+    function positionOutput() {
+      var r = form.getBoundingClientRect();
+      output.style.setProperty('--od-search-left', r.left + 'px');
+      output.style.setProperty('--od-search-top', (r.bottom + 6) + 'px');
+      output.style.maxWidth = Math.max(280, window.innerWidth - r.left - 16) + 'px';
+    }
+
+    positionOutput();
+    window.addEventListener('resize', positionOutput);
+    window.addEventListener('scroll', positionOutput, true);
+    if (input) input.addEventListener('input', positionOutput);
+    search.addEventListener('focusin', positionOutput);
+
+    /* Fechar ao clicar fora. Tentamos antes uma máscara full-screen
+       (div transparente cobrindo a tela, clique nela fecha), mas
+       .md-sidebar--primary é position:sticky com z-index:auto — então
+       TUDO dentro dela (form e output, não importa o z-index que a
+       gente desse a eles) fica preso na "fatia" auto dessa sidebar no
+       stacking context da página, sempre abaixo de qualquer elemento
+       com z-index explícito como a máscara. Resultado: a máscara
+       cobria até o próprio dropdown e bloqueava cliques e scroll nele.
+       Detectar o clique fora pelo alvo do evento não depende de
+       camadas/z-index, então não tem esse problema. */
+    var checkbox = document.getElementById('__search');
+
+    function closeSearch() {
+      if (!checkbox.checked) return;
+      checkbox.checked = false;
+      checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    document.addEventListener('click', function (e) {
+      if (!checkbox.checked) return;
+      /* Ao clicar no ícone de lupa (um <label for="__search">), o
+         navegador dispara DOIS cliques que chegam aqui: o do próprio
+         label e um clique sintético no checkbox #__search (a ativação
+         que alterna o estado). Esse clique sintético tem target = o
+         checkbox, que vive fora de .md-search — sem ignorá-lo, ele era
+         lido como "clique fora" e fechava a busca no mesmo gesto que a
+         abria. search.contains() cobre form, output e o label interno;
+         o `=== checkbox` cobre o clique sintético. */
+      if (e.target === checkbox) return;
+      if (search.contains(e.target)) return;
+      closeSearch();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeSearch();
+    });
+  })();
+</script><script>
 (function () {
+
+  /* Move as tabs para dentro da linha do header (logo | nav | github) */
+  (function () {
+    var tabs     = document.querySelector('.md-tabs');
+    var tabsList = tabs && tabs.querySelector('.md-tabs__list');
+    var inner    = document.querySelector('.md-header__inner');
+    var title    = inner && inner.querySelector('.md-header__title');
+    var source   = inner && inner.querySelector('.md-header__source');
+    if (!tabsList || !inner) return;
+
+    var nav = document.createElement('nav');
+    nav.className = 'od-header-nav';
+    nav.appendChild(tabsList);
+
+    inner.insertBefore(nav, source || null);
+    if (title)  title.style.display  = 'none';
+    if (tabs)   tabs.remove();
+  })();
+
   var NAV = [
     
     {
-      title: "Guide",
-      children: [
-        
-        
-        { title: "Home", url: "https://abrasel-nacional.github.io/opendelivery-v2/", active: false },
-        
-        { title: "Core Concepts", url: "https://abrasel-nacional.github.io/opendelivery-v2/documentation/core-concepts/", active: false },
-        
-        { title: "Discovery", url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/discovery/", active: false },
-        
-        { title: "Roadmap", url: "https://abrasel-nacional.github.io/opendelivery-v2/documentation/roadmap/", active: false }
-        
-        
-      ]
+      title: "Guia",
+      children: [{
+      title: "In\u00edcio",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/",
+      active: false
+    },{
+      title: "Primeiros Passos",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/guide/getting-started/",
+      active: false
+    },{
+      title: "Conceitos",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/documentation/core-concepts/",
+      active: false
+    },{
+      title: "Pap\u00e9is e Responsabilidades",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/roles-and-responsibilities/",
+      active: false
+    },{
+      title: "Migra\u00e7\u00e3o e Hist\u00f3rico",
+      children: [{
+      title: "Changelog",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/guide/changelog/",
+      active: false
+    },{
+      title: "Migra\u00e7\u00e3o V1\u2192V2",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/guide/migration-v1-v2/",
+      active: false
+    },{
+      title: "Roadmap",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/documentation/roadmap/",
+      active: false
+    }]
+    }]
     },
     
     {
-      title: "API Reference",
-      children: [
-        
-        
-        { title: "Overview", url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/", active: false },
-        
-        { title: "Authentication", url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/authentication/", active: false },
-        
-        { title: "Discovery", url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/discovery/", active: false },
-        
-        { title: "Customer \u0026 Loyalty", url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/customer/", active: false },
-        
-        { title: "Indoor / Sal\u00e3o", url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/indoor/", active: false }
-        
-        
-      ]
+      title: "Protocolo",
+      children: [{
+      title: "Fundamentos",
+      children: [{
+      title: "Princ\u00edpios",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/principles/",
+      active: false
+    },{
+      title: "Regras Gerais",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/guidelines/",
+      active: false
+    },{
+      title: "Tratamento de Erros",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/error-handling/",
+      active: false
+    },{
+      title: "Fluxos",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/flows/",
+      active: false
+    },{
+      title: "Evolu\u00e7\u00e3o",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/evolution/",
+      active: false
+    }]
+    },{
+      title: "Discovery",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/discovery/",
+      active: false
+    },{
+      title: "Autentica\u00e7\u00e3o",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/authentication/",
+      active: false
+    },{
+      title: "Capabilities",
+      children: [{
+      title: "Merchant / Card\u00e1pio",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/merchant/",
+      active: false
+    },{
+      title: "Orders / Pedidos",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/orders/",
+      active: false
+    },{
+      title: "Log\u00edstica",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/logistics/",
+      active: false
+    },{
+      title: "Customer / CRM",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/customer/",
+      active: false
+    },{
+      title: "Fidelidade",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/extensions/loyalty/",
+      active: false
+    },{
+      title: "Indoor / Sal\u00e3o",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/indoor/",
+      active: false
+    }]
+    }]
+    },
+    
+    {
+      title: "Refer\u00eancia da API",
+      children: [{
+      title: "Vis\u00e3o Geral",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/",
+      active: false
+    },{
+      title: "Infraestrutura",
+      children: [{
+      title: "Autentica\u00e7\u00e3o",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/authentication/",
+      active: false
+    },{
+      title: "Discovery",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/discovery/",
+      active: false
+    }]
+    },{
+      title: "Capabilities",
+      children: [{
+      title: "Merchant",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/merchant/",
+      active: false
+    },{
+      title: "Pedidos",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/orders/",
+      active: false
+    },{
+      title: "Log\u00edstica",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/logistics/",
+      active: false
+    },{
+      title: "Customer \u0026 Fidelidade",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/customer/",
+      active: false
+    },{
+      title: "Indoor",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/indoor/",
+      active: false
+    }]
+    }]
     }
     
   ];
@@ -817,42 +2093,78 @@
   document.body.appendChild(portal);
 
   var hideTimer = null;
+  var hideEndTimer = null;
+  var currentTab = null;
 
-  function fillPortal(children) {
-    portal.innerHTML = "";
+  function appendItems(children, nested) {
     children.forEach(function (child) {
+      /* Seção aninhada (sem url, mas com filhos): cabeçalho + itens recuados */
+      if (child.children) {
+        var label = document.createElement("li");
+        label.className = "od-group-label";
+        label.textContent = child.title;
+        portal.appendChild(label);
+        appendItems(child.children, true);
+        return;
+      }
+
       if (!child.url) return;
+
       var li = document.createElement("li");
       var a  = document.createElement("a");
       a.href = child.url;
       a.textContent = child.title;
-
-      if (child.active) {
-        a.classList.add("od-active");
-      }
+      if (nested) a.classList.add("od-nested");
+      if (child.active) a.classList.add("od-active");
 
       li.appendChild(a);
       portal.appendChild(li);
     });
   }
 
+  function fillPortal(children) {
+    portal.innerHTML = "";
+    appendItems(children, false);
+  }
+
   function showPortal(tab, children) {
     clearTimeout(hideTimer);
+    clearTimeout(hideEndTimer);
+    if (currentTab && currentTab !== tab) currentTab.classList.remove('od-tab-open');
+    currentTab = tab;
+    tab.classList.add('od-tab-open');
     fillPortal(children);
-    var r = tab.getBoundingClientRect();
+    var r   = tab.getBoundingClientRect();
+    var hdr = document.querySelector('.md-header');
+    var top = hdr ? hdr.getBoundingClientRect().bottom : r.bottom;
     portal.style.left = r.left + "px";
-    portal.style.top  = r.bottom + "px";
+    portal.style.top  = top + "px";
     portal.style.display = "block";
+    requestAnimationFrame(function () {
+      portal.classList.add("od-dropdown--visible");
+    });
   }
 
   function scheduleHide() {
     hideTimer = setTimeout(function () {
-      portal.style.display = "none";
-    }, 150);
+      /* Remove a classe primeiro — dispara a animação de fechar (CSS) */
+      portal.classList.remove("od-dropdown--visible");
+      /* Só esconde do DOM depois que a animação terminar */
+      hideEndTimer = setTimeout(function () {
+        portal.style.display = "none";
+        if (currentTab) {
+          currentTab.classList.remove('od-tab-open');
+          currentTab = null;
+        }
+      }, 160);
+    }, 80);
   }
 
   /* Manter aberto enquanto o mouse está sobre o próprio dropdown */
-  portal.addEventListener("mouseenter", function () { clearTimeout(hideTimer); });
+  portal.addEventListener("mouseenter", function () {
+    clearTimeout(hideTimer);
+    clearTimeout(hideEndTimer);
+  });
   portal.addEventListener("mouseleave", scheduleHide);
 
   function wireTabs() {
@@ -865,6 +2177,15 @@
       if (!section || !section.children || section.children.length === 0) return;
 
       tab.classList.add("od-tab-has-dropdown");
+
+      /* Injeta o <span> da seta se ainda não existe */
+      var link = tab.querySelector('.md-tabs__link');
+      if (link && !link.querySelector('.od-chevron')) {
+        var chevron = document.createElement('span');
+        chevron.className = 'od-chevron';
+        chevron.setAttribute('aria-hidden', 'true');
+        link.appendChild(chevron);
+      }
 
       tab.addEventListener("mouseenter", function () {
         showPortal(tab, section.children);

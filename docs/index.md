@@ -2,178 +2,187 @@
 hide:
   - toc
 title: Open Delivery Protocol
-description: The common language for ordering applications, software services, and logistics providers.
+description: A linguagem de interoperabilidade do delivery de alimentos no Brasil.
 ---
 
 <div class="landing-page">
 
-  <!-- ── HERO ──────────────────────────────────────────────── -->
+  <!-- ── HERO ─────────────────────────────────────────────────── -->
   <div class="hero-wrapper">
     <div class="hero-content">
-      <h1>Open Delivery<br>Protocol</h1>
-      <p class="hero-subheading">
-        The common language for ordering, fulfillment, and delivery.
+      <h1>Open Delivery Protocol</h1>
+      <p class="hero-tagline">
+        Padrão aberto que conecta aplicações de pedido, sistemas de gestão e plataformas logísticas no delivery de alimentos do Brasil.
       </p>
-      <p class="hero-description">
-        Open Delivery defines building blocks for food and retail delivery coordination—from
-        merchant catalog discovery to order placement and last-mile logistics—allowing
-        the ecosystem to interoperate through one standard, without custom bilateral integrations.
-      </p>
-      <a href="documentation/core-concepts/" class="promo-button">Get started</a>
     </div>
     <div class="hero-image">
-      <img src="assets/images/opendelivery-logo.png" alt="Open Delivery Protocol logo" class="hero-logo-crisp">
+      <img src="assets/images/opendelivery-logo.png" alt="Open Delivery Protocol" class="hero-logo">
     </div>
   </div>
 
-  <!-- ── PROMO CARDS ───────────────────────────────────────── -->
-  <div class="promo-card-wrapper">
-    <div class="promo-card">
-      <h3>Learn</h3>
-      <p>Protocol overview, core concepts, and design principles</p>
-      <a href="documentation/core-concepts/" class="promo-button">Read the docs</a>
-    </div>
-    <div class="promo-card">
-      <h3>Implement</h3>
-      <p>GitHub repo, technical spec, and capability reference</p>
-      <a href="https://github.com/Abrasel-Nacional/opendelivery-v2" class="promo-button" target="_blank">View on GitHub</a>
-    </div>
-    <div class="promo-card">
-      <h3>Contribute</h3>
-      <p>Feedback, issues, and pull requests welcome</p>
-      <a href="https://github.com/Abrasel-Nacional/opendelivery-v2/issues" class="promo-button" target="_blank">Open an issue</a>
-    </div>
-  </div>
-
-  <hr class="od-divider">
-
-  <!-- ── CORE CAPABILITIES ─────────────────────────────────── -->
+  <!-- ── POR ONDE COMEÇAR ──────────────────────────────────────── -->
   <div class="section-intro">
-    <h2>Core capabilities</h2>
-    <p>
-      The protocol is organized into independent capabilities. Each capability specifies
-      information model, supported operations, interaction roles, and interoperability obligations.
-    </p>
-    <p>
-      Before any capability is used, participants discover each other through the mandatory
-      well-known document defined by the protocol.
-    </p>
+    <h2>Por onde você quer começar?</h2>
+    <p>Escolha o caminho que melhor descreve o que você precisa agora.</p>
   </div>
 
-  <div class="domain-grid">
-    <div class="domain-card">
-      <div class="domain-card-icon">🏢</div>
-      <h3>Merchant</h3>
-      <p>Merchant entity structure and operational rules. Menus, categories, items, availability.</p>
-      <br><a href="specification/merchant/" class="promo-button">Learn more</a>
+  <div class="path-grid">
+
+    <!-- PATH 1: Novo aqui -->
+    <div class="path-card path-card--new">
+      <div class="path-label path-label--new">Novo aqui</div>
+      <h3>Não conheço o projeto</h3>
+      <p>Entenda o que é o Open Delivery, como o ecossistema funciona e quais problemas o protocolo resolve antes de qualquer implementação.</p>
+      <ul class="path-links">
+        <li><a href="documentation/core-concepts/">O que é o Open Delivery?</a></li>
+        <li><a href="protocol/principles/">Princípios do protocolo</a></li>
+        <li><a href="protocol/roles-and-responsibilities/">Papéis no ecossistema</a></li>
+      </ul>
     </div>
-    <div class="domain-card">
-      <div class="domain-card-icon">📋</div>
-      <h3>Orders</h3>
-      <p>Order lifecycle, state management, and coordination. Idempotency, events, cancellation.</p>
-      <br><a href="specification/orders/" class="promo-button">Learn more</a>
+
+    <!-- PATH 2: Vou implementar -->
+    <div class="path-card path-card--implement">
+      <div class="path-label path-label--implement">Quero implementar</div>
+      <h3>Conheço o projeto, vou integrar a V2</h3>
+      <p>Você já sabe o que é o Open Delivery — ou conhecia a V1 — e quer iniciar ou aprofundar sua integração com a V2.</p>
+      <ul class="path-links">
+        <li><a href="guide/getting-started/">Primeiros Passos</a></li>
+        <li><a href="protocol/discovery/">Configurar o Discovery</a></li>
+        <li><a href="protocol/authentication/">Autenticar minha aplicação</a></li>
+        <li><a href="reference/">Referência da API</a></li>
+      </ul>
     </div>
-    <div class="domain-card">
-      <div class="domain-card-icon">👤</div>
-      <h3>Customer</h3>
-      <p>Customer, lead, and customer-linked order interoperability for CRM, loyalty, and marketing use cases.</p>
-      <br><a href="specification/customer/" class="promo-button">Learn more</a>
+
+    <!-- PATH 3: Migrar da V1 -->
+    <div class="path-card path-card--migrate">
+      <div class="path-label path-label--migrate">Migrando da V1</div>
+      <h3>Tenho uma integração V1 e quero ir para V2</h3>
+      <p>Você já implementou o protocolo V1 e precisa entender o que mudou, o que quebra e como planejar a migração.</p>
+      <ul class="path-links">
+        <li><a href="guide/changelog/">O que mudou na V2?</a></li>
+        <li><a href="guide/migration-v1-v2/">Guia de Migração V1→V2</a></li>
+        <li><a href="guide/getting-started/">Primeiros Passos na V2</a></li>
+      </ul>
     </div>
-    <div class="domain-card">
-      <div class="domain-card-icon">📍</div>
-      <h3>Logistics</h3>
-      <p>Delivery coordination and tracking. Address resolution, delivery states, and updates.</p>
-      <br><a href="specification/logistics/" class="promo-button">Learn more</a>
-    </div>
+
   </div>
 
   <hr class="od-divider">
 
-  <!-- ── FEATURES ──────────────────────────────────────────── -->
+  <!-- ── CAPABILITIES ──────────────────────────────────────────── -->
   <div class="section-intro">
-    <h2>Built for flexibility, neutrality, and scale</h2>
-    <p>
-      Delivery coordination demands interoperability. Open Delivery is built on
-      transport-agnostic protocol semantics—REST, MCP, or any other binding—so
-      different systems work together without custom integration per pair.
-    </p>
+    <h2>Capabilities do protocolo</h2>
+    <p>Implemente qualquer capability de forma independente. Não há capability central ou obrigatória.</p>
   </div>
 
-  <div class="features-section">
-    <div class="features-list">
-      <div class="feature-item">
-        <div class="feature-item-icon">🔄</div>
-        <div>
-          <h3>Transport-agnostic</h3>
-          <p>Protocol semantics define conformance. Transport binding (REST, MCP, queues) is a separate layer. The same protocol works over any data interchange mechanism.</p>
-        </div>
+  <div class="cap-strip">
+
+    <a href="protocol/merchant/" class="cap-item">
+      <div class="cap-item-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="3" width="11" height="18" rx="1"/>
+          <path d="M9 21v-4h2v4"/>
+          <path d="M7 7h2M11 7h2M7 11h2M11 11h2M7 15h2M11 15h2"/>
+          <path d="M15 9h4a1 1 0 0 1 1 1v11h-5"/>
+        </svg>
       </div>
-      <div class="feature-item">
-        <div class="feature-item-icon">🏪</div>
-        <div>
-          <h3>Merchants at the center</h3>
-          <p>Built to facilitate commerce while ensuring merchants retain control of their catalog, pricing, and operational rules. Merchant context is the single source of truth.</p>
-        </div>
+      <span class="cap-item-name">Merchant</span>
+    </a>
+
+    <a href="protocol/orders/" class="cap-item">
+      <div class="cap-item-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="6" y="4" width="12" height="17" rx="2"/>
+          <path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/>
+          <path d="M9 11h6M9 14h6M9 17h4"/>
+        </svg>
       </div>
-      <div class="feature-item">
-        <div class="feature-item-icon">📐</div>
-        <div>
-          <h3>Normative and unambiguous</h3>
-          <p>Uses RFC 2119 keywords (MUST, MUST NOT, SHOULD, MAY) throughout. No implicit behavior—if it is not normatively stated, it is not required.</p>
-        </div>
+      <span class="cap-item-name">Orders</span>
+    </a>
+
+    <a href="protocol/logistics/" class="cap-item">
+      <div class="cap-item-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 21s7-7.21 7-12a7 7 0 1 0-14 0c0 4.79 7 12 7 12Z"/>
+          <circle cx="12" cy="9" r="2.5"/>
+        </svg>
       </div>
-      <div class="feature-item">
-        <div class="feature-item-icon">🔗</div>
-        <div>
-          <h3>Autonomous peers</h3>
-          <p>Ordering Application, Software Service, and Logistics Service are independent peers. There is no central orchestrator—each party decides autonomously.</p>
-        </div>
+      <span class="cap-item-name">Logistics</span>
+    </a>
+
+    <a href="protocol/customer/" class="cap-item">
+      <div class="cap-item-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="8" r="3.5"/>
+          <path d="M5 20c0-3.866 3.134-7 7-7s7 3.134 7 7"/>
+        </svg>
       </div>
-      <div class="feature-item">
-        <div class="feature-item-icon">🔒</div>
-        <div>
-          <h3>Secure and merchant-scoped</h3>
-          <p>Credentials are merchant-scoped. Implementations MUST NOT share a single credential set across merchants. Security contracts are first-class protocol citizens.</p>
-        </div>
+      <span class="cap-item-name">Customer</span>
+    </a>
+
+    <a href="extensions/loyalty/" class="cap-item">
+      <div class="cap-item-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402C1 3.518 3.8 1 7.4 1c1.8 0 3.4.754 4.6 1.965C13.2 1.754 14.8 1 16.6 1 20.2 1 23 3.518 23 7.19c0 4.106-5.37 8.863-11 14.403z"/>
+        </svg>
       </div>
-    </div>
+      <span class="cap-item-name">Loyalty</span>
+      <span class="cap-item-ext">ext. Customer</span>
+    </a>
+
+    <a href="protocol/indoor/" class="cap-item">
+      <div class="cap-item-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="6" width="20" height="14" rx="2"/>
+          <path d="M2 10h20"/>
+          <circle cx="7" cy="15" r="1.5"/>
+          <circle cx="12" cy="15" r="1.5"/>
+          <circle cx="17" cy="15" r="1.5"/>
+        </svg>
+      </div>
+      <span class="cap-item-name">Indoor</span>
+      <span class="cap-item-ext">ext. Orders</span>
+    </a>
+
   </div>
 
   <hr class="od-divider">
 
-  <!-- ── GET STARTED ───────────────────────────────────────── -->
-  <div class="get-started-container">
-    <div class="get-started-container-intro">
-      <h2>Get started today</h2>
-      <p>
-        Open Delivery is an open standard designed to let ordering apps, merchant software,
-        and logistics providers interact seamlessly—without needing custom, one-off
-        integrations for every connection. We actively seek your feedback and contributions.
-      </p>
-    </div>
-    <div class="get-started-container-steps">
-      <div class="get-started-container-step">
-        <div class="get-started-container-step-icon">📖</div>
-        <div>
-          <h3><a href="documentation/core-concepts/">Read the concepts</a></h3>
-          <p>Understand parties, capabilities, and coordination model</p>
-        </div>
-      </div>
-      <div class="get-started-container-step">
-        <div class="get-started-container-step-icon">📐</div>
-        <div>
-          <h3><a href="protocol/guidelines/">Follow the rules</a></h3>
-          <p>Cross-cutting normative rules and RFC 2119 language</p>
-        </div>
-      </div>
-      <div class="get-started-container-step">
-        <div class="get-started-container-step-icon">🏗️</div>
-        <div>
-          <h3><a href="protocol/authentication/">Set up access</a></h3>
-          <p>Understand the shared authentication flow before protected capability operations</p>
-        </div>
-      </div>
-    </div>
+  <!-- ── ECOSYSTEM ─────────────────────────────────────────────── -->
+  <div class="eco-strip">
+    <span class="eco-strip-label">Links do ecossistema:</span>
+
+    <a href="https://github.com/Abrasel-Nacional/opendelivery-v2" class="eco-link" target="_blank">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/>
+      </svg>
+      GitHub
+    </a>
+
+    <a href="guide/changelog/" class="eco-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 8v4l3 3"/>
+        <circle cx="12" cy="12" r="9"/>
+      </svg>
+      Changelog
+    </a>
+
+    <a href="documentation/roadmap/" class="eco-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12h18M3 6l4-3 4 3 4-3 4 3M3 18l4 3 4-3 4 3 4-3"/>
+      </svg>
+      Roadmap
+    </a>
+
+    <a href="https://github.com/Abrasel-Nacional/opendelivery-v2/issues" class="eco-link" target="_blank">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      Reportar Issue
+    </a>
+
   </div>
 
 </div>

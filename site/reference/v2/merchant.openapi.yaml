@@ -1,0 +1,1048 @@
+openapi: 3.0.3
+
+info:
+  title: Open Delivery V2 — Merchant
+  version: 2.0.0-rc
+  description: |
+    Merchant Capability API for the Open Delivery Protocol V2.
+
+    This specification covers merchant identity, operational services, and catalog management.
+    All endpoints follow the async-first model: state-change operations return `202 Accepted`.
+
+    ## Breaking changes from V1
+
+    | Change | V1 | V2 |
+    |---|---|---|
+    | Merchant ID generation | PDV generates and shares | **Originator generates**; PDV stores as `externalCode` |
+    | Catalog updates | `merchantUpdate` webhook (monolithic) | **CRUD per entity** |
+    | Service identification | By service ID | **By service type** (`DELIVERY`, `TAKEOUT`, `INDOOR`) |
+    | `merchantType` | Present | **Removed** |
+    | `subtotal` in options | Present | **Removed** |
+    | `option_price` | Optional | **Mandatory** |
+
+    ## Authorization
+
+    All endpoints require `Authorization: Bearer {token}` with scope `od.menu`.
+    Tokens are issued per the [Authentication spec](authentication.openapi.yaml).
+
+tags:
+  - name: Merchants
+    description: Merchant identity and listing
+  - name: Services
+    description: Operational service contexts (Delivery, Takeout, Indoor)
+  - name: Menus
+    description: Menu management
+  - name: Categories
+    description: Menu category management
+  - name: Item Offers
+    description: Items available for ordering
+  - name: Option Groups
+    description: Customization groups for item offers
+  - name: Options
+    description: Individual customization options
+
+paths:
+
+  # ---------------------------------------------------------------------------
+  # Merchant listing
+  # ---------------------------------------------------------------------------
+
+  /merchants:
+    get:
+      tags: [Merchants]
+      operationId: listMerchants
+      summary: List authorized merchants
+      description: |
+        Returns all merchants authorized for the calling application.
+        In the V2 per-application authentication model, a single token grants
+        access to all merchants linked to that application.
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: pageSize
+          in: query
+          schema: { type: integer, default: 50, maximum: 200 }
+        - name: status
+          in: query
+          schema: { type: string, enum: [OPEN, CLOSED, PAUSED] }
+      responses:
+        '200':
+          description: List of merchants
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  merchants:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MerchantSummary'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  # ---------------------------------------------------------------------------
+  # Merchant basic info
+  # ---------------------------------------------------------------------------
+
+  /merchants/{merchantId}:
+    parameters:
+      - $ref: '#/components/parameters/MerchantId'
+
+    get:
+      tags: [Merchants]
+      operationId: getMerchant
+      summary: Get merchant details
+      responses:
+        '200':
+          description: Merchant details
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Merchant' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+    patch:
+      tags: [Merchants]
+      operationId: updateMerchant
+      summary: Partially update merchant basic info
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MerchantPatch' }
+      responses:
+        '202': { description: Update accepted for processing }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ---------------------------------------------------------------------------
+  # Services
+  # ---------------------------------------------------------------------------
+
+  /merchants/{merchantId}/services/{serviceType}:
+    parameters:
+      - $ref: '#/components/parameters/MerchantId'
+      - name: serviceType
+        in: path
+        required: true
+        schema:
+          type: string
+          enum: [DELIVERY, TAKEOUT, INDOOR]
+
+    get:
+      tags: [Services]
+      operationId: getService
+      summary: Get service configuration
+      responses:
+        '200':
+          description: Service configuration
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Service' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+    put:
+      tags: [Services]
+      operationId: replaceService
+      summary: Replace full service configuration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ServiceWrite' }
+      responses:
+        '202': { description: Update accepted }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+    patch:
+      tags: [Services]
+      operationId: updateService
+      summary: Partially update service configuration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ServicePatch' }
+      responses:
+        '202': { description: Update accepted }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /merchants/{merchantId}/services/{serviceType}/pause:
+    parameters:
+      - $ref: '#/components/parameters/MerchantId'
+      - name: serviceType
+        in: path
+        required: true
+        schema:
+          type: string
+          enum: [DELIVERY, TAKEOUT, INDOOR]
+
+    post:
+      tags: [Services]
+      operationId: pauseService
+      summary: Temporarily pause a service
+      description: |
+        Pauses a specific service type for a configurable duration.
+        Does not modify operating hours — it is a temporary operational pause.
+        The service resumes automatically when the duration expires, or can be
+        resumed early by updating the service status.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [durationMinutes]
+              properties:
+                durationMinutes:
+                  type: integer
+                  minimum: 1
+                  description: How long to pause the service, in minutes
+                  example: 30
+                reason:
+                  type: string
+                  description: Human-readable reason for the pause
+                  example: "Alta demanda — retomada em 30 minutos"
+      responses:
+        '202': { description: Pause accepted }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ---------------------------------------------------------------------------
+  # Menus
+  # ---------------------------------------------------------------------------
+
+  /merchants/{merchantId}/menus:
+    parameters:
+      - $ref: '#/components/parameters/MerchantId'
+
+    get:
+      tags: [Menus]
+      operationId: listMenus
+      summary: List merchant menus
+      responses:
+        '200':
+          description: List of menus
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  menus:
+                    type: array
+                    items: { $ref: '#/components/schemas/MenuSummary' }
+
+  /merchants/{merchantId}/menus/{menuId}/snapshot:
+    parameters:
+      - $ref: '#/components/parameters/MerchantId'
+      - $ref: '#/components/parameters/MenuId'
+
+    get:
+      tags: [Menus]
+      operationId: getMenuSnapshot
+      summary: Get full menu snapshot
+      description: |
+        Returns the complete menu structure in a single response:
+        categories, item offers, option groups and options.
+        Equivalent to the V1 full menu payload. Use for initial sync or full refresh.
+      responses:
+        '200':
+          description: Full menu snapshot
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MenuSnapshot' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ---------------------------------------------------------------------------
+  # Categories
+  # ---------------------------------------------------------------------------
+
+  /merchants/{merchantId}/menus/{menuId}/categories:
+    parameters:
+      - $ref: '#/components/parameters/MerchantId'
+      - $ref: '#/components/parameters/MenuId'
+
+    get:
+      tags: [Categories]
+      operationId: listCategories
+      summary: List categories in a menu
+      responses:
+        '200':
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  categories:
+                    type: array
+                    items: { $ref: '#/components/schemas/Category' }
+
+    post:
+      tags: [Categories]
+      operationId: createCategory
+      summary: Create a new category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CategoryWrite' }
+      responses:
+        '201':
+          description: Category created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /merchants/{merchantId}/menus/{menuId}/categories/{categoryId}:
+    parameters:
+      - $ref: '#/components/parameters/MerchantId'
+      - $ref: '#/components/parameters/MenuId'
+      - $ref: '#/components/parameters/CategoryId'
+
+    put:
+      tags: [Categories]
+      operationId: replaceCategory
+      summary: Replace a category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CategoryWrite' }
+      responses:
+        '202': { description: Update accepted }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+    delete:
+      tags: [Categories]
+      operationId: deleteCategory
+      summary: Delete a category
+      responses:
+        '202': { description: Deletion accepted }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ---------------------------------------------------------------------------
+  # Item Offers
+  # ---------------------------------------------------------------------------
+
+  /merchants/{merchantId}/menus/{menuId}/item-offers:
+    parameters:
+      - $ref: '#/components/parameters/MerchantId'
+      - $ref: '#/components/parameters/MenuId'
+
+    get:
+      tags: [Item Offers]
+      operationId: listItemOffers
+      summary: List item offers
+      parameters:
+        - name: categoryId
+          in: query
+          schema: { type: string }
+        - name: status
+          in: query
+          schema: { type: string, enum: [AVAILABLE, UNAVAILABLE] }
+      responses:
+        '200':
+          description: List of item offers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  itemOffers:
+                    type: array
+                    items: { $ref: '#/components/schemas/ItemOffer' }
+
+    post:
+      tags: [Item Offers]
+      operationId: createItemOffer
+      summary: Create a new item offer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ItemOfferWrite' }
+      responses:
+        '201':
+          description: Item offer created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ItemOffer' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /merchants/{merchantId}/menus/{menuId}/item-offers/{itemOfferId}:
+    parameters:
+      - $ref: '#/components/parameters/MerchantId'
+      - $ref: '#/components/parameters/MenuId'
+      - $ref: '#/components/parameters/ItemOfferId'
+
+    put:
+      tags: [Item Offers]
+      operationId: replaceItemOffer
+      summary: Replace an item offer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ItemOfferWrite' }
+      responses:
+        '202': { description: Update accepted }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+    patch:
+      tags: [Item Offers]
+      operationId: updateItemOffer
+      summary: Partially update an item offer
+      description: |
+        Use to update availability (`status`, `quantity_available`) without
+        sending the full item structure.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ItemOfferPatch' }
+      responses:
+        '202': { description: Update accepted }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+    delete:
+      tags: [Item Offers]
+      operationId: deleteItemOffer
+      summary: Delete an item offer
+      responses:
+        '202': { description: Deletion accepted }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ---------------------------------------------------------------------------
+  # Option Groups
+  # ---------------------------------------------------------------------------
+
+  /merchants/{merchantId}/menus/{menuId}/item-offers/{itemOfferId}/option-groups:
+    parameters:
+      - $ref: '#/components/parameters/MerchantId'
+      - $ref: '#/components/parameters/MenuId'
+      - $ref: '#/components/parameters/ItemOfferId'
+
+    get:
+      tags: [Option Groups]
+      operationId: listOptionGroups
+      summary: List option groups for an item offer
+      responses:
+        '200':
+          description: Option groups
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  optionGroups:
+                    type: array
+                    items: { $ref: '#/components/schemas/OptionGroup' }
+
+    post:
+      tags: [Option Groups]
+      operationId: createOptionGroup
+      summary: Create an option group
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OptionGroupWrite' }
+      responses:
+        '201':
+          description: Option group created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OptionGroup' }
+
+  /merchants/{merchantId}/menus/{menuId}/item-offers/{itemOfferId}/option-groups/{groupId}:
+    parameters:
+      - $ref: '#/components/parameters/MerchantId'
+      - $ref: '#/components/parameters/MenuId'
+      - $ref: '#/components/parameters/ItemOfferId'
+      - $ref: '#/components/parameters/GroupId'
+
+    put:
+      tags: [Option Groups]
+      operationId: replaceOptionGroup
+      summary: Replace an option group
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OptionGroupWrite' }
+      responses:
+        '202': { description: Update accepted }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+    delete:
+      tags: [Option Groups]
+      operationId: deleteOptionGroup
+      summary: Delete an option group
+      responses:
+        '202': { description: Deletion accepted }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ---------------------------------------------------------------------------
+  # Options
+  # ---------------------------------------------------------------------------
+
+  /merchants/{merchantId}/menus/{menuId}/item-offers/{itemOfferId}/option-groups/{groupId}/options:
+    parameters:
+      - $ref: '#/components/parameters/MerchantId'
+      - $ref: '#/components/parameters/MenuId'
+      - $ref: '#/components/parameters/ItemOfferId'
+      - $ref: '#/components/parameters/GroupId'
+
+    get:
+      tags: [Options]
+      operationId: listOptions
+      summary: List options in a group
+      responses:
+        '200':
+          description: Options list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  options:
+                    type: array
+                    items: { $ref: '#/components/schemas/Option' }
+
+    post:
+      tags: [Options]
+      operationId: createOption
+      summary: Create an option
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OptionWrite' }
+      responses:
+        '201':
+          description: Option created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Option' }
+
+  /merchants/{merchantId}/menus/{menuId}/item-offers/{itemOfferId}/option-groups/{groupId}/options/{optionId}:
+    parameters:
+      - $ref: '#/components/parameters/MerchantId'
+      - $ref: '#/components/parameters/MenuId'
+      - $ref: '#/components/parameters/ItemOfferId'
+      - $ref: '#/components/parameters/GroupId'
+      - name: optionId
+        in: path
+        required: true
+        schema: { type: string }
+
+    put:
+      tags: [Options]
+      operationId: replaceOption
+      summary: Replace an option
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OptionWrite' }
+      responses:
+        '202': { description: Update accepted }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+    delete:
+      tags: [Options]
+      operationId: deleteOption
+      summary: Delete an option
+      responses:
+        '202': { description: Deletion accepted }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+components:
+
+  parameters:
+    MerchantId:
+      name: merchantId
+      in: path
+      required: true
+      description: Merchant identifier (generated by the originator)
+      schema: { type: string }
+      example: merchant-550e8400
+    MenuId:
+      name: menuId
+      in: path
+      required: true
+      schema: { type: string }
+    CategoryId:
+      name: categoryId
+      in: path
+      required: true
+      schema: { type: string }
+    ItemOfferId:
+      name: itemOfferId
+      in: path
+      required: true
+      schema: { type: string }
+    GroupId:
+      name: groupId
+      in: path
+      required: true
+      schema: { type: string }
+
+  responses:
+    BadRequest:
+      description: Invalid request payload or parameters
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Missing or invalid credentials
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: Insufficient scope for the requested operation
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+  schemas:
+
+    # -------------------------------------------------------------------------
+    # Merchant
+    # -------------------------------------------------------------------------
+
+    MerchantSummary:
+      type: object
+      required: [id, name, status]
+      properties:
+        id:
+          type: string
+          description: Merchant identifier — generated by the originator
+          example: merchant-550e8400
+        externalCode:
+          type: string
+          description: Merchant's internal identifier on the Software Service (PDV)
+          example: loja-centro-sp
+        name:
+          type: string
+          example: Burger House
+        status:
+          type: string
+          enum: [OPEN, CLOSED, PAUSED]
+
+    Merchant:
+      allOf:
+        - $ref: '#/components/schemas/MerchantSummary'
+        - type: object
+          properties:
+            basicInfo:
+              $ref: '#/components/schemas/MerchantBasicInfo'
+            updatedAt:
+              type: string
+              format: date-time
+
+    MerchantBasicInfo:
+      type: object
+      required: [name, address]
+      properties:
+        name:
+          type: string
+          example: Burger House
+        description:
+          type: string
+        address:
+          $ref: '#/components/schemas/Address'
+        contacts:
+          type: array
+          items:
+            type: object
+            properties:
+              type: { type: string, enum: [PHONE, EMAIL, WHATSAPP] }
+              value: { type: string }
+        categories:
+          type: array
+          description: Business category tags
+          items: { type: string }
+          example: [Hamburgueres, Fast Food]
+        logoUrl:
+          type: string
+          format: uri
+
+    MerchantPatch:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+        contacts:
+          type: array
+          items:
+            type: object
+            properties:
+              type: { type: string }
+              value: { type: string }
+        logoUrl: { type: string, format: uri }
+
+    Address:
+      type: object
+      required: [street, city, state, country, postalCode]
+      properties:
+        street: { type: string, example: "Av. Paulista, 1000" }
+        complement: { type: string }
+        neighborhood: { type: string }
+        city: { type: string, example: "São Paulo" }
+        state: { type: string, example: "SP" }
+        country: { type: string, example: "BR" }
+        postalCode: { type: string, example: "01310-100" }
+        coordinates:
+          type: object
+          properties:
+            latitude: { type: number, format: double }
+            longitude: { type: number, format: double }
+
+    # -------------------------------------------------------------------------
+    # Services
+    # -------------------------------------------------------------------------
+
+    Service:
+      type: object
+      required: [type, status]
+      properties:
+        type:
+          type: string
+          enum: [DELIVERY, TAKEOUT, INDOOR]
+        status:
+          type: string
+          enum: [ONLINE, OFFLINE, PAUSED]
+        operatingHours:
+          type: array
+          description: Regular operating hours schedule
+          items:
+            $ref: '#/components/schemas/OperatingHoursEntry'
+        deliveryArea:
+          $ref: '#/components/schemas/DeliveryArea'
+          description: Delivery coverage area (only for DELIVERY type)
+        pauseUntil:
+          type: string
+          format: date-time
+          description: When a PAUSED service will resume automatically
+
+    ServiceWrite:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [ONLINE, OFFLINE] }
+        operatingHours:
+          type: array
+          items: { $ref: '#/components/schemas/OperatingHoursEntry' }
+        deliveryArea: { $ref: '#/components/schemas/DeliveryArea' }
+
+    ServicePatch:
+      type: object
+      properties:
+        status: { type: string, enum: [ONLINE, OFFLINE] }
+        operatingHours:
+          type: array
+          items: { $ref: '#/components/schemas/OperatingHoursEntry' }
+
+    OperatingHoursEntry:
+      type: object
+      required: [dayOfWeek, opens, closes]
+      properties:
+        dayOfWeek:
+          type: string
+          enum: [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY]
+        opens:
+          type: string
+          pattern: '^[0-2][0-9]:[0-5][0-9]$'
+          example: "11:00"
+        closes:
+          type: string
+          pattern: '^[0-2][0-9]:[0-5][0-9]$'
+          example: "23:00"
+
+    DeliveryArea:
+      type: object
+      description: |
+        Delivery coverage area. Use either `radius` (simple) or `polygon` (precise).
+      properties:
+        radius:
+          type: object
+          properties:
+            center:
+              type: object
+              properties:
+                latitude: { type: number, format: double }
+                longitude: { type: number, format: double }
+            radiusKm: { type: number, format: double, example: 5.0 }
+        polygon:
+          type: array
+          description: List of lat/lng points forming the delivery polygon
+          items:
+            type: object
+            properties:
+              latitude: { type: number, format: double }
+              longitude: { type: number, format: double }
+
+    # -------------------------------------------------------------------------
+    # Menus and Snapshot
+    # -------------------------------------------------------------------------
+
+    MenuSummary:
+      type: object
+      required: [id, merchantId, name, status]
+      properties:
+        id: { type: string }
+        merchantId: { type: string }
+        name: { type: string }
+        status:
+          type: string
+          enum: [AVAILABLE, UNAVAILABLE]
+
+    MenuSnapshot:
+      type: object
+      description: Complete menu structure for initial sync or full refresh
+      required: [id, merchantId, name, categories]
+      properties:
+        id: { type: string }
+        merchantId: { type: string }
+        name: { type: string }
+        status:
+          type: string
+          enum: [AVAILABLE, UNAVAILABLE]
+        categories:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/Category'
+              - type: object
+                properties:
+                  itemOffers:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: '#/components/schemas/ItemOffer'
+                        - type: object
+                          properties:
+                            optionGroups:
+                              type: array
+                              items: { $ref: '#/components/schemas/OptionGroup' }
+
+    # -------------------------------------------------------------------------
+    # Categories
+    # -------------------------------------------------------------------------
+
+    Category:
+      type: object
+      required: [id, name, status]
+      properties:
+        id: { type: string }
+        name: { type: string, example: "Hambúrgueres" }
+        status:
+          type: string
+          enum: [AVAILABLE, UNAVAILABLE]
+        displayOrder:
+          type: integer
+          description: Display position within the menu
+        templateTranslationId:
+          type: string
+
+    CategoryWrite:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+        status: { type: string, enum: [AVAILABLE, UNAVAILABLE], default: AVAILABLE }
+        displayOrder: { type: integer }
+
+    # -------------------------------------------------------------------------
+    # Item Offers
+    # -------------------------------------------------------------------------
+
+    ItemOffer:
+      type: object
+      required: [id, name, unity_price, status]
+      properties:
+        id: { type: string }
+        externalCode:
+          type: string
+          description: PDV's internal item reference
+        name: { type: string, example: "X-Burguer Clássico" }
+        description: { type: string }
+        unity_price:
+          type: integer
+          description: Base price in minor units (centavos). Does not include optional additions.
+          example: 2500
+        status:
+          type: string
+          enum: [AVAILABLE, UNAVAILABLE]
+        quantity_available:
+          type: integer
+          nullable: true
+          description: |
+            Operational availability count. Not a stock control — it is an operational signal.
+            `null` means no quantity limit declared. `0` means currently unavailable.
+          example: 10
+        imageUrl:
+          type: string
+          format: uri
+        serving:
+          type: object
+          description: Serving size information
+          properties:
+            size: { type: string }
+            unit: { type: string }
+
+    ItemOfferWrite:
+      type: object
+      required: [name, unity_price]
+      properties:
+        externalCode: { type: string }
+        name: { type: string }
+        description: { type: string }
+        unity_price: { type: integer }
+        status: { type: string, enum: [AVAILABLE, UNAVAILABLE], default: AVAILABLE }
+        quantity_available: { type: integer, nullable: true }
+        imageUrl: { type: string, format: uri }
+
+    ItemOfferPatch:
+      type: object
+      description: Partial update — typically used to update availability
+      properties:
+        status: { type: string, enum: [AVAILABLE, UNAVAILABLE] }
+        quantity_available: { type: integer, nullable: true }
+        unity_price: { type: integer }
+
+    # -------------------------------------------------------------------------
+    # Option Groups (recursive)
+    # -------------------------------------------------------------------------
+
+    OptionGroup:
+      type: object
+      required: [id, name, min, max]
+      description: |
+        Option groups can be nested recursively. An option within a group can itself
+        have option groups, allowing multi-level customization (e.g., size → cooking → sauce).
+        Real-world usage is typically 2–3 levels deep.
+      properties:
+        id: { type: string }
+        name: { type: string, example: "Ponto da carne" }
+        min:
+          type: integer
+          minimum: 0
+          description: Minimum number of selections required (0 = optional group)
+          example: 1
+        max:
+          type: integer
+          minimum: 1
+          description: Maximum number of selections allowed
+          example: 1
+        status:
+          type: string
+          enum: [AVAILABLE, UNAVAILABLE]
+        displayOrder: { type: integer }
+        options:
+          type: array
+          items: { $ref: '#/components/schemas/Option' }
+
+    OptionGroupWrite:
+      type: object
+      required: [name, min, max]
+      properties:
+        name: { type: string }
+        min: { type: integer, minimum: 0 }
+        max: { type: integer, minimum: 1 }
+        status: { type: string, enum: [AVAILABLE, UNAVAILABLE], default: AVAILABLE }
+        displayOrder: { type: integer }
+
+    # -------------------------------------------------------------------------
+    # Options
+    # -------------------------------------------------------------------------
+
+    Option:
+      type: object
+      required: [id, name, option_price, status]
+      properties:
+        id: { type: string }
+        externalCode: { type: string }
+        name: { type: string, example: "Ao ponto" }
+        option_price:
+          type: integer
+          description: |
+            Additional price for this option in minor units (centavos).
+            MANDATORY. Use 0 for options that don't add cost.
+          example: 0
+        default_quantity:
+          type: integer
+          description: |
+            Quantity included by default without selection.
+            Used for pre-included ingredients (e.g., lettuce on a burger).
+            Setting to 0 allows removal of default ingredients.
+          example: 1
+        status:
+          type: string
+          enum: [AVAILABLE, UNAVAILABLE]
+        imageUrl:
+          type: string
+          format: uri
+        optionGroups:
+          type: array
+          description: Nested option groups for multi-level customization
+          items: { $ref: '#/components/schemas/OptionGroup' }
+
+    OptionWrite:
+      type: object
+      required: [name, option_price]
+      properties:
+        externalCode: { type: string }
+        name: { type: string }
+        option_price: { type: integer }
+        default_quantity: { type: integer }
+        status: { type: string, enum: [AVAILABLE, UNAVAILABLE], default: AVAILABLE }
+        imageUrl: { type: string, format: uri }
+
+    # -------------------------------------------------------------------------
+    # Shared
+    # -------------------------------------------------------------------------
+
+    Pagination:
+      type: object
+      properties:
+        page: { type: integer }
+        pageSize: { type: integer }
+        totalItems: { type: integer }
+        totalPages: { type: integer }
+
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          description: Machine-readable error code
+          example: MERCHANT_NOT_FOUND
+        message:
+          type: string
+          description: Human-readable error description
+          example: Merchant with id 'merchant-123' was not found
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field: { type: string }
+              issue: { type: string }

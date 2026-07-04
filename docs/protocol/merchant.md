@@ -1,122 +1,199 @@
-# Merchant Capability
+# Merchant / Cardápio
 
-## 1. Overview
+> Capability name: `merchant`
 
-Merchant Capability defines merchant identity, service context, and catalog publication structures used by the ecosystem.
+## Visão Geral
 
-Every merchant record MUST include a stable identifier to support deterministic cross-system reconciliation.
+A capability **Merchant** define a identidade do estabelecimento, os contextos de serviço (delivery, retirada, salão) e as entidades de catálogo publicadas no ecossistema. É a fonte de verdade para todos os dados estáticos e operacionais relativos ao estabelecimento e ao que ele oferece.
 
-## 2. Scope and Extensions
+Esta capability cobre:
 
-Merchant Capability covers:
+- Identidade e informações descritivas do estabelecimento
+- Serviços operacionais (delivery, takeout, indoor) e seus horários
+- Composição do catálogo: menus, categorias, item-offers, option-groups e opções
+- Disponibilidade operacional dos itens
+- Pausa e retomada de serviços
 
-- Merchant registration and descriptive metadata
-- Operational services context
-- Catalog composition entities (menus, categories, items, offers, options)
-- Availability references for catalog usage
+Esta capability **não** cobre:
 
-Merchant Capability does not cover:
+- Ciclo de vida de pedidos (capability Orders)
+- Coordenação de entrega (capability Logistics)
+- Relacionamento com clientes e fidelidade (capability Customer)
 
-- Order lifecycle management
-- Delivery execution orchestration
-- CRM/loyalty relationship workflows
+---
 
-Current extension set: no Merchant extensions are defined in this version.
+## Papéis
 
-## 3. Players
+| Papel | Responsabilidade |
+|---|---|
+| **Software Service** | Fonte de verdade do estabelecimento e do catálogo. Expõe as interfaces de leitura e escrita do Merchant. |
+| **Ordering Application** | Consome dados de estabelecimento e catálogo para construir interfaces de pedido. |
+| **Delivery Platform** (opcional) | Consome contexto de serviço e disponibilidade do estabelecimento para decisões logísticas. |
 
-- `SOFTWARE_SERVICE`: source of truth for merchant and catalog publication
-- `ORDERING_APPLICATION`: consumes merchant/catlog data for ordering interfaces
-- `DELIVERY_PLATFORM` (optional): consumes service and readiness context for delivery features
+---
 
-Consumers MUST treat merchant data as authoritative only for declared merchant scope.
+## Merchant ID — gerado pelo originador
 
-### Provider/Consumer Mapping
+!!! important "Quebra de comportamento em relação à V1"
+    Na V1, o `merchantId` era gerado pelo Software Service (POS). Na V2, o `merchantId` é **gerado pela Ordering Application** no momento do cadastro do estabelecimento.
 
-| participant | typical role as Provider | typical role as Consumer |
-|---|---|---|
-| `SOFTWARE_SERVICE` | Exposes merchant/catalog data and change feeds | Consumes reconciliation acknowledgements when used |
-| `ORDERING_APPLICATION` | Exposes optional consumer callbacks when agreed | Consumes merchant/catalog snapshots and updates |
-| `DELIVERY_PLATFORM` | Exposes optional logistics constraints interface | Consumes merchant service/readiness context |
+    Isso inverte quem tem a chave de referência: a plataforma de pedidos escolhe o ID e o POS o registra. Os dois lados DEVEM usar exatamente o mesmo identificador em todas as operações subsequentes.
 
-## 4. Interaction Between Players
+Essa decisão foi tomada para:
 
-Typical interaction pattern:
+- Eliminar a dependência de um round-trip de cadastro antes de enviar pedidos
+- Permitir que a Ordering Application referencie o merchant de forma determinista desde a criação
+- Simplificar reconciliações em cenários multi-plataforma
 
-1. Source participant publishes merchant snapshot or delta.
-2. Consumer participants ingest and validate structure and references.
-3. Updates are propagated as asynchronous change signals.
+O `merchantId` DEVE ser único por Ordering Application. O formato DEVE ser uma string opaca (UUID v4 recomendado).
 
-Update signaling MUST identify changed entity types to allow partial refresh strategies.
+---
 
-## 5. Flows (Statuses and Events)
+## Entidades do catálogo
 
-Merchant catalog exchange is snapshot/delta oriented.
+O catálogo é composto por entidades independentes com relacionamentos explícitos. Cada entidade é gerenciada por CRUD granular — não há mais uma operação monolítica de publicação do cardápio.
 
-Flow expectations:
+```
+Merchant
+└── Service (por tipo: delivery / takeout / indoor)
+└── Menu
+    └── Category
+        └── ItemOffer
+            └── OptionGroup (recursivo)
+                └── Option
+```
 
-- Initial bootstrap of merchant and catalog entities
-- Incremental update notifications for changed entities
-- Consumer-side reconciliation preserving referential integrity
+### Serviço (`Service`)
 
-Implementations MUST preserve referential integrity between menus, categories, items, offers, and options through all update flows.
+Cada estabelecimento pode ter múltiplos serviços. Um serviço é identificado pelo seu **tipo** — não há Service ID separado.
 
-## 6. Discovery / Well-Known Configuration
-
-Participants exposing merchant data MUST declare capability name `merchant` in discovery.
-
-Discovery declaration SHOULD include:
-
-- Supported operation mode (push/pull/hybrid)
-- Merchant endpoint base URL for transport binding
-- Snapshot and/or incremental update support
-
-## 7. Authorization
-
-Merchant exchange operations require authenticated access.
-
-Implementations MUST enforce scope-based authorization as defined in [Authentication and Authorization](authentication.md).
-
-Recommended minimum scope families:
-
-- `merchant.read`
-- `merchant.write`
-- `merchant.events.write`
-
-## 8. Operations
-
-Reference operations include merchant publication, merchant query, and change notification workflows. Concrete endpoint contracts are defined in REST API Binding pages.
-
-### Merchant Object Fields
-
-| name | type | required | description |
+| Campo | Tipo | Obrigatório | Descrição |
 |---|---|---|---|
-| `merchant.id` | string | YES | Merchant unique identifier |
-| `merchant.basicInfo` | object | YES | Registration and descriptive metadata |
-| `merchant.services` | array[object] | YES | Service operation contexts |
-| `merchant.menus` | array[object] | YES | Menu entities |
-| `merchant.categories` | array[object] | YES | Category entities |
-| `merchant.items` | array[object] | YES | Item entities |
-| `merchant.itemOffers` | array[object] | YES | Offer entities |
-| `merchant.optionGroups` | array[object] | YES | Option group entities |
-| `merchant.options` | array[object] | YES | Option entities |
-| `merchant.availabilities` | array[object] | YES | Availability entities |
+| `type` | string (enum) | SIM | `DELIVERY`, `TAKEOUT` ou `INDOOR` |
+| `status` | string (enum) | SIM | `OPEN`, `CLOSED` ou `PAUSED` |
+| `operatingHours` | array[object] | SIM | Horários de funcionamento por dia da semana |
+| `deliveryArea` | object | NÃO | Raio ou polígono de cobertura (somente `DELIVERY`) |
+| `menuId` | string | NÃO | Referência ao menu ativo para este serviço |
 
-### Merchant Object Example
+#### Pausa de serviço
+
+Para pausas operacionais (ex.: cozinha sobrecarregada, falta de entregadores), use:
+
+```
+POST /merchants/{merchantId}/services/{serviceType}/pause
+```
+
+A pausa é uma transição de estado que produz resposta `202 Accepted`. O serviço permanece em `PAUSED` até ser reativado via `PATCH /merchants/{merchantId}/services/{serviceType}` com `status: OPEN`.
+
+### Menu e Categoria
+
+Um Menu agrupa Categorias. Uma Categoria agrupa ItemOffers. Um estabelecimento pode ter múltiplos Menus (ex.: cardápio do almoço, cardápio da janta, cardápio de bebidas).
+
+### ItemOffer
+
+Um **ItemOffer** é a oferta de um produto com preço e disponibilidade.
+
+| Campo | Tipo | Obrigatório | Descrição |
+|---|---|---|---|
+| `id` | string | SIM | Identificador único (UUID) |
+| `name` | string | SIM | Nome exibido ao consumidor |
+| `description` | string | NÃO | Texto descritivo |
+| `unity_price` | object | SIM | Preço unitário com valor e moeda |
+| `quantity_available` | integer | NÃO | Quantidade disponível no momento (operacional, não estoque) |
+| `optionGroupIds` | array[string] | NÃO | Grupos de opções associados |
+
+!!! info "`quantity_available` é operacional"
+    Este campo representa a quantidade disponível **agora** (por exemplo, um prato do dia com 10 porções restantes). Não é um controle de estoque — o sistema de gestão de estoque não é responsabilidade do protocolo. Quando não informado, considera-se disponibilidade ilimitada.
+
+### OptionGroup (recursivo)
+
+Um grupo de opções contém opções selecionáveis pelo cliente (ex.: "Ponto da carne", "Complementos"). OptionGroups são **recursivos** — uma opção pode conter um sub-grupo de opções.
+
+| Campo | Tipo | Obrigatório | Descrição |
+|---|---|---|---|
+| `id` | string | SIM | Identificador único |
+| `name` | string | SIM | Nome do grupo |
+| `min` | integer | SIM | Mínimo de seleções (0 = opcional) |
+| `max` | integer | SIM | Máximo de seleções |
+| `options` | array[Option] | SIM | Lista de opções |
+
+### Option
+
+| Campo | Tipo | Obrigatório | Descrição |
+|---|---|---|---|
+| `id` | string | SIM | Identificador único |
+| `name` | string | SIM | Nome da opção |
+| `option_price` | object | SIM | Preço incremental da opção |
+| `optionGroupIds` | array[string] | NÃO | Sub-grupos (recursividade) |
+
+!!! important "`option_price` é obrigatório na V2"
+    Na V1, o preço da opção era opcional. Na V2, **todo `Option` DEVE ter `option_price`**. Se a opção não tem custo adicional, declare `{ "value": 0, "currency": "BRL" }`. O campo `subtotal` foi removido — o total de um pedido com opções é calculado a partir de `unity_price` + soma dos `option_price`.
+
+---
+
+## Snapshot do cardápio
+
+Para obter o cardápio completo de um estabelecimento em uma única chamada (bootstrap inicial ou sincronização completa), use:
+
+```
+GET /merchants/{merchantId}/menus/{menuId}/snapshot
+```
+
+O snapshot retorna menu, categorias, item-offers, option-groups e options em uma estrutura hierárquica única. Esta é a operação recomendada para onboarding e reconciliação.
+
+Para atualizações incrementais, use os endpoints granulares de cada entidade.
+
+---
+
+## Discovery
+
+Participantes que expõem a capability Merchant DEVEM declarar `merchant` no documento well-known.
 
 ```json
-{
+"capabilities": {
   "merchant": {
-    "id": "merchant-123",
-    "basicInfo": {},
-    "services": [],
-    "menus": [],
-    "categories": [],
-    "items": [],
-    "itemOffers": [],
-    "optionGroups": [],
-    "options": [],
-    "availabilities": []
+    "baseUrl": "https://api.example.com",
+    "operations": ["read", "write", "snapshot"]
   }
 }
 ```
+
+---
+
+## Autorização
+
+Todas as operações da capability Merchant exigem autenticação Bearer (OAuth 2.0).
+
+Escopos mínimos recomendados:
+
+| Escopo | Operações |
+|---|---|
+| `merchant.read` | Leitura de dados do estabelecimento e catálogo |
+| `merchant.write` | Criação e atualização de entidades do catálogo |
+| `merchant.events.write` | Emissão de eventos de mudança |
+
+---
+
+## Regras normativas
+
+**O Software Service DEVE:**
+
+- Expor `merchantId` como identificador único e estável gerado pela Ordering Application
+- Preservar integridade referencial entre menu, categorias, item-offers, option-groups e opções em todas as operações de atualização
+- Retornar `202 Accepted` para todas as mutações (PATCH, PUT, DELETE com efeito assíncrono)
+- Declarar `quantity_available` apenas quando há limitação operacional real
+
+**A Ordering Application DEVE:**
+
+- Gerar o `merchantId` antes do cadastro e mantê-lo estável
+- Tratar `quantity_available` como uma dica operacional, não como garantia de estoque
+- Consultar o snapshot para bootstrap e usar endpoints granulares para deltas
+
+**Ambos DEVEM:**
+
+- Declarar a capability `merchant` no discovery antes de iniciar operações
+- Usar `option_price: { value: 0, currency: "..." }` explicitamente para opções sem custo adicional
+
+---
+
+**Referência completa de campos e contratos REST:** [Referência da API — Merchant →](../reference/merchant.md)

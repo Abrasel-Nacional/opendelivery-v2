@@ -1,244 +1,253 @@
-# Customer Capability
+# Customer / CRM
 
-## 1. Overview
+> Capability name: `customer` · Extension associada: [Loyalty](../extensions/loyalty.md)
+> REST/HTTP binding: [Customer Endpoints](../transport-bindings/rest-http-customer.md)
 
-Customer Capability defines interoperability for customer-related data and events with focus on CRM, relationship, and engagement scenarios.
+## Para que serve
 
-This capability standardizes customer, lead, review, and customer-linked order exchanges without taking ownership of operational fulfillment lifecycle.
+A capability **Customer** padroniza a troca de dados de clientes e eventos de relacionamento entre a plataforma de pedidos e o sistema de CRM. Ela cobre o cadastro de clientes, leads, pedidos no contexto de CRM, avaliações e eventos de engajamento — sem assumir controle sobre o ciclo de vida operacional dos pedidos.
 
-## 2. Scope and Extensions
+Sem um padrão, cada integração entre plataforma e CRM precisava negociar bilateralmente como representar dados de cliente: qual identificador usar para deduplicação, como sincronizar leads, quando enviar eventos, como lidar com avaliações. O Customer elimina essa negociação ao definir o **cliente** como entidade central e um conjunto fixo de operações e eventos sobre ele.
 
-Customer Capability covers:
+!!! info "Customer não é loyalty"
+    Esta capability cobre a estrutura de dados e os eventos do relacionamento com o cliente. Regras de negócio de fidelidade — pontos, cashback, catálogo de prêmios — são responsabilidade da [extensão Loyalty](../extensions/loyalty.md).
 
-- Customer master and enrichment data exchange
-- Lead ingestion and qualification context
-- Customer-centric order views for CRM analytics
-- Customer relationship events (consent and engagement)
-- Review ingestion model (draft under discussion)
+---
 
-Customer Capability does not cover:
+## Os dois lados da integração
 
-- Kitchen, fulfillment, dispatch, or operational order transitions
-- Campaign orchestration internals
-- Reward catalog and loyalty business policy internals
+| Papel | Responsabilidade |
+|---|---|
+| **Ordering Application** | Plataforma de origem dos dados (app próprio, marketplace, PDV, totem). **Expõe** dados de cliente, lead e pedido para sincronização, e **recebe** resultados de inteligência do CRM. |
+| **CRM Software Service** | Sistema de CRM, automação de marketing ou backend de fidelidade. **Consome** dados da plataforma e **expõe** visões de inteligência quando solicitado. |
 
-Extension associated with Customer Capability:
+A integração pode ser **push** (a Ordering Application envia dados ao CRM), **pull** (o CRM busca dados da plataforma) ou **híbrida**. Ambos os modos são suportados; a combinação usada deve ser declarada via discovery antes do início da troca operacional.
 
-- [Loyalty Extension (Customer)](../extensions/loyalty.md)
+---
 
-CRM systems MUST be treated as consumers of customer intelligence context and MUST NOT alter operational order state ownership.
+## Conceitos-chave
 
-## 3. Players
+### O cliente (Customer)
 
-- `ORDERING_APPLICATION`: origin channels such as first-party app, marketplace, POS/PDV, digital menu, or indoor interface
-- `CRM_SOFTWARE_SERVICE`: CRM, marketing automation, loyalty/couponing backends
+O cliente é a entidade central da capability. O único campo obrigatório é o `identifier` — uma chave canônica que permite deduplicação e reconciliação entre sistemas.
 
-`CRM_SOFTWARE_SERVICE` is a specialized software-service role for customer relationship use cases.
-
-### Provider/Consumer Mapping
-
-| participant | typical role as Provider | typical role as Consumer |
+| Campo do `identifier` | Descrição | Exemplos de `type` |
 |---|---|---|
-| `ORDERING_APPLICATION` | Exposes customer/order/event data interfaces in pull mode | Sends ingest payloads and consumes CRM outcomes in push mode |
-| `CRM_SOFTWARE_SERVICE` | Exposes customer intelligence interfaces when pulling from ordering systems is not used | Consumes customer/order/event data from origin channels |
+| `type` | Tipo do identificador | `document`, `phone`, `email`, `external_id`, `custom` |
+| `value` | Valor do identificador | `"+5511999999999"`, `"CPF:123.456.789-00"` |
 
-## 4. Interaction Between Players
+Todos os demais campos (`name`, `contacts`, `document`, `demographics`, `address`, `externalIds`, `metadata`) são opcionais — o cliente pode ser registrado com apenas o identificador e enriquecido posteriormente.
 
-Supported interaction patterns:
+### Modos de integração
 
-1. Push: `ORDERING_APPLICATION` sends customers/orders/events to CRM.
-2. Pull: `CRM_SOFTWARE_SERVICE` fetches customers/orders from origin system.
-3. Hybrid: push for selected entities and pull for others.
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> Push: OA envia dados ao CRM
+    [*] --> Pull: CRM busca dados da OA
+    Push --> Hybrid: combinação
+    Pull --> Hybrid: combinação
+    Hybrid --> [*]
+```
 
-The protocol MUST NOT assume a single authoritative source for customer data, and external identifiers MUST be supported for deduplication/reconciliation.
+| Modo | Descrição |
+|---|---|
+| `push` | Ordering Application envia clientes, leads, pedidos e eventos ao CRM via POST |
+| `pull` | CRM busca clientes, leads e pedidos da Ordering Application via GET |
+| `hybrid` | Push para algumas entidades e pull para outras |
 
-## 5. Flows (Statuses and Events)
+### Status do cliente
 
-### Customer States
+| Status | Significado |
+|---|---|
+| `lead` | Pessoa em fase de aquisição — ainda não realizou pedido |
+| `active` | Cliente com relacionamento ativo |
+| `inactive` | Cliente sem interação recente |
 
-- `lead`: person in acquisition stage
-- `active`: customer with active relationship
-- `inactive`: customer without recent interaction
+### Eventos
 
-### Events
+A cada ação relevante do cliente, a Ordering Application **DEVE** emitir o evento correspondente ao CRM:
 
-- `customer.created`
-- `customer.updated`
-- `customer.opted_in`
-- `customer.opted_out`
-- `lead.created`
-- `order.created`
-- `order.completed`
-- `order.canceled`
-- `review.created` (draft)
+| Evento | Gatilho |
+|---|---|
+| `customer.created` | Novo cliente registrado |
+| `customer.updated` | Dados do cliente alterados |
+| `customer.opted_in` | Cliente deu opt-in para comunicação |
+| `customer.opted_out` | Cliente retirou consentimento |
+| `lead.created` | Novo lead capturado |
+| `order.created` | Pedido realizado pelo cliente |
+| `order.completed` | Pedido entregue/concluído |
+| `order.canceled` | Pedido cancelado |
+| `review.created` | Avaliação submetida pelo cliente |
 
-Flow/event principles:
+Eventos **DEVEM** representar fatos de negócio, não comandos. O CRM DEVE processá-los de forma idempotente.
 
-- Events MUST represent business facts, not commands.
-- Events SHOULD be emitted when they enable meaningful downstream action.
-- Customer data MAY be incomplete as long as semantic structure remains valid.
+---
 
-## 6. Discovery / Well-Known Configuration
+## Fluxos
 
-Participants exposing Customer Capability MUST declare capability name `customer` in discovery.
+Os fluxos abaixo mostram as sequências de chamadas entre a Ordering Application e o CRM Software Service.
 
-Discovery declaration SHOULD include:
+### Fluxo push — cadastro de cliente
 
-- Supported integration mode(s): push, pull, hybrid
-- Supported operation groups (customer, lead, order-view, event, review)
-- Extension support metadata for loyalty/couponing when available
+A Ordering Application registra um novo cliente e envia o evento correspondente ao CRM.
 
-Each integration MUST explicitly declare supported mode(s) through discovery before operational exchange starts.
+```mermaid
+sequenceDiagram
+    participant OA as Ordering Application
+    participant CRM as CRM Software Service
 
-## 7. Authorization
+    Note over OA,CRM: Cliente realiza cadastro na plataforma
+    OA->>CRM: POST /v1/customer/customers:ingest
+    CRM-->>OA: 202 Accepted
 
-Customer operations require authenticated requests with scope validation according to [Authentication and Authorization](authentication.md).
+    OA->>CRM: POST /v1/customer/events
+    Note over OA,CRM: eventType: customer.created
+    CRM-->>OA: 202 Accepted
+```
 
-Recommended scope families by operation group:
+### Fluxo pull — sincronização de clientes
 
-- `customer.read`, `customer.write`
-- `orders.crm.read`, `orders.crm.write`
-- `customer.events.write`
-- `lead.write`
-- `review.write` (draft)
+O CRM busca a lista de clientes da plataforma para enriquecer sua base.
 
-## 8. Operations
+```mermaid
+sequenceDiagram
+    participant CRM as CRM Software Service
+    participant OA as Ordering Application
 
-### `ingestCustomer`
+    Note over CRM,OA: CRM inicia sincronização periódica
+    CRM->>OA: GET /v1/customer/customers
+    OA-->>CRM: 200 OK (array de Customer)
 
-- Provider: `CRM_SOFTWARE_SERVICE`
-- Consumer: `ORDERING_APPLICATION`
-- Originator: `ORDERING_APPLICATION`
-- Receiver: `CRM_SOFTWARE_SERVICE`
-- Authentication: Required
-- Required scope: `customer.write`
-- See: [Authentication and Authorization](authentication.md)
+    CRM->>OA: GET /v1/customer/customers/{id}
+    OA-->>CRM: 200 OK (Customer individual)
+```
 
-### `getCustomers`
+### Fluxo de lead
 
-- Provider: `ORDERING_APPLICATION`
-- Consumer: `CRM_SOFTWARE_SERVICE`
-- Originator: `CRM_SOFTWARE_SERVICE`
-- Receiver: `ORDERING_APPLICATION`
-- Authentication: Required
-- Required scope: `customer.read`
-- See: [Authentication and Authorization](authentication.md)
+Captura de lead pela plataforma e envio ao CRM para qualificação.
 
-### `ingestOrdersForCRM`
+```mermaid
+sequenceDiagram
+    participant OA as Ordering Application
+    participant CRM as CRM Software Service
 
-- Provider: `CRM_SOFTWARE_SERVICE`
-- Consumer: `ORDERING_APPLICATION`
-- Originator: `ORDERING_APPLICATION`
-- Receiver: `CRM_SOFTWARE_SERVICE`
-- Authentication: Required
-- Required scope: `orders.crm.write`
-- See: [Authentication and Authorization](authentication.md)
+    Note over OA,CRM: Usuário preenche formulário ou interage sem cadastro completo
+    OA->>CRM: POST /v1/customer/leads:ingest
+    CRM-->>OA: 202 Accepted
 
-### `getOrdersForCRM`
+    OA->>CRM: POST /v1/customer/events
+    Note over OA,CRM: eventType: lead.created
+    CRM-->>OA: 202 Accepted
 
-- Provider: `ORDERING_APPLICATION`
-- Consumer: `CRM_SOFTWARE_SERVICE`
-- Originator: `CRM_SOFTWARE_SERVICE`
-- Receiver: `ORDERING_APPLICATION`
-- Authentication: Required
-- Required scope: `orders.crm.read`
-- See: [Authentication and Authorization](authentication.md)
+    Note over OA,CRM: Lead converte — cliente realiza primeiro pedido
+    OA->>CRM: POST /v1/customer/customers:ingest
+    CRM-->>OA: 202 Accepted
+    OA->>CRM: POST /v1/customer/events
+    Note over OA,CRM: eventType: customer.created
+    CRM-->>OA: 202 Accepted
+```
 
-### `receiveCustomerEvent`
+### Fluxo de pedido no contexto CRM
 
-- Provider: `CRM_SOFTWARE_SERVICE`
-- Consumer: `ORDERING_APPLICATION`
-- Originator: `ORDERING_APPLICATION`
-- Receiver: `CRM_SOFTWARE_SERVICE`
-- Authentication: Required
-- Required scope: `customer.events.write`
-- See: [Authentication and Authorization](authentication.md)
+A Ordering Application envia o snapshot do pedido ao CRM para análise de comportamento.
 
-### `ingestLead`
+```mermaid
+sequenceDiagram
+    participant OA as Ordering Application
+    participant CRM as CRM Software Service
 
-- Provider: `CRM_SOFTWARE_SERVICE`
-- Consumer: `ORDERING_APPLICATION`
-- Originator: `ORDERING_APPLICATION` (or lead source integrated through it)
-- Receiver: `CRM_SOFTWARE_SERVICE`
-- Authentication: Required
-- Required scope: `lead.write`
-- See: [Authentication and Authorization](authentication.md)
+    Note over OA,CRM: Pedido concluído — CRM precisa do contexto
+    OA->>CRM: POST /v1/customer/orders:ingest
+    CRM-->>OA: 202 Accepted
 
-### Draft Operation: `ingestReview` (Under Discussion)
+    OA->>CRM: POST /v1/customer/events
+    Note over OA,CRM: eventType: order.completed
+    CRM-->>OA: 202 Accepted
 
-- Provider: `CRM_SOFTWARE_SERVICE`
-- Consumer: `ORDERING_APPLICATION`
-- Originator: `ORDERING_APPLICATION`
-- Receiver: `CRM_SOFTWARE_SERVICE`
-- Authentication: Required
-- Required scope: `review.write`
-- See: [Authentication and Authorization](authentication.md)
+    opt CRM busca histórico completo
+        CRM->>OA: GET /v1/customer/orders
+        OA-->>CRM: 200 OK (array de Order)
+    end
+```
 
-### Customer Fields
+### Fluxo de avaliação
 
-| name | type | required | description |
-|---|---|---|---|
-| `customer.id` | string | YES | Logical customer identifier |
-| `customer.externalIds[]` | array[string] | YES | External identifiers for deduplication/reconciliation |
-| `customer.name` | string | YES | Customer display name |
-| `customer.contacts` | object | YES | Contact channels (phone, email) |
-| `customer.document` | string | NO | National identity document (for example CPF) |
-| `customer.birthDate` | string | NO | Birth date (`YYYY-MM-DD`) |
-| `customer.gender` | string | NO | Optional demographic enrichment |
-| `customer.consent` | object | YES | Consent metadata (opt-in/opt-out, legal basis) |
-| `customer.createdAt` | string | YES | Creation timestamp (ISO 8601 date-time) |
-| `customer.updatedAt` | string | YES | Update timestamp (ISO 8601 date-time) |
+Cliente submete avaliação; plataforma envia ao CRM e emite evento.
 
-### Lead Fields
+```mermaid
+sequenceDiagram
+    participant OA as Ordering Application
+    participant CRM as CRM Software Service
 
-| name | type | required | description |
-|---|---|---|---|
-| `lead.id` | string | YES | Lead identifier |
-| `lead.source` | string | YES | Lead source channel |
-| `lead.status` | string | YES | Lead stage/status |
-| `lead.customerRef` | string | NO | Optional customer link |
+    Note over OA,CRM: Cliente avalia pedido ou experiência
+    OA->>CRM: POST /v1/customer/reviews:ingest
+    CRM-->>OA: 202 Accepted
 
-### Customer-Centric Order Fields
+    OA->>CRM: POST /v1/customer/events
+    Note over OA,CRM: eventType: review.created
+    CRM-->>OA: 202 Accepted
 
-| name | type | required | description |
-|---|---|---|---|
-| `order.orderId` | string | YES | Reference to ODP order id |
-| `order.customerId` | string | YES | Linked customer identifier |
-| `order.salesChannel` | string | YES | Sales channel context |
-| `order.timestamps` | object | YES | Minimal lifecycle markers for CRM analytics |
+    opt CRM consulta avaliações do cliente
+        CRM->>OA: GET /v1/customer/customers/{customerId}/reviews
+        OA-->>CRM: 200 OK (array de Review)
+    end
+```
 
-### Event Fields
+---
 
-| name | type | required | description |
-|---|---|---|---|
-| `event.eventType` | string | YES | Event classification |
-| `event.entityType` | string | YES | Entity type (`customer`, `order`, `lead`, `review`) |
-| `event.occurredAt` | string | YES | Business occurrence time (ISO 8601 date-time) |
-| `event.payload` | object | YES | Event-specific payload |
+## Implementando o CRM Software Service
 
-### Draft Review Fields (Under Discussion)
+Se você recebe dados e expõe interfaces de inteligência de cliente, atente para:
 
-| name | type | required | description |
-|---|---|---|---|
-| `review.id` | string | YES | Review identifier |
-| `review.referenceType` | string | YES | Review reference type (`order`, `store`, `experience`) |
-| `review.score` | number | YES | Numeric rating |
-| `review.comment` | string | NO | Free-text comment |
+**Processe ingestões de forma assíncrona.** Todas as operações de ingestão (`POST`) retornam `202 Accepted` — o processamento ocorre em background. Nunca bloqueie a resposta aguardando persistência ou enriquecimento.
 
-## Pending Topics (Non-Normative)
+**Suporte identificadores externos para deduplicação.** O campo `identifier` é a chave canônica do cliente. Use `externalIds[]` para reconciliar o mesmo cliente entre sistemas diferentes (ex.: PDV com código `C12345` e CRM com ID `crm:93821`). Nunca assuma que o mesmo cliente terá o mesmo ID em todos os sistemas.
 
-- Final payload structure for reviews
-- Detailed loyalty modeling (points, cashback, catalog, redemption)
-- Formal separation between CRM and loyalty events
-- Standard enums (`salesChannel`, `lead.status`, `lead.source`)
-- Event versioning strategy
-- Mandatory vs optional sensitive fields under LGPD guidance
+**Processe eventos de forma idempotente.** O mesmo evento pode ser entregue mais de uma vez. Use `event.occurredAt` e o identificador da entidade para detectar duplicatas e evitar processamento redundante.
 
-## Out of Scope
+**Exponha endpoints de pull quando declarado no discovery.** Se a integração suportar o modo pull, você deve implementar os endpoints GET (`/customers`, `/orders`, `/leads`) e retornar os dados com paginação quando o volume for alto.
 
-- Campaign execution logic
-- Loyalty business rules
-- Reward catalog specifics
-- CRM-to-CRM synchronization
-- Real-time operational orchestration
-- UI/UX or internal workflow definitions
+**Não altere o ciclo de vida operacional dos pedidos.** O CRM DEVE ser consumidor do contexto de pedido — NUNCA atualizar status, cancelar ou modificar pedidos operacionais. A visão de pedido no Customer é somente para analytics e relacionamento.
+
+**Preserve o consentimento.** Dados recebidos com `customer.opted_out` DEVEM ser marcados e excluídos de listas de comunicação imediatamente. Eventos `customer.opted_out` têm precedência sobre qualquer outro estado de consentimento.
+
+---
+
+## Implementando a Ordering Application
+
+Se você é a origem dos dados e expõe interfaces para o CRM, atente para:
+
+**Declare o modo de integração no discovery.** Antes do início da troca operacional, exponha no discovery quais modos você suporta (`push`, `pull`, `hybrid`) e quais grupos de operações estão disponíveis (customer, lead, order-view, event, review).
+
+**Emita eventos para cada ação relevante.** Toda mudança significativa no cliente, lead ou pedido deve gerar o evento correspondente ao CRM. Uma mudança sem evento é uma mudança invisível para o sistema de relacionamento.
+
+**Use o `identifier` como chave canônica.** Ao enviar um cliente, sempre inclua o `identifier` com o tipo e valor apropriados. Use `externalIds[]` para incluir referências cruzadas de outros sistemas.
+
+**Permita dados incompletos.** O `identifier` é o único campo obrigatório — você PODE enviar clientes com dados parciais. O CRM irá enriquecer progressivamente conforme novos dados estiverem disponíveis.
+
+**Envie pedidos apenas com os campos de contexto CRM.** A visão de pedido no Customer contém somente os campos relevantes para analytics de relacionamento (`orderId`, `customerId`, `salesChannel`, `timestamps`). Não replique o payload operacional completo.
+
+**Suporte consultas GET se declarado no discovery.** Se você declarou suporte a pull, implemente os endpoints GET e retorne os dados de forma consistente e paginada.
+
+---
+
+!!! tip "Checklist — CRM Software Service"
+    - Ingestões retornam `202 Accepted` e processamento ocorre de forma assíncrona.
+    - Identificadores externos (`externalIds[]`) suportados para deduplicação e reconciliação.
+    - Eventos processados de forma idempotente — duplicatas detectadas por `occurredAt` + ID da entidade.
+    - Endpoints GET implementados quando o modo pull está declarado no discovery.
+    - Ciclo de vida operacional dos pedidos preservado — CRM não altera status de pedidos.
+    - Consentimento opt-out tratado imediatamente e com precedência.
+
+!!! tip "Checklist — Ordering Application"
+    - Modo de integração (`push`, `pull`, `hybrid`) declarado no discovery antes da troca operacional.
+    - Evento emitido para cada ação relevante de cliente, lead ou pedido.
+    - Campo `identifier` presente em todos os payloads de cliente.
+    - Dados parciais aceitos — não exija completude para registrar um cliente.
+    - Payload de pedido no contexto CRM limitado aos campos de analytics (não replica o pedido operacional).
+    - Endpoints GET disponíveis quando pull está declarado no discovery.
+
+---
+
+**Referência completa de campos e regras normativas:** [API Customer →](../reference/customer.md)

@@ -1,0 +1,408 @@
+openapi: 3.0.3
+
+info:
+  title: Open Delivery V2 — Logistics
+  version: 2.0.0-rc
+  description: |
+    Logistics Capability API for the Open Delivery Protocol V2.
+
+    Logistics Capability defines delivery coordination primitives tied to an order context.
+    Every delivery request MUST reference an existing order identifier.
+
+    ## Async-first model
+
+    All state-change operations return `202 Accepted`. Delivery status updates are
+    delivered via webhooks. Use `GET /logistics/delivery/{orderId}` for reconciliation.
+
+    ## Participants
+
+    | Participant | Role |
+    |---|---|
+    | **Ordering Application** | Sends delivery requests; receives tracking events |
+    | **Software Service (PDV)** | Coordinates merchant-side delivery context |
+    | **Logistics Service** | Executes delivery; emits tracking events |
+
+    ## Authorization
+
+    All endpoints require `Authorization: Bearer {token}` with scope `od.logistics`.
+
+tags:
+  - name: Delivery
+    description: Delivery request and tracking operations
+  - name: Availability
+    description: Logistics availability and pricing checks
+
+paths:
+
+  /logistics/availability:
+    post:
+      tags: [Availability]
+      operationId: checkLogisticsAvailability
+      summary: Check delivery availability and estimated cost
+      description: |
+        Queries whether a logistics provider can fulfil a delivery for the given
+        origin and destination. Returns availability status and, when available,
+        estimated cost and delivery time.
+
+        This is typically called before creating an order to validate logistics
+        feasibility and display delivery fee to the customer.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [merchantId, origin, destination]
+              properties:
+                merchantId:
+                  type: string
+                  description: Merchant from which the order originates
+                  example: merchant-550e8400
+                origin:
+                  $ref: '#/components/schemas/Address'
+                destination:
+                  $ref: '#/components/schemas/Address'
+                scheduledFor:
+                  type: string
+                  format: date-time
+                  description: Target delivery time for scheduled orders (UTC)
+      responses:
+        '200':
+          description: Availability response
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [available]
+                properties:
+                  available:
+                    type: boolean
+                  estimatedDeliveryMinutes:
+                    type: integer
+                    description: Estimated delivery time in minutes
+                    example: 35
+                  deliveryFee:
+                    type: object
+                    properties:
+                      value:
+                        type: integer
+                        description: Fee in minor units (centavos)
+                        example: 500
+                      currency:
+                        type: string
+                        example: BRL
+                  unavailableReason:
+                    type: string
+                    description: Present when `available` is false
+                    example: "OUT_OF_COVERAGE"
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /logistics/delivery:
+    post:
+      tags: [Delivery]
+      operationId: createDelivery
+      summary: Request a delivery
+      description: |
+        Creates a delivery request linked to an existing order.
+        The logistics provider will assign a courier and begin tracking.
+
+        Returns `202 Accepted`. A `delivery.assigned` event is sent when a
+        courier is assigned. Poll `GET /logistics/delivery/{orderId}` for status.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [orderId, merchantId, origin, destination]
+              properties:
+                orderId:
+                  type: string
+                  description: Existing order identifier this delivery is linked to
+                  example: order-abc123
+                merchantId:
+                  type: string
+                  example: merchant-550e8400
+                origin:
+                  $ref: '#/components/schemas/Address'
+                destination:
+                  $ref: '#/components/schemas/Address'
+                customer:
+                  type: object
+                  description: Customer contact details for the courier
+                  properties:
+                    name: { type: string }
+                    phone: { type: string }
+                scheduledPickupAt:
+                  type: string
+                  format: date-time
+                  description: Requested courier pickup time at origin (UTC)
+                observations:
+                  type: string
+                  description: Delivery instructions for the courier
+      responses:
+        '202':
+          description: Delivery request accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deliveryId:
+                    type: string
+                    description: Delivery identifier assigned by the logistics provider
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404':
+          description: Order not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /logistics/delivery/{orderId}:
+    parameters:
+      - name: orderId
+        in: path
+        required: true
+        schema: { type: string }
+        example: order-abc123
+
+    get:
+      tags: [Delivery]
+      operationId: getDelivery
+      summary: Get delivery details and current status
+      description: |
+        Returns the current state of a delivery linked to an order.
+        Use for reconciliation when events are missed.
+      responses:
+        '200':
+          description: Delivery details
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Delivery' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /logistics/delivery/{orderId}/ready-for-pickup:
+    parameters:
+      - name: orderId
+        in: path
+        required: true
+        schema: { type: string }
+
+    post:
+      tags: [Delivery]
+      operationId: notifyReadyForPickup
+      summary: Notify logistics that order is ready for courier pickup
+      description: |
+        Signals to the logistics provider that the order is packaged and
+        ready to be collected at the store. Triggers courier dispatch if
+        not already assigned.
+      responses:
+        '202': { description: Notification accepted }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /logistics/delivery/{orderId}/collected:
+    parameters:
+      - name: orderId
+        in: path
+        required: true
+        schema: { type: string }
+
+    post:
+      tags: [Delivery]
+      operationId: confirmOrderCollected
+      summary: Confirm courier collected the order
+      description: |
+        Signals that the courier picked up the order from the store.
+        Projected delivery status: `IN_TRANSIT`.
+      responses:
+        '202': { description: Accepted }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /logistics/delivery/{orderId}/delivered:
+    parameters:
+      - name: orderId
+        in: path
+        required: true
+        schema: { type: string }
+
+    post:
+      tags: [Delivery]
+      operationId: confirmDelivered
+      summary: Confirm order delivered to customer
+      description: |
+        Signals successful delivery to the customer.
+        Projected delivery status: `DELIVERED`.
+      responses:
+        '202': { description: Accepted }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /logistics/delivery/{orderId}/problem:
+    parameters:
+      - name: orderId
+        in: path
+        required: true
+        schema: { type: string }
+
+    post:
+      tags: [Delivery]
+      operationId: reportDeliveryProblem
+      summary: Report a delivery problem or incident
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [problemCode]
+              properties:
+                problemCode:
+                  type: string
+                  description: Machine-readable problem identifier
+                  example: CUSTOMER_UNREACHABLE
+                description:
+                  type: string
+                  description: Human-readable problem description
+      responses:
+        '202': { description: Problem reported }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /logistics/delivery/{orderId}/cancel:
+    parameters:
+      - name: orderId
+        in: path
+        required: true
+        schema: { type: string }
+
+    post:
+      tags: [Delivery]
+      operationId: cancelDelivery
+      summary: Cancel a delivery
+      description: Cancels the delivery for this order. Does not cancel the order itself.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [cancellationCode]
+              properties:
+                cancellationCode:
+                  type: string
+                  example: "MERCHANT_REQUEST"
+                reason:
+                  type: string
+      responses:
+        '202': { description: Cancellation accepted }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+components:
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Missing or invalid credentials
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: Insufficient scope
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Conflict:
+      description: Invalid state for the requested operation
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+  schemas:
+
+    Delivery:
+      type: object
+      required: [orderId, status]
+      properties:
+        orderId:
+          type: string
+          description: Order identifier this delivery is linked to
+          example: order-abc123
+        deliveryId:
+          type: string
+          description: Logistics provider's internal delivery identifier
+        status:
+          type: string
+          enum: [PENDING, ASSIGNED, IN_TRANSIT, DELIVERED, CANCELLED, FAILED]
+          description: |
+            Current delivery status:
+            - `PENDING` — waiting for courier assignment
+            - `ASSIGNED` — courier assigned, heading to store
+            - `IN_TRANSIT` — order collected, en route to customer
+            - `DELIVERED` — successfully delivered to customer
+            - `CANCELLED` — delivery cancelled
+            - `FAILED` — delivery attempted but failed (e.g., customer unreachable)
+        courier:
+          type: object
+          description: Courier information (available after assignment)
+          properties:
+            name: { type: string, example: "João S." }
+            phone: { type: string }
+            vehicleType:
+              type: string
+              enum: [MOTORCYCLE, BICYCLE, CAR, WALKING]
+            trackingUrl:
+              type: string
+              format: uri
+              description: Real-time tracking URL (when provided by logistics platform)
+        estimatedDeliveryAt:
+          type: string
+          format: date-time
+          description: Estimated delivery timestamp (UTC)
+        pickedUpAt:
+          type: string
+          format: date-time
+          description: When the courier collected the order from the store
+        deliveredAt:
+          type: string
+          format: date-time
+          description: When the order was delivered to the customer
+
+    Address:
+      type: object
+      required: [street, city, state, country, postalCode]
+      properties:
+        street: { type: string, example: "Rua das Flores, 42" }
+        complement: { type: string }
+        neighborhood: { type: string }
+        city: { type: string, example: "São Paulo" }
+        state: { type: string, example: "SP" }
+        country: { type: string, example: "BR" }
+        postalCode: { type: string, example: "01310-100" }
+        coordinates:
+          type: object
+          properties:
+            latitude: { type: number, format: double }
+            longitude: { type: number, format: double }
+
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: DELIVERY_NOT_FOUND
+        message:
+          type: string
+          example: "No delivery found for order 'order-abc123'"

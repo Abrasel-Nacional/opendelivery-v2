@@ -2,41 +2,88 @@ site_name: Open Delivery Protocol
 site_description: Open standard for ordering, fulfillment, and delivery interoperability
 site_url: https://abrasel-nacional.github.io/opendelivery-v2/
 
-repo_name: Abrasel-Nacional/opendelivery-v2
+repo_name: ODP on GitHub
 repo_url: https://github.com/Abrasel-Nacional/opendelivery-v2
 
 docs_dir: docs
 site_dir: site
 
 nav:
-  - Guide:
-    - Home: index.md
-    - Core Concepts: documentation/core-concepts.md
+  - Guia:
+    - Início: index.md
+    - Primeiros Passos: guide/getting-started.md
+    - Conceitos: documentation/core-concepts.md
+    - Papéis e Responsabilidades: protocol/roles-and-responsibilities.md
+    - Migração e Histórico:
+      - Changelog: guide/changelog.md
+      - Migração V1→V2: guide/migration-v1-v2.md
+      - Roadmap: documentation/roadmap.md
+  - Protocolo:
+    - Fundamentos:
+      - Princípios: protocol/principles.md
+      - Regras Gerais: protocol/guidelines.md
+      - Tratamento de Erros: protocol/error-handling.md
+      - Fluxos: protocol/flows.md
+      - Evolução: protocol/evolution.md
     - Discovery: protocol/discovery.md
-    - Roadmap: documentation/roadmap.md
-  - API Reference:
-    - Overview: reference/index.md
-    - Authentication: reference/authentication.md
-    - Discovery: reference/discovery.md
-    - Customer & Loyalty: reference/customer.md
-    - Indoor / Salão: reference/indoor.md
+    - Autenticação: protocol/authentication.md
+    - Capabilities:
+      - Merchant / Cardápio: protocol/merchant.md
+      - Orders / Pedidos: protocol/orders.md
+      - Logística: protocol/logistics.md
+      - Customer / CRM: protocol/customer.md
+      - Fidelidade: extensions/loyalty.md
+      - Indoor / Salão: protocol/indoor.md
+  - Referência da API:
+    - Visão Geral: reference/index.md
+    - Infraestrutura:
+      - Autenticação: reference/authentication.md
+      - Discovery: reference/discovery.md
+    - Capabilities:
+      - Merchant: reference/merchant.md
+      - Pedidos: reference/orders.md
+      - Logística: reference/logistics.md
+      - Customer & Fidelidade: reference/customer.md
+      - Indoor: reference/indoor.md
+
+plugins:
+  - search
 
 theme:
   name: material
   custom_dir: overrides
-  language: en
-  logo: assets/images/opendelivery-logo.png
+  logo: assets/images/opendelivery-logo-header.png
   favicon: assets/images/opendelivery-logo.png
+  font:
+    text: Inter
+    code: JetBrains Mono
   palette:
     - scheme: default
-      primary: teal
-      accent: lime
+      primary: custom
+      accent: custom
   features:
     - navigation.tabs
     - navigation.tabs.sticky
     - navigation.top
     - navigation.tracking
     - navigation.indexes
+    - navigation.footer
+    - content.code.copy
+    - content.tooltips
+    - content.tabs.link
+    - content.action.edit
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - search.share
+
+edit_uri: edit/main/docs/
+
+extra:
+  # Token do Cloudflare Web Analytics (cole aqui depois de criar o site em
+  # https://dash.cloudflare.com -> Analytics & Logs -> Web Analytics).
+  # Deixe vazio para desativar.
+  cloudflare_analytics_token: ""
 
 markdown_extensions:
   - admonition
@@ -46,7 +93,15 @@ markdown_extensions:
   - pymdownx.details
   - pymdownx.tabbed:
       alternate_style: true
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
 
 extra_css:
+  - stylesheets/theme.css
   - stylesheets/landing.css
+
+extra_javascript:
+  - https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js

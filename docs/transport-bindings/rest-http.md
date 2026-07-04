@@ -32,7 +32,7 @@ Use this model to avoid duplication while keeping implementation clear:
 
 ## OpenAPI Artifacts
 
-- OpenAPI guidance and files: [OpenAPI Artifacts](../reference/openapi.md)
+- OpenAPI specs: [Referência da API](../reference/index.md)
 
 ## Conformance Mapping Pattern
 

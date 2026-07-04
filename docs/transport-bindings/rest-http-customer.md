@@ -124,4 +124,4 @@ Error payloads SHOULD follow [Error Model](../protocol/error-handling.md).
 
 ## OpenAPI Artifact
 
-- Download: [rest-http-customer.openapi.yaml](../reference/v2/rest-http-customer.openapi.yaml)
+- Download: [customer.openapi.yaml](../reference/v2/customer.openapi.yaml)

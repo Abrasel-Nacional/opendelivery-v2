@@ -1,112 +1,254 @@
-# Loyalty Extension (Customer)
+# Loyalty / Fidelidade
 
-!!! warning "Work in Progress"
-    This extension is currently under committee review. The content on this page is a placeholder and will be expanded once normative decisions are finalized.
+> Extensão da [Customer Capability](../protocol/customer.md) · Extension name: `loyalty`
+> REST/HTTP binding: [Referência da API — Customer & Fidelidade](../reference/customer.md)
 
-## 1. Overview
+## Para que serve
 
-Loyalty Extension expands Customer Capability with interoperability for loyalty identity, accrual, redemption, and coupon/voucher validation contexts.
+A extensão **Loyalty** padroniza a interoperabilidade entre a plataforma de pedidos e o sistema de fidelidade: consulta de saldo, acúmulo de pontos vinculado a pedidos, resgates de recompensas, aplicação de cupons e histórico de transações de fidelidade.
 
-## 2. Scope and Extensions
+Sem um padrão, cada integração entre plataforma e sistema de loyalty precisava negociar bilateralmente como identificar a conta do cliente, quando e como acumular pontos, como tratar resgates parciais e o que acontece com o saldo em caso de cancelamento. O Loyalty elimina essa negociação ao definir a **conta de fidelidade** como entidade central e um conjunto fixo de operações e eventos sobre ela.
 
-This extension covers:
+!!! warning "Loyalty é uma extensão, não uma capability autônoma"
+    Esta extensão pressupõe que ambas as partes já implementaram a **capability Customer**. Os dados de cadastro do cliente, leads e pedidos trafegam pelo Customer; o Loyalty adiciona, sobre esse contexto, a camada de fidelidade e cupons.
 
-- Loyalty account identification and balance inquiry
-- Point or credit accumulation linked to orders
-- Redemption of rewards at checkout
-- Coupon and voucher validation and application
+    Implementações que não possuem a capability Customer ativa não podem usar esta extensão.
 
-This extension does not cover:
+!!! info "O que o Loyalty NÃO padroniza"
+    Regras internas de programa — lógica de acúmulo, política de tiers, expiração de pontos, elegibilidade de campanhas — são responsabilidade de cada implementação e ficam fora do escopo deste protocolo.
 
-- Program configuration or tier management (platform-internal)
-- Financial settlement of redeemed rewards (out of scope)
-- Marketing campaign orchestration
+---
 
-Loyalty is an extension of Customer Capability and MUST follow Customer capability boundaries.
+## Os dois lados da integração
 
-Current sub-extensions: none.
+| Papel | Responsabilidade |
+|---|---|
+| **Loyalty Software Service** | Sistema de fidelidade ou CRM com módulo de loyalty. **Hospeda** as interfaces de saldo, transações, recompensas, resgates e cupons. **Emite** eventos do ciclo de vida de fidelidade. |
+| **Ordering Application** | Plataforma de pedidos (app próprio, marketplace, PDV, totem). **Consome** as interfaces de fidelidade para exibir saldo, aplicar cupons no checkout e confirmar resgates. |
 
-## 3. Players
+Em todas as operações desta extensão, o Loyalty Software Service é o servidor e a Ordering Application é o cliente.
 
-- `ORDERING_APPLICATION`
-- `CRM_SOFTWARE_SERVICE`
-- `LOYALTY_SOFTWARE_SERVICE` (when loyalty is a dedicated system)
+---
 
-### Provider/Consumer Mapping
+## Conceitos-chave
 
-| participant | typical role as Provider | typical role as Consumer |
-|---|---|---|
-| `LOYALTY_SOFTWARE_SERVICE` | Exposes balance, accrual, redemption, and coupon validation interfaces | Consumes order context for accrual/reversal |
-| `CRM_SOFTWARE_SERVICE` | Exposes customer relationship context for loyalty enrichment | Consumes loyalty outcomes for customer intelligence |
-| `ORDERING_APPLICATION` | Exposes optional callback channels when agreed | Consumes loyalty validation and redemption outcomes |
+### A conta de fidelidade
 
-## 4. Interaction Between Players
+A **conta de fidelidade** agrega o saldo e o histórico de movimentações de um cliente em um programa específico. Um cliente pode ter contas em múltiplos programas.
 
-Typical interaction model:
+| Campo | Descrição |
+|---|---|
+| `customerId` | Referência ao cliente na capability Customer |
+| `programId` | Identificador do programa de fidelidade |
+| `summary.pointsAvailable` | Saldo disponível para resgate |
+| `summary.pointsPending` | Pontos aguardando confirmação (ex.: pedido ainda em entrega) |
+| `summary.pointsExpiringSoon` | Pontos próximos do vencimento |
 
-1. Ordering side identifies the loyalty account in a compliant way.
-2. Loyalty service validates eligibility, balances, and redemption constraints.
-3. Order confirmation triggers accrual and/or redemption registration.
-4. Customer profile may be enriched in CRM with loyalty outcomes.
+### Status da conta de fidelidade
 
-Integrations SHOULD support both synchronous validation and asynchronous confirmation events for accrual/reversal.
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> ENROLLED : cliente adere ao programa
+    ENROLLED --> ACTIVE : primeira transação
+    ACTIVE --> SUSPENDED : violação de regras / fraude
+    SUSPENDED --> ACTIVE : reativação
+    ACTIVE --> [*] : cancelamento do programa
+```
 
-## 5. Flows (Statuses and Events)
+| Status | Significado |
+|---|---|
+| `ENROLLED` | Cliente inscrito, ainda sem movimentação |
+| `ACTIVE` | Conta com movimentação; acúmulo e resgates habilitados |
+| `SUSPENDED` | Conta suspensa — operações bloqueadas até reativação |
 
-Illustrative loyalty states:
+### Tipos de transação
 
-- `ENROLLED`
-- `ACTIVE`
-- `SUSPENDED`
+| Tipo | Quando ocorre |
+|---|---|
+| `earn` | Acúmulo de pontos vinculado a um pedido concluído |
+| `burn` | Baixa de pontos por resgate de recompensa ou cupom |
+| `expire` | Expiração de pontos por vencimento |
+| `adjust` | Ajuste manual por suporte ou política de negócio |
 
-Illustrative loyalty events:
+### Cupons
 
-- `loyalty.account_linked`
-- `loyalty.points_accrued`
-- `loyalty.points_redeemed`
-- `loyalty.redemption_reversed`
+O cupom é a representação do benefício gerado por um resgate. Um resgate cria um cupom com código, tipo (`discount`, `free_item`, `cashback`) e status de uso.
 
-Reward and coupon events MUST be traceable to customer and order references when applicable.
+| Status do cupom | Significado |
+|---|---|
+| `available` | Disponível para uso no checkout |
+| `applied` | Aplicado a um pedido em andamento |
+| `used` | Consumido — pedido confirmado |
+| `expired` | Expirado sem uso |
+| `cancelled` | Cancelado (ex.: pedido cancelado) |
 
-## 6. Discovery / Well-Known Configuration
+### Eventos
 
-Participants supporting loyalty behavior SHOULD declare loyalty extension support under Customer capability metadata in discovery.
+| Evento | Gatilho |
+|---|---|
+| `loyalty.account_linked` | Conta de fidelidade vinculada ao cliente |
+| `loyalty.points_accrued` | Pontos confirmados após pedido concluído |
+| `loyalty.points_pending` | Pontos em espera (pedido ainda não entregue) |
+| `loyalty.points_expired` | Pontos expirados por vencimento |
+| `loyalty.points_redeemed` | Resgate realizado — pontos baixados |
+| `loyalty.redemption_reversed` | Resgate estornado (ex.: pedido cancelado) |
+| `loyalty.coupon_applied` | Cupom aplicado ao checkout |
+| `loyalty.coupon_cancelled` | Cupom cancelado |
 
-Declaration SHOULD include:
+---
 
-- Supported operation groups (balance, accrual, redemption, coupon validation)
-- Supported channels and timing mode (real-time/deferred)
-- Event support for accrual/redemption outcomes
+## Fluxos
 
-## 7. Authorization
+### Acúmulo de pontos após pedido
 
-Loyalty operations require authenticated calls and scope enforcement.
+O acúmulo acontece de forma **assíncrona** — o Loyalty Software Service aguarda a confirmação de entrega antes de creditar os pontos definitivamente.
 
-Recommended minimum scope families:
+```mermaid
+sequenceDiagram
+    participant OA as Ordering Application
+    participant LS as Loyalty Software Service
 
-- `customer.loyalty.read`
-- `customer.loyalty.write`
-- `customer.coupon.validate`
+    Note over OA,LS: Pedido criado — pontos em espera
+    OA->>LS: notificação via Customer event: order.created
+    LS-)OA: evento: loyalty.points_pending
 
-## 8. Operations
+    Note over OA,LS: Pedido entregue — pontos confirmados
+    OA->>LS: notificação via Customer event: order.completed
+    LS-)OA: evento: loyalty.points_accrued
 
-Illustrative operation set (subject to committee finalization):
+    Note over OA,LS: OA exibe novo saldo ao cliente
+    OA->>LS: GET /customers/{id}/loyalty/accounts
+    LS-->>OA: 200 OK (saldo atualizado)
+```
 
-- `getLoyaltyBalance`
-- `registerLoyaltyAccrual`
-- `redeemLoyaltyReward`
-- `validateCoupon`
+### Resgate de recompensa
 
-## Pending Topics
+O cliente troca pontos por uma recompensa. O resgate gera um cupom que pode ser usado no próximo pedido.
 
-The following topics are open for committee decision:
+```mermaid
+sequenceDiagram
+    participant OA as Ordering Application
+    participant LS as Loyalty Software Service
 
-- Loyalty account linking model (CPF-based vs. platform token)
-- Real-time vs. deferred point accumulation
-- Multi-program support per customer
-- Coupon validation timing (pre-checkout vs. order confirmation)
+    Note over OA,LS: Cliente escolhe recompensa no catálogo
+    OA->>LS: GET /loyalty/rewards
+    LS-->>OA: 200 OK (catálogo de recompensas)
 
-## Out of Scope
+    Note over OA,LS: Cliente confirma o resgate
+    OA->>LS: POST /customers/{id}/loyalty/redemptions
+    LS-->>OA: 201 Created (RedemptionResult com cupom gerado)
+    LS-)OA: evento: loyalty.points_redeemed
 
-- Loyalty program administration interfaces
-- Partner-specific reward catalogs
+    Note over OA,LS: Cupom disponível para uso
+    OA->>LS: GET /customers/{id}/coupons
+    LS-->>OA: 200 OK (lista de cupons — status: available)
+```
+
+### Aplicação de cupom no checkout
+
+O cliente usa o cupom gerado por um resgate (ou recebido por outra origem) em um novo pedido.
+
+```mermaid
+sequenceDiagram
+    participant OA as Ordering Application
+    participant LS as Loyalty Software Service
+
+    Note over OA,LS: Antes do checkout — verificar cupons disponíveis
+    OA->>LS: GET /customers/{id}/coupons
+    LS-->>OA: 200 OK (cupons com status: available)
+
+    Note over OA,LS: Cliente aplica cupom ao pedido
+    OA->>LS: notificação via Customer event: order.created (com referência ao cupom)
+    LS-)OA: evento: loyalty.coupon_applied
+
+    Note over OA,LS: Pedido confirmado — cupom consumido
+    OA->>LS: notificação via Customer event: order.completed
+    LS-)OA: evento: loyalty.points_accrued (novo acúmulo pelo pedido)
+```
+
+### Estorno por cancelamento
+
+Pedido cancelado após acúmulo ou uso de cupom — pontos e cupons são revertidos.
+
+```mermaid
+sequenceDiagram
+    participant OA as Ordering Application
+    participant LS as Loyalty Software Service
+
+    Note over OA,LS: Pedido cancelado após entrega parcial
+    OA->>LS: notificação via Customer event: order.canceled
+    LS-)OA: evento: loyalty.redemption_reversed (pontos estornados)
+    LS-)OA: evento: loyalty.coupon_cancelled (se cupom foi usado)
+
+    Note over OA,LS: Saldo revertido ao estado anterior
+    OA->>LS: GET /customers/{id}/loyalty/accounts
+    LS-->>OA: 200 OK (saldo revertido)
+```
+
+### Consulta de histórico
+
+```mermaid
+sequenceDiagram
+    participant OA as Ordering Application
+    participant LS as Loyalty Software Service
+
+    Note over OA,LS: Cliente acessa extrato de fidelidade
+    OA->>LS: GET /customers/{id}/loyalty/accounts/{accountId}
+    LS-->>OA: 200 OK (conta com saldo e tier)
+
+    OA->>LS: GET /customers/{id}/loyalty/transactions
+    LS-->>OA: 200 OK (histórico: earn, burn, expire, adjust)
+```
+
+---
+
+## Implementando o Loyalty Software Service
+
+Se você hospeda as interfaces de fidelidade, atente para:
+
+**Trate o acúmulo como assíncrono.** Só confirme pontos (`earn`) após a entrega definitiva do pedido (`order.completed`). Registre pontos pendentes (`loyalty.points_pending`) imediatamente após `order.created` para que a Ordering Application possa exibir a previsão ao cliente — mas deixe claro no payload que são pontos em espera.
+
+**Revertam tudo no cancelamento.** Um `order.canceled` deve disparar estorno de pontos acumulados (`redemption_reversed`) e cancelamento de cupons gerados ou aplicados (`coupon_cancelled`). O cliente não pode ficar com benefícios de um pedido que não foi concluído.
+
+**Valide o saldo antes de confirmar um resgate.** `POST /customers/{id}/loyalty/redemptions` deve verificar se `pointsAvailable` é suficiente para cobrir o custo da recompensa. Rejeite com `422 Unprocessable Entity` se o saldo for insuficiente — nunca permita saldo negativo.
+
+**Emita eventos para cada transição.** Toda movimentação de pontos ou mudança de status de cupom deve gerar o evento correspondente. A Ordering Application depende desses eventos para manter a tela do cliente atualizada.
+
+**Declare suporte no discovery.** Anuncie na capability Customer quais grupos de operações você suporta: balance, accrual, redemption, coupon validation. Declare também o modo de timing (real-time ou deferred) para o acúmulo.
+
+---
+
+## Implementando a Ordering Application
+
+Se você consome as interfaces de fidelidade e exibe saldo e benefícios ao cliente, atente para:
+
+**Exiba pontos pendentes com clareza.** Use `summary.pointsPending` para mostrar a previsão de pontos que serão creditados após a entrega — mas diferencie visualmente do saldo disponível (`pointsAvailable`) para não criar expectativas incorretas.
+
+**Consulte cupons disponíveis antes do checkout.** Ao abrir a tela de pagamento, faça `GET /customers/{id}/coupons` para listar cupons com `status: available`. Não assuma que o cupom gerado em um resgate anterior ainda está disponível — pode ter sido usado em outra sessão.
+
+**Associe o cupom ao pedido ao enviá-lo.** Ao enviar o evento `order.created`, inclua a referência ao cupom aplicado para que o Loyalty Software Service possa transicioná-lo para `applied` e depois `used`.
+
+**Receba e trate eventos de estorno.** Implemente o webhook que recebe `loyalty.redemption_reversed` e `loyalty.coupon_cancelled` — atualize a tela de fidelidade e notifique o cliente quando um benefício for revertido por cancelamento.
+
+**Alerte sobre pontos expirando.** Use `summary.pointsExpiringSoon` para criar alertas proativos na interface — um cliente que perde pontos por falta de aviso tem uma experiência ruim que impacta diretamente o programa de fidelidade.
+
+---
+
+!!! tip "Checklist — Loyalty Software Service"
+    - Acúmulo de pontos é assíncrono: `pending` após `order.created`, `earn` após `order.completed`.
+    - Cancelamento reverte pontos e cancela cupons afetados — sempre.
+    - Saldo validado antes de confirmar resgate; saldo negativo nunca permitido.
+    - Evento emitido para cada movimentação de pontos e mudança de status de cupom.
+    - Grupos de operações e modo de timing (real-time / deferred) declarados no discovery.
+
+!!! tip "Checklist — Ordering Application"
+    - Pontos pendentes exibidos com distinção clara do saldo disponível.
+    - Cupons consultados antes do checkout — não assumir disponibilidade sem verificar.
+    - Referência ao cupom incluída no payload do pedido ao enviar `order.created`.
+    - Webhook implementado para receber `loyalty.redemption_reversed` e `loyalty.coupon_cancelled`.
+    - Alerta de `pointsExpiringSoon` exibido proativamente na interface de fidelidade.
+
+---
+
+**Referência completa de campos e regras normativas:** [API Customer & Loyalty →](../reference/customer.md)

@@ -1,195 +1,179 @@
-# Authentication
+# Autenticação
 
-Authentication is not a capability domain.
+Autenticação não é um domínio de capability.
 
-It is a protocol-wide mechanism that governs how participants obtain and present credentials to access protected operations. Authentication applies uniformly across all ODP capabilities — Merchant, Orders, Logistics, and others.
+É um mecanismo transversal ao protocolo que governa como os participantes obtêm e apresentam credenciais para acessar operações protegidas. A autenticação se aplica uniformemente a todas as capabilities do ODP — Merchant, Orders, Logistics e outras.
 
-## Supported Authentication Models
+## Modelos de Autenticação Suportados
 
-ODP v2 supports three OAuth2 authentication models. The protocol does not mandate a single model for all ecosystems. Each platform MUST declare which model(s) it supports, and this declaration MUST be made explicit in the Discovery endpoint and during onboarding.
+O ODP v2 suporta três modelos de autenticação OAuth 2.0. O protocolo não impõe um único modelo para todos os ecossistemas. Cada plataforma DEVE declarar qual(is) modelo(s) suporta, e essa declaração DEVE ser explicitada no endpoint de Discovery e durante o onboarding.
 
-| model | identifier | status |
+| modelo | identificador | status |
 |---|---|---|
-| Client Credentials per Merchant | `client_credentials_merchant` | Supported — legacy compatibility |
-| Client Credentials per Application | `client_credentials_application` | Supported — recommended for new integrations |
-| Authorization Code | `authorization_code` | Supported — optional, advanced use cases |
+| Client Credentials por Estabelecimento | `client_credentials_merchant` | Suportado — compatibilidade legada |
+| Client Credentials por Aplicação | `client_credentials_application` | Suportado — recomendado para novas integrações |
+| Authorization Code | `authorization_code` | Suportado — opcional, casos de uso avançados |
 
-## Common Requirements
+## Requisitos Comuns
 
-Regardless of the authentication model selected, every implementation MUST follow these rules:
+Independentemente do modelo de autenticação selecionado, toda implementação DEVE seguir estas regras:
 
-1. The selected authentication model MUST be declared in the Discovery endpoint.
-2. The authentication model used in production MUST be aligned explicitly during onboarding.
-3. Supported scopes MUST be declared and consistent with the protocol capabilities used.
-4. Merchant authorization rules MUST be explicit and discoverable.
-5. Message signing, when supported, MUST be declared independently from the OAuth2 flow.
-6. Event and request payloads MUST preserve merchant identification whenever required by the integration model.
-7. Authentication material MUST be protected in transit and at rest.
+1. O modelo de autenticação selecionado DEVE ser declarado no endpoint de Discovery.
+2. O modelo de autenticação usado em produção DEVE ser alinhado explicitamente durante o onboarding.
+3. Os escopos suportados DEVEM ser declarados e consistentes com as capabilities do protocolo utilizadas.
+4. As regras de autorização de estabelecimentos DEVEM ser explícitas e descobríveis.
+5. A assinatura de mensagens, quando suportada, DEVE ser declarada independentemente do fluxo OAuth 2.0.
+6. Os payloads de eventos e requisições DEVEM preservar a identificação do estabelecimento sempre que exigido pelo modelo de integração.
+7. O material de autenticação DEVE ser protegido em trânsito e em repouso.
 
-## Model 1 — Client Credentials per Merchant
+## Modelo 1 — Client Credentials por Estabelecimento
 
-A separate `client_id`/`client_secret` pair is issued for each merchant.
+Um par `client_id`/`client_secret` separado é emitido para cada estabelecimento.
 
-This is the model used in ODP v1. It is supported in v2 for compatibility and migration scenarios.
+Este é o modelo utilizado no ODP v1. É suportado na v2 para cenários de compatibilidade e migração.
 
-The **Ordering Application** or **Logistics Service** MUST provide one `client_id` and `client_secret` for each individual merchant it works with, even if those merchants use the same **Software Service**.
+A **Ordering Application** ou o **Logistics Service** DEVE fornecer um `client_id` e `client_secret` para cada estabelecimento individual com o qual trabalha, mesmo que esses estabelecimentos usem o mesmo **Software Service**.
 
-**Credential acquisition:** The merchant **Software Service** retrieves the `client_id` and `client_secret` from the **Ordering Application** or **Logistics Service** and uses them to obtain an access token via the [token endpoint](https://spec.opendelivery.io/v2/openapi.yaml#operation/postOAuthToken).
+**Aquisição de credenciais:** O **Software Service** do estabelecimento recupera o `client_id` e o `client_secret` da **Ordering Application** ou do **Logistics Service** e os utiliza para obter um token de acesso via endpoint de token.
 
-**Token usage:** The `accessToken` obtained must be included in the `Authorization` header of every protected request:
+**Uso do token:** O `accessToken` obtido deve ser incluído no header `Authorization` de toda requisição protegida:
 
 ```
 Authorization: Bearer <accessToken>
 ```
 
-The `expiresIn` field indicates the lifetime of the access token in seconds. The token MUST be cached and reused across requests until expiration — it MUST NOT be regenerated per request.
+O campo `expiresIn` indica o tempo de vida do token de acesso em segundos. O token DEVE ser armazenado em cache e reutilizado entre requisições até a expiração — NÃO DEVE ser regenerado por requisição.
 
 !!! note
-    Refresh Token is not supported in this model.
+    Refresh Token não é suportado neste modelo.
 
-**Capability scope mapping in v1:**
+**Mapeamento de escopo por capability na v1:**
 
-| capability | responsible for credentials |
+| capability | responsável pelas credenciais |
 |---|---|
 | Orders, Merchant | Ordering Application |
 | Logistics | Logistics Service |
 
-**When to use:**
+**Quando usar:**
 
-- Legacy migrations from v1
-- Ecosystems where credentials are provisioned per merchant
-- Scenarios where changing the operational credential model would produce excessive migration cost
-
-**Trade-offs:**
-
-- Requires repeated credential provisioning for each merchant
-- Higher operational overhead for software providers managing many merchants
-- Weaker scalability for multi-merchant integrations
-
-## Model 2 — Client Credentials per Application
-
-A single `client_id`/`client_secret` pair is issued for the software or application. Merchant access is determined separately through authorization rules, outside the token itself.
-
-This is the recommended model for new integrations in ODP v2.
-
-**Recommended complementary capabilities when using this model:**
-
-- An endpoint to list merchants authorized for the application (e.g., `GET /merchants`)
-- Authorization and deauthorization notification mechanisms
-- Optional filtering by merchant in asynchronous event retrieval flows
+- Migrações legadas da v1
+- Ecossistemas onde as credenciais são provisionadas por estabelecimento
+- Cenários onde alterar o modelo de credenciais operacionais produziria custo excessivo de migração
 
 **Trade-offs:**
 
-- Requires an explicit merchant authorization strategy separate from the credential
-- Merchants MUST NOT be embedded in the access token itself
+- Requer provisionamento repetido de credenciais para cada estabelecimento
+- Maior sobrecarga operacional para provedores de software que gerenciam muitos estabelecimentos
+- Menor escalabilidade para integrações multi-estabelecimento
 
-## Model 3 — Authorization Code
+## Modelo 2 — Client Credentials por Aplicação
 
-Authorization Code is an optional OAuth2 model intended for scenarios where a **merchant owner or administrator** must explicitly grant an external application access to their data.
+Um único par `client_id`/`client_secret` é emitido para o software ou aplicação. O acesso ao estabelecimento é determinado separadamente por meio de regras de autorização, fora do token em si.
 
-In this flow, the authorization is not implicit in the credential — it requires an interactive step. The typical flow is:
+Este é o modelo recomendado para novas integrações no ODP v2.
 
-1. A **Software Service** initiates an authorization request for a specific merchant.
-2. The merchant is redirected to an authorization interface hosted by the platform.
-3. The merchant authenticates and explicitly approves or denies access for that application.
-4. Upon approval, the platform issues an authorization code that the application exchanges for an access token.
-5. The resulting token is scoped to that merchant and that application.
+**Capabilities complementares recomendadas ao usar este modelo:**
 
-This model provides stronger governance over which applications can access a merchant's data, making it suitable for ecosystems where merchant consent must be auditable and revocable.
+- Um endpoint para listar os estabelecimentos autorizados para a aplicação (ex.: `GET /merchants`)
+- Mecanismos de notificação de autorização e desautorização
+- Filtragem opcional por estabelecimento nos fluxos de recuperação assíncrona de eventos
 
-It is not mandatory for all integrations. When supported, it MUST be declared in the Discovery. The detailed OAuth2 Authorization Code flow parameters are defined in the [REST transport binding](https://spec.opendelivery.io/v2/openapi.yaml#operation/postOAuthAuthorize).
+**Trade-offs:**
+
+- Requer uma estratégia explícita de autorização de estabelecimentos separada da credencial
+- Estabelecimentos NÃO DEVEM ser incorporados no token de acesso em si
+
+## Modelo 3 — Authorization Code
+
+O Authorization Code é um modelo OAuth 2.0 opcional destinado a cenários onde um **proprietário ou administrador de estabelecimento** deve conceder explicitamente acesso a uma aplicação externa aos seus dados.
+
+Neste fluxo, a autorização não é implícita na credencial — ela requer uma etapa interativa. O fluxo típico é:
+
+1. Um **Software Service** inicia uma solicitação de autorização para um estabelecimento específico.
+2. O estabelecimento é redirecionado para uma interface de autorização hospedada pela plataforma.
+3. O estabelecimento se autentica e aprova ou nega explicitamente o acesso para aquela aplicação.
+4. Após a aprovação, a plataforma emite um código de autorização que a aplicação troca por um token de acesso.
+5. O token resultante tem escopo para aquele estabelecimento e aquela aplicação.
+
+Este modelo fornece governança mais forte sobre quais aplicações podem acessar os dados de um estabelecimento, tornando-o adequado para ecossistemas onde o consentimento do estabelecimento deve ser auditável e revogável.
+
+Não é obrigatório para todas as integrações. Quando suportado, DEVE ser declarado no Discovery.
 
 ## API Key
 
-Some endpoints may require authentication via API Key instead of OAuth2. When used, the key MUST be passed in the request header (see [`ApiKeyAuth` security scheme](https://spec.opendelivery.io/v2/openapi.yaml#/components/securitySchemes/ApiKeyAuth)):
+Alguns endpoints podem exigir autenticação via API Key em vez de OAuth 2.0. Quando utilizada, a chave DEVE ser passada no header da requisição:
 
-| header | type | description |
+| header | tipo | descrição |
 |---|---|---|
-| `X-API-KEY` | string | API key issued by the endpoint host to its clients |
+| `X-API-KEY` | string | Chave de API emitida pelo host do endpoint para seus clientes |
 
-The creation and management of the API key is the responsibility of the endpoint host. Each client may hold its own key. Operations that require API Key authentication declare this explicitly in their operation definition.
+A criação e gestão da API Key é responsabilidade do host do endpoint. Cada cliente pode ter sua própria chave. As operações que exigem autenticação via API Key declaram isso explicitamente em sua definição.
 
-## Webhook Authentication
+## Autenticação de Webhooks
 
-Webhooks do not use OAuth2. They use a **message signing** mechanism to allow the receiver to verify the authenticity of the sender.
+Webhooks não usam OAuth 2.0. Utilizam um mecanismo de **assinatura de mensagens** para permitir que o receptor verifique a autenticidade do remetente.
 
-When an **Ordering Application** sends a webhook event to a **Software Service**, the request MUST carry signed identity information — including the identity of the application, the merchant involved, and a cryptographic signature of the payload derived from the shared `client_secret`.
+Quando uma **Ordering Application** envia um evento de webhook para um **Software Service**, a requisição DEVE carregar informações de identidade assinadas — incluindo a identidade da aplicação, o estabelecimento envolvido e uma assinatura criptográfica do payload derivada do `client_secret` compartilhado.
 
-The **Software Service** is responsible for verifying the signature on every received webhook to confirm the request originates from a known and authorized **Ordering Application**.
+O **Software Service** é responsável por verificar a assinatura em cada webhook recebido para confirmar que a requisição origina de uma **Ordering Application** conhecida e autorizada.
 
-The specific headers, signing algorithm, and acknowledgement rules are defined in the [REST transport binding](https://spec.opendelivery.io/v2/openapi.yaml#operation/postWebhookEvent).
+## Escopos
 
-## Scopes
+Os escopos no ODP v2 são organizados por domínio de capability. Toda operação protegida declara qual escopo é necessário.
 
-Scopes in ODP v2 are organized by capability domain. Every protected operation declares which scope it requires.
-
-| scope | domain |
+| escopo | domínio |
 |---|---|
 | `od.orders` | Orders |
-| `od.menu` | Menu / Catalog |
+| `od.menu` | Merchant / Catálogo |
 | `od.logistics` | Logistics |
-| `od.crm` | CRM and Loyalty |
-| `od.all` | All capabilities (full access) |
+| `od.crm` | CRM e Loyalty |
+| `od.all` | Todas as capabilities (acesso total) |
 
 !!! note
-    In ODP v1, a single scope `od.all` was used for all endpoints. Domain-scoped tokens are a v2 introduction and allow more granular access control.
+    No ODP v1, um único escopo `od.all` era usado para todos os endpoints. Tokens com escopo por domínio são uma introdução da v2 e permitem controle de acesso mais granular.
 
-Implementations MUST declare the scopes they support in the Discovery.
+As implementações DEVEM declarar os escopos que suportam no Discovery.
 
-## Message Signing
+## Assinatura de Mensagens
 
-Message signing is a security capability independent of the OAuth2 authentication model. It can be applied to requests and responses in both directions.
+A assinatura de mensagens é uma capability de segurança independente do modelo de autenticação OAuth 2.0. Pode ser aplicada a requisições e respostas em ambas as direções.
 
-- Message signing is **not mandatory** for REST transport outside of webhooks.
-- Support for message signing MUST be declared in the Discovery.
-- When declared, the signing mechanism and applicable operations MUST be specified explicitly.
+- A assinatura de mensagens **não é obrigatória** para o transporte REST fora de webhooks.
+- O suporte à assinatura de mensagens DEVE ser declarado no Discovery.
+- Quando declarado, o mecanismo de assinatura e as operações aplicáveis DEVEM ser especificados explicitamente.
 
-## Discovery Declaration
+## Declaração no Discovery
 
-Every ODP v2 implementation MUST expose a [Discovery endpoint](https://spec.opendelivery.io/v2/openapi.yaml#operation/getDiscovery) that declares its authentication configuration. The following fields are required for authentication declaration:
+Toda implementação ODP v2 DEVE expor um [endpoint de Discovery](discovery.md) que declare sua configuração de autenticação. Os seguintes campos são obrigatórios para a declaração de autenticação:
 
-| field | type | required | description |
+| campo | tipo | obrigatório | descrição |
 |---|---|---|---|
-| `authentication.supportedModels` | array[string] | YES | List of supported authentication model identifiers |
-| `authentication.defaultModel` | string | YES | Default model to use during onboarding |
-| `authentication.scopes` | array[string] | YES | List of supported scopes |
-| `authentication.messageSigning.supported` | boolean | YES | Whether message signing is supported |
-| `authentication.messageSigning.required` | boolean | YES | Whether message signing is required |
-| `authentication.merchantDiscovery.supported` | boolean | YES | Whether a merchant listing endpoint is available |
+| `authentication.supportedGrantTypes` | array[string] | SIM | Grant types OAuth 2.0 aceitos: `client_credentials`, `authorization_code` |
+| `authentication.clientIdGeneration` | array[string] | SIM | Como os client IDs são emitidos: `by_app` (recomendado) ou `by_merchant` (legado V1) |
 
-**Example Discovery authentication block:**
+**Exemplo de bloco de autenticação no Discovery:**
 
 ```yaml
 authentication:
-  supportedModels:
-    - client_credentials_application
-    - client_credentials_merchant
-  defaultModel: client_credentials_application
-  scopes:
-    - od.orders
-    - od.menu
-    - od.logistics
-    - od.crm
-    - od.all
-  messageSigning:
-    supported: true
-    required: false
-  merchantDiscovery:
-    supported: true
+  supportedGrantTypes:
+    - client_credentials
+    - authorization_code
+  clientIdGeneration:
+    - by_app
 ```
 
-## Operation-Level Authentication Declaration
+## Declaração por Operação
 
-Each capability operation MUST explicitly document:
+Cada operação de capability DEVE documentar explicitamente:
 
-- Whether the operation is public or protected
-- Which scope is required when the operation is protected
-- Which participant is expected to present the credential
+- Se a operação é pública ou protegida
+- Qual escopo é necessário quando a operação é protegida
+- Qual participante deve apresentar a credencial
 
-This declaration appears in the operation definition, with a reference to this section.
+Essa declaração aparece na definição da operação, com referência a esta seção.
 
-## Relationship to Capabilities
+## Relação com as Capabilities
 
-Authentication protects resources and operations exposed by capabilities such as Merchant, Orders, and Logistics. Some protocol operations (such as the Discovery endpoint itself) are public. Most productive interactions require authentication.
+A autenticação protege recursos e operações expostos pelas capabilities como Merchant, Orders e Logistics. Algumas operações do protocolo (como o próprio endpoint de Discovery) são públicas. A maioria das interações produtivas requer autenticação.
 
-Authentication does not define business coordination logic. It is a prerequisite for capability access.
+A autenticação não define lógica de coordenação de negócio. É um pré-requisito para acesso às capabilities.

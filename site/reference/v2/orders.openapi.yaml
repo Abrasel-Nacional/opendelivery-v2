@@ -1,0 +1,528 @@
+openapi: 3.0.3
+
+info:
+  title: Open Delivery V2 — Orders
+  version: 2.0.0-rc
+  description: |
+    Orders Capability API for the Open Delivery Protocol V2.
+
+    ## Async-first model
+
+    All state-change operations return `202 Accepted`. Business logic closes via events
+    (webhooks) or by polling `GET /orders/{orderId}`. Never treat a 202 response as
+    confirmation of the state change — always wait for the corresponding event or poll.
+
+    ## Status vs. events
+
+    - **Status** (`order.status` in `GET /orders/{orderId}`) is the authoritative current
+      state. Always use it for reconciliation.
+    - **Events** (webhooks) are informational notifications. Do not use them as the
+      sole source of truth.
+
+    ## Breaking changes from V1
+
+    | Change | V1 | V2 |
+    |---|---|---|
+    | Cancellation | 3-step handshake (request/accept/deny) | **Direct `POST /cancel`** |
+    | `picked_up` event | Present | **Removed** (was ambiguous) |
+    | `dispatch` event | Present | Possibly deprecated — see event matrix |
+
+    ## Order profiles
+
+    | Profile | Description |
+    |---|---|
+    | `DELIVERY` | Home delivery via logistics provider or own fleet |
+    | `TAKEOUT` | Customer picks up at the store |
+    | `INDOOR` | On-premise consumption (table, tab, counter) |
+
+    ## Authorization
+
+    All endpoints require `Authorization: Bearer {token}` with scope `od.orders`.
+
+tags:
+  - name: Orders
+    description: Order lifecycle operations
+  - name: Versions
+    description: Protocol version discovery
+
+paths:
+
+  /versions:
+    get:
+      tags: [Versions]
+      operationId: getVersions
+      security: []
+      summary: List supported protocol versions
+      description: Returns the ODP versions supported by this endpoint implementation.
+      responses:
+        '200':
+          description: Supported versions
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [versions]
+                properties:
+                  versions:
+                    type: array
+                    items: { type: string }
+                    example: ["2.0", "1.7"]
+
+  /orders/{orderId}:
+    parameters:
+      - $ref: '#/components/parameters/OrderId'
+
+    get:
+      tags: [Orders]
+      operationId: getOrder
+      summary: Get order details
+      description: |
+        Returns the current state of an order. This is the authoritative source
+        for order status. Use for reconciliation and fallback when events are missed.
+      responses:
+        '200':
+          description: Order details
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Order' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /orders/{orderId}/confirm:
+    parameters:
+      - $ref: '#/components/parameters/OrderId'
+
+    post:
+      tags: [Orders]
+      operationId: confirmOrder
+      summary: Confirm order for processing
+      description: |
+        Merchant accepts the order. MUST be emitted for all order profiles.
+
+        After confirmation, the projected status transitions to `CONFIRMED`.
+        An event will be delivered to the ordering application.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                estimatedPreparationTimeMinutes:
+                  type: integer
+                  description: Estimated preparation time in minutes
+                  example: 25
+      responses:
+        '202': { description: Confirmation accepted for processing }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /orders/{orderId}/preparing:
+    parameters:
+      - $ref: '#/components/parameters/OrderId'
+
+    post:
+      tags: [Orders]
+      operationId: setOrderPreparing
+      summary: Signal that preparation has started
+      description: |
+        Optional event — not required for all profiles. Signals that the merchant
+        has started preparing the order. Projected status: `PREPARING`.
+      responses:
+        '202': { description: Accepted }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /orders/{orderId}/ready-for-pickup:
+    parameters:
+      - $ref: '#/components/parameters/OrderId'
+
+    post:
+      tags: [Orders]
+      operationId: setOrderReadyForPickup
+      summary: Signal order is ready for pickup
+      description: |
+        - **DELIVERY:** Order is ready for courier pickup at the store
+        - **TAKEOUT:** Order is ready for customer collection at the counter (MUST)
+        - **INDOOR:** Order is ready to be served (MAY)
+
+        Projected status: `READY`.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pickupCode:
+                  type: string
+                  description: Code shown to customer for TAKEOUT pickup
+                  example: "A42"
+      responses:
+        '202': { description: Accepted }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /orders/{orderId}/dispatch:
+    parameters:
+      - $ref: '#/components/parameters/OrderId'
+
+    post:
+      tags: [Orders]
+      operationId: dispatchOrder
+      summary: Signal order dispatched to customer
+      description: |
+        Signals the order left the store in the direction of the customer.
+        Only applicable for `DELIVERY` profile. Projected status: `IN_DELIVERY`.
+
+        !!! note "Possible deprecation"
+            This event is under review for V2.1. Check with the originator
+            whether they consume it before emitting.
+      responses:
+        '202': { description: Accepted }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /orders/{orderId}/delivered:
+    parameters:
+      - $ref: '#/components/parameters/OrderId'
+
+    post:
+      tags: [Orders]
+      operationId: setOrderDelivered
+      summary: Signal order delivered to customer
+      description: |
+        MUST be emitted for all profiles when the order reaches the customer.
+        - **DELIVERY:** Customer received the order at home
+        - **TAKEOUT:** Customer picked up at the counter
+        - **INDOOR:** Order served at the table / counter
+
+        Projected status: `DELIVERED`.
+      responses:
+        '202': { description: Accepted }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /orders/{orderId}/cancel:
+    parameters:
+      - $ref: '#/components/parameters/OrderId'
+
+    post:
+      tags: [Orders]
+      operationId: cancelOrder
+      summary: Cancel an order
+      description: |
+        Cancels the order directly. No handshake required in V2.
+
+        **V1 migration note:** The three-step handshake
+        (`requestCancellation` / `acceptCancellation` / `denyCancellation`) is removed.
+        Cancellation is now direct and final.
+
+        Projected status: `CANCELLED`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [cancellationCode, cancelledBy]
+              properties:
+                cancellationCode:
+                  type: string
+                  description: Machine-readable cancellation reason
+                  example: "ORDER_ITEM_OUT_OF_STOCK"
+                cancellationReason:
+                  type: string
+                  description: Human-readable explanation
+                  example: "Item esgotado"
+                cancelledBy:
+                  type: string
+                  enum: [MERCHANT, ORDERING_APPLICATION, LOGISTICS, SYSTEM]
+      responses:
+        '202': { description: Cancellation accepted }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /orders/{orderId}/conclude:
+    parameters:
+      - $ref: '#/components/parameters/OrderId'
+
+    post:
+      tags: [Orders]
+      operationId: concludeOrder
+      summary: Logically close a delivered order
+      description: |
+        Marks the order as logically concluded after delivery.
+        MUST be emitted by the originator (or by the merchant in some profiles).
+        Projected status: `CONCLUDED`.
+      responses:
+        '202': { description: Accepted }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+components:
+
+  parameters:
+    OrderId:
+      name: orderId
+      in: path
+      required: true
+      description: Unique order identifier
+      schema: { type: string }
+      example: order-abc123
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid credentials
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: Insufficient scope
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Order not found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Conflict:
+      description: Invalid state transition for the current order status
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+  schemas:
+
+    Order:
+      type: object
+      required: [id, displayId, createdAt, orderTiming, type, status, merchant, items, total]
+      properties:
+        id:
+          type: string
+          description: Unique order identifier
+          example: order-abc123
+        displayId:
+          type: string
+          description: Human-readable order code shown to merchant and customer
+          example: A123
+        createdAt:
+          type: string
+          format: date-time
+          description: Order creation timestamp (UTC, RFC 3339)
+        orderTiming:
+          type: string
+          enum: [INSTANT, SCHEDULED]
+          description: |
+            `INSTANT` — order to be fulfilled as soon as possible.
+            `SCHEDULED` — order for a specific future time.
+        scheduledFor:
+          type: string
+          format: date-time
+          description: Target fulfillment time for SCHEDULED orders (UTC)
+        type:
+          type: string
+          enum: [DELIVERY, TAKEOUT, INDOOR]
+          description: Order profile
+        status:
+          type: string
+          enum: [CREATED, CONFIRMED, PREPARING, READY, IN_DELIVERY, DELIVERED, CANCELLED, CONCLUDED]
+          description: Current authoritative order status
+        merchant:
+          type: object
+          required: [id]
+          properties:
+            id: { type: string }
+            externalCode: { type: string }
+        items:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/OrderItem' }
+        total:
+          $ref: '#/components/schemas/OrderTotal'
+        customer:
+          $ref: '#/components/schemas/OrderCustomer'
+        payments:
+          type: array
+          items: { $ref: '#/components/schemas/OrderPayment' }
+        delivery:
+          $ref: '#/components/schemas/DeliveryContext'
+          description: Present when type is DELIVERY
+        indoor:
+          $ref: '#/components/schemas/IndoorContext'
+          description: Present when type is INDOOR
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Additional context — platform-specific, not validated by the protocol
+
+    OrderItem:
+      type: object
+      required: [id, name, quantity, unity_price, total_price]
+      properties:
+        id:
+          type: string
+          description: Line item identifier within this order
+        externalCode:
+          type: string
+          description: PDV's internal item reference
+        itemOfferId:
+          type: string
+          description: Catalog item offer reference
+        name:
+          type: string
+          description: Item name at order time (snapshot — do not rely on catalog for this)
+          example: X-Burguer Clássico
+        quantity:
+          type: integer
+          minimum: 1
+        unity_price:
+          type: integer
+          description: Unit base price in minor units (centavos), without options
+          example: 2500
+        total_price:
+          type: integer
+          description: Total price for this line including options and quantity
+          example: 5000
+        observations:
+          type: string
+          description: Item-level special instructions from customer
+        options:
+          type: array
+          items: { $ref: '#/components/schemas/OrderItemOption' }
+
+    OrderItemOption:
+      type: object
+      required: [id, name, quantity, option_price]
+      properties:
+        id: { type: string }
+        optionGroupId: { type: string }
+        optionGroupName: { type: string }
+        name: { type: string, example: "Ao ponto" }
+        quantity: { type: integer, minimum: 1 }
+        option_price:
+          type: integer
+          description: Additional price per unit of this option in minor units
+          example: 0
+        options:
+          type: array
+          description: Nested options for multi-level customization
+          items: { $ref: '#/components/schemas/OrderItemOption' }
+
+    OrderTotal:
+      type: object
+      required: [value, currency]
+      properties:
+        value:
+          type: integer
+          description: Total order value in minor units (centavos)
+          example: 5500
+        currency:
+          type: string
+          description: ISO 4217 currency code
+          example: BRL
+        subtotal:
+          type: integer
+          description: Items subtotal before fees and discounts
+          example: 5000
+        deliveryFee:
+          type: integer
+          description: Delivery fee in minor units
+          example: 500
+        discount:
+          type: integer
+          description: Total discount applied in minor units
+          example: 0
+        benefits:
+          type: array
+          description: Applied promotions and discount details
+          items:
+            type: object
+            properties:
+              targetId: { type: string }
+              targetType: { type: string }
+              value: { type: integer }
+              description: { type: string }
+
+    OrderCustomer:
+      type: object
+      description: Customer identification context for this order
+      properties:
+        id: { type: string }
+        name: { type: string }
+        phone: { type: string }
+        email: { type: string }
+
+    OrderPayment:
+      type: object
+      required: [method]
+      properties:
+        method:
+          type: string
+          description: Payment method identifier
+          example: CREDIT_CARD
+        value:
+          type: integer
+          description: Amount for this payment in minor units
+        changeFor:
+          type: integer
+          description: Cash change requested (for CASH method)
+        prepaid:
+          type: boolean
+          description: Whether the payment was collected online before delivery
+
+    DeliveryContext:
+      type: object
+      description: Delivery-specific context (required when type is DELIVERY)
+      properties:
+        address:
+          type: object
+          properties:
+            street: { type: string }
+            complement: { type: string }
+            neighborhood: { type: string }
+            city: { type: string }
+            state: { type: string }
+            postalCode: { type: string }
+            coordinates:
+              type: object
+              properties:
+                latitude: { type: number, format: double }
+                longitude: { type: number, format: double }
+        observations: { type: string }
+
+    IndoorContext:
+      type: object
+      description: Indoor-specific context (required when type is INDOOR)
+      properties:
+        operationMode:
+          type: string
+          enum: [TABLE, COMANDA, COUNTER]
+          description: Operating mode that identifies the type of indoor service
+        identifier:
+          type: string
+          description: Table number, tab identifier, or counter position
+          example: "Mesa 12"
+        accountId:
+          type: string
+          description: Existing account ID (returned by PDV if an account is already open)
+
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: INVALID_ORDER_STATE_TRANSITION
+        message:
+          type: string
+          example: "Cannot confirm an order in CANCELLED status"
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field: { type: string }
+              issue: { type: string }

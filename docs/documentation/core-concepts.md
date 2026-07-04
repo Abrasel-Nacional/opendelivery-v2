@@ -1,84 +1,75 @@
-# Core Concepts
+# Conceitos Fundamentais
 
-The Open Delivery Protocol (ODP) is an open standard designed to improve communication and
-interoperability across food and retail delivery ecosystems.
+O Open Delivery Protocol (ODP) é um padrão aberto projetado para melhorar a comunicação e a interoperabilidade em ecossistemas de delivery de alimentos e varejo.
 
-Different systems usually run disconnected models, payloads, and operational rules. ODP provides a
-shared language so these systems can coordinate merchant data, order lifecycles, customer
-relationships, and delivery tracking without custom one-off integrations for each partner.
+Sistemas diferentes geralmente operam com modelos, payloads e regras operacionais desconexos. O ODP fornece uma linguagem compartilhada para que esses sistemas coordenem dados de estabelecimentos, ciclos de vida de pedidos, relacionamentos com clientes e rastreamento de entregas — sem integrações bilaterais customizadas para cada parceiro.
 
-This page explains ODP at a conceptual level. Normative behavior is described in the
-[Specification](../specification/overview.md).
+Esta página explica o ODP em nível conceitual. O comportamento normativo é descrito na seção [Protocolo](../protocol/authentication.md).
 
-## High-Level Architecture
+## Arquitetura de Alto Nível
 
-ODP is a coordination protocol between independent participants.
+O ODP é um protocolo de coordenação entre participantes independentes.
 
-There is no central host required by the protocol. Each participant runs its own infrastructure and
-exchanges protocol information through agreed transport bindings.
+Não há host central exigido pelo protocolo. Cada participante opera sua própria infraestrutura e troca informações do protocolo por meio de bindings de transporte acordados.
 
-At a high level, the protocol coordinates four streams of information:
+Em alto nível, o protocolo coordena quatro fluxos de informação:
 
-- **Merchant context** — identity, operational services, catalog
-- **Order context** — events, states, cancellation outcomes
-- **Customer context** — CRM, loyalty-related facts, customer-centric analytics
-- **Delivery context** — quote, dispatch, tracking, problem handling
+- **Contexto de Merchant** — identidade, serviços operacionais, catálogo
+- **Contexto de Pedidos** — eventos, estados, resultados de cancelamento
+- **Contexto de Customer** — CRM, fatos relacionados à fidelidade, análise centrada no cliente
+- **Contexto de Logistics** — cotação, despacho, rastreamento, tratamento de problemas
 
-## Roles and Participants
+## Papéis e Participantes
 
-ODP defines four primary participant roles:
+O ODP define quatro papéis primários de participante:
 
-- **Ordering Application** — Consumer-facing surface where users browse menus and place orders. Consumes merchant information and coordinates order interactions.
-- **Software Service** — Merchant-side system that publishes merchant data and processes order lifecycle updates.
-- **Logistics Service** — Delivery platform that receives delivery requests, returns quotes, and sends tracking/problem updates.
-- **CRM Software Service** — CRM, marketing automation, loyalty, and couponing backends.
+- **Ordering Application** — Interface voltada ao consumidor final onde os usuários navegam por cardápios e fazem pedidos. Consome informações de estabelecimento e coordena interações de pedidos.
+- **Software Service** — Sistema do lado do estabelecimento que publica dados do merchant e processa atualizações do ciclo de vida de pedidos.
+- **Logistics Service** — Plataforma de entrega que recebe solicitações de entrega, retorna cotações e envia atualizações de rastreamento e problemas.
+- **CRM Software Service** — Backends de CRM, automação de marketing, fidelidade e cupons.
 
-A single company can fulfill multiple roles depending on the integration context.
+Uma única empresa pode desempenhar múltiplos papéis dependendo do contexto de integração.
 
 ## Capabilities
 
-Capabilities are the primary functional areas of the protocol. They represent the main coordination
-problems ODP solves.
+Capabilities são as áreas funcionais primárias do protocolo. Elas representam os principais problemas de coordenação que o ODP resolve.
 
-| Capability | Description |
+| Capability | Descrição |
 |---|---|
-| **Merchant** | Merchant identity, catalog, services, and operational context |
-| **Orders** | Order lifecycle, state management, and coordination |
-| **Indoor** | On-premise order operations — table service, counter, tab |
-| **Customer** | CRM, leads, customer events, and customer-linked order views |
-| **Loyalty** | Loyalty identity, accrual, redemption, and coupon validation |
-| **Logistics** | Delivery coordination, tracking, and problem handling |
+| **Merchant** | Identidade do estabelecimento, catálogo, serviços e contexto operacional |
+| **Orders** | Ciclo de vida de pedidos, gerenciamento de estado e coordenação |
+| **Customer** | CRM, leads, eventos de cliente e visões de pedidos centradas no cliente |
+| **Loyalty** | Identidade de fidelidade, acúmulo, resgate e validação de cupons |
+| **Logistics** | Coordenação de entrega, rastreamento e tratamento de problemas |
+| **Indoor** | Operações de pedidos em salão — serviço de mesa, balcão, comanda |
 
-## Extensions
+Capabilities são **independentes** entre si. Uma plataforma pode implementar qualquer capability ou combinação sem precisar das demais. Não existe capability obrigatória nem capability central da qual outras dependam.
 
-Extensions are optional protocol modules that augment a base capability without redefining it.
-An extension is always declared alongside its parent capability and MUST NOT be used independently.
+## Extensões
 
-| Extension | Parent Capability | Description |
+Extensões são módulos opcionais do protocolo que aumentam uma capability base sem redefiní-la. Uma extensão é sempre declarada junto com sua capability pai e NÃO DEVE ser usada de forma independente.
+
+| Extensão | Capability Pai | Descrição |
 |---|---|---|
-| **Indoor** | Orders | On-premise account aggregation, incremental ordering, partial payments |
-| **Loyalty** | Customer | Loyalty account, accrual, redemption, and coupon/voucher validation |
+| **Indoor** | Orders | Agregação de conta em salão, pedidos incrementais, pagamentos parciais |
+| **Loyalty** | Customer | Conta de fidelidade, acúmulo, resgate e validação de cupons/vouchers |
 
-## Transport Bindings
+## Bindings de Transporte
 
-Transport bindings define the communication layer used to exchange ODP messages between
-participants. ODP currently specifies one transport binding:
+Bindings de transporte definem a camada de comunicação usada para trocar mensagens ODP entre participantes. O ODP especifica atualmente um binding de transporte:
 
-- **REST/HTTP** — RESTful HTTP endpoints with JSON payloads
+- **REST/HTTP** — Endpoints HTTP RESTful com payloads JSON
 
-Transport bindings are defined separately from capability semantics. The same capability
-semantics apply regardless of transport.
+Bindings de transporte são definidos separadamente da semântica de capability. A mesma semântica de capability se aplica independentemente do transporte.
 
 ## Discovery
 
-Before any capability operation, participants MUST publish a machine-readable discovery document
-at a well-known endpoint:
+Antes de qualquer operação de capability, os participantes DEVEM publicar um documento de discovery legível por máquina em um endpoint well-known:
 
 ```
 GET /.well-known/opendelivery
 ```
 
-This document declares the participant's identity, supported capabilities, and the transport
-endpoints available for each capability.
+Este documento declara a identidade do participante, as capabilities suportadas e os endpoints de transporte disponíveis para cada capability. Nenhuma integração pode prosseguir sem que o Discovery esteja disponível.
 
-See [Specification — Discovery](../specification/overview.md#discovery) for normative rules.
+Consulte [Protocolo — Discovery](../protocol/discovery.md) para as regras normativas.

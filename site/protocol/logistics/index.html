@@ -13,6 +13,10 @@
         <link rel="canonical" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/logistics/">
       
       
+        <link rel="prev" href="../orders/">
+      
+      
+        <link rel="next" href="../customer/">
       
       
         
@@ -23,7 +27,7 @@
     
     
       
-        <title>Logistics Capability - Open Delivery Protocol</title>
+        <title>Logística - Open Delivery Protocol</title>
       
     
     
@@ -44,10 +48,12 @@
         
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
       
     
+    
+      <link rel="stylesheet" href="../../stylesheets/theme.css">
     
       <link rel="stylesheet" href="../../stylesheets/landing.css">
     
@@ -59,53 +65,122 @@
     
 
 <style>
-  /* Seta no tab que tem dropdown */
-  .od-tab-has-dropdown > .md-tabs__link::after {
-    content: " ▾";
-    font-size: .55rem;
-    opacity: .7;
+  /* Caixa da seta (borda estática, não gira) */
+  .od-chevron {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.35rem;
+    height: 1.35rem;
+    margin-left: 3px;
+    border: 1.5px solid transparent;
+    border-radius: 4px;
+    flex-shrink: 0;
     vertical-align: middle;
+    transition: border-color 0.18s ease;
   }
 
-  /* Dropdown renderizado como filho de <body> (padrão portal).
-     position: fixed + z-index alto escapa de qualquer stacking context
-     do Material e do container do ReDoc. */
+  /* A seta em si: chevron CSS (border), gira sem arrastar a caixa */
+  .od-chevron::after {
+    content: "";
+    display: block;
+    width: 7px;
+    height: 7px;
+    border-right: 2px solid var(--od-green-dark, #004621);
+    border-bottom: 2px solid var(--od-green-dark, #004621);
+    /* rotate(45deg) = canto inferior-direito aponta pra baixo → ∨
+       translateY(-1px) compensa centro visual sem sair do transition */
+    transform: rotate(45deg) translateY(-1px);
+    opacity: 0.5;
+    transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s;
+  }
+
+  /* Hover ou aberto: borda aparece na caixa; só a seta gira */
+  .od-tab-has-dropdown:hover .od-chevron,
+  .od-tab-has-dropdown.od-tab-open .od-chevron {
+    border-color: var(--od-green-dark, #004621);
+  }
+
+  /* -135° = 45° + 180° → canto aponta pra cima → ∧ */
+  .od-tab-has-dropdown:hover .od-chevron::after,
+  .od-tab-has-dropdown.od-tab-open .od-chevron::after {
+    transform: rotate(-135deg) translateY(-1px);
+    opacity: 1;
+  }
+
+  /* Dropdown — branco, borda, sombra suave */
   .od-dropdown {
     display: none;
     position: fixed;
     margin: 0;
-    padding: .3rem 0;
+    padding: 0.3rem 0;
     list-style: none;
-    background: var(--md-primary-fg-color--dark, #00695c);
-    border-radius: 0 0 .25rem .25rem;
-    box-shadow: 0 .4rem 1rem rgba(0, 0, 0, .25);
-    min-width: 14rem;
-    z-index: 1000;
+    background: #fff;
+    border: 1px solid var(--od-border, #d3e4d6);
+    border-top: none;
+    border-radius: 0 0 var(--od-radius-md, .6rem) var(--od-radius-md, .6rem);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.09);
+    min-width: 15rem;
+    /* abaixo do z-index do header (4) — header fica sempre por cima */
+    z-index: 3;
+    opacity: 0;
+    transform: translateY(-8px);
+    /* Fechar: rápido, sobe */
+    transition: opacity 0.13s ease-in, transform 0.13s ease-in;
+  }
+
+  /* Abrir: suave, desce */
+  .od-dropdown.od-dropdown--visible {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.18s ease-out, transform 0.22s cubic-bezier(0, 0, 0.2, 1);
   }
 
   .od-dropdown li { margin: 0; }
 
   .od-dropdown a {
     display: block;
-    padding: .5rem 1.1rem;
-    color: rgba(255, 255, 255, .8);
-    font-size: .7rem;
+    padding: 0.52rem 1.2rem;
+    color: var(--od-green-dark, #004621);
+    font-size: 0.75rem;
     font-weight: 500;
-    letter-spacing: .02em;
+    letter-spacing: 0.01em;
     text-decoration: none;
     white-space: nowrap;
-    transition: background .12s, color .12s;
+    transition: background 0.12s, color 0.12s;
   }
 
   .od-dropdown a:hover {
-    background: rgba(255, 255, 255, .12);
-    color: #fff;
+    background: var(--od-bg-soft, #f4f9f5);
+    color: var(--od-green, #00652e);
+    text-decoration: none;
   }
 
   .od-dropdown a.od-active {
-    color: #fff;
-    background: rgba(255, 255, 255, .08);
+    color: var(--od-green, #00652e);
+    background: rgba(0, 101, 46, 0.07);
     font-weight: 700;
+  }
+
+  .od-dropdown .od-group-label {
+    padding: 0.6rem 1.2rem 0.25rem;
+    margin-top: 0.2rem;
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--od-text-soft, #4a6151);
+    border-top: 1px solid var(--od-border, #d3e4d6);
+    white-space: nowrap;
+  }
+
+  .od-dropdown .od-group-label:first-child {
+    border-top: none;
+    margin-top: 0;
+  }
+
+  .od-dropdown a.od-nested {
+    padding-left: 1.8rem;
   }
 </style>
 
@@ -119,7 +194,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="lime">
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
@@ -128,7 +203,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#logistics-capability" class="md-skip">
+        <a href="#logistica" class="md-skip">
           Skip to content
         </a>
       
@@ -146,7 +221,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../.." title="Open Delivery Protocol" class="md-header__button md-logo" aria-label="Open Delivery Protocol" data-md-component="logo">
       
-  <img src="../../assets/images/opendelivery-logo.png" alt="logo">
+  <img src="../../assets/images/opendelivery-logo-header.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -163,7 +238,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Logistics Capability
+              Logística
             
           </span>
         </div>
@@ -176,7 +251,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="lime"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
     
   
 </form>
@@ -206,11 +281,18 @@
       </label>
       <nav class="md-search__options" aria-label="Search">
         
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
         <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
       </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
       
     </form>
     <div class="md-search__output">
@@ -262,10 +344,46 @@
   
     
   
-  Guide
+  Guia
 
         </a>
       </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../principles/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Protocolo
+
+        </a>
+      </li>
+    
+  
+
     
   
 
@@ -284,7 +402,7 @@
   
     
   
-  API Reference
+  Referência da API
 
         </a>
       </li>
@@ -322,7 +440,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="Open Delivery Protocol" class="md-nav__button md-logo" aria-label="Open Delivery Protocol" data-md-component="logo">
       
-  <img src="../../assets/images/opendelivery-logo.png" alt="logo">
+  <img src="../../assets/images/opendelivery-logo-header.png" alt="logo">
 
     </a>
     Open Delivery Protocol
@@ -361,6 +479,8 @@
       
         
       
+        
+      
     
     
     
@@ -383,7 +503,7 @@
   <span class="md-ellipsis">
     
   
-    Guide
+    Guia
   
 
     
@@ -405,7 +525,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Guide
+    Guia
   
 
           </label>
@@ -420,14 +540,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../documentation/core-concepts/" class="md-nav__link">
+      <a href="../../guide/getting-started/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Core Concepts
+    Primeiros Passos
   
 
     
@@ -448,14 +568,156 @@
   
   
     <li class="md-nav__item">
-      <a href="../discovery/" class="md-nav__link">
+      <a href="../../documentation/core-concepts/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Discovery
+    Conceitos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../roles-and-responsibilities/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Papéis e Responsabilidades
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_1_5" id="__nav_1_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migração e Histórico
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Migração e Histórico
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/migration-v1-v2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migração V1→V2
   
 
     
@@ -503,10 +765,20 @@
     </li>
   
 
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
     
       
       
   
+  
+    
   
   
   
@@ -514,7 +786,68 @@
     
       
         
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
           
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protocolo
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Protocolo
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
         
       
         
@@ -536,7 +869,766 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_1" id="__nav_2_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fundamentos
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Fundamentos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../principles/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Princípios
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guidelines/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Regras Gerais
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../error-handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tratamento de Erros
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../flows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fluxos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../evolution/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evolução
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../discovery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Discovery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Autenticação
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Capabilities
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Capabilities
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../merchant/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Merchant / Cardápio
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../orders/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orders / Pedidos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logística
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logística
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#visao-geral" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Visão Geral
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#papeis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Papéis
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#modelo-de-dados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modelo de dados
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Modelo de dados">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#entidade-delivery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entidade Delivery
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ciclo-de-vida-da-entrega" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ciclo de vida da entrega
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fluxo-principal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fluxo principal
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Fluxo principal">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-verificar-disponibilidade-e-obter-cotacao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Verificar disponibilidade e obter cotação
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-criar-a-entrega" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Criar a entrega
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-acompanhar-a-progressao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Acompanhar a progressão
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-sinalizar-prontidao-para-coleta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Sinalizar prontidão para coleta
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-confirmar-coleta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Confirmar coleta
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-confirmar-entrega" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Confirmar entrega
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#problemas-durante-a-entrega" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problemas durante a entrega
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cancelamento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cancelamento
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#discovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discovery
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#autorizacao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Autorização
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#regras-normativas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regras normativas
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../customer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Customer / CRM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../extensions/loyalty/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fidelidade
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../indoor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Indoor / Salão
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -547,7 +1639,7 @@
   <span class="md-ellipsis">
     
   
-    API Reference
+    Referência da API
   
 
     
@@ -558,24 +1650,80 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
   
-    API Reference
+    Referência da API
   
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
               
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Infraestrutura
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Infraestrutura
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -591,7 +1739,7 @@
   <span class="md-ellipsis">
     
   
-    Authentication
+    Autenticação
   
 
     
@@ -633,6 +1781,160 @@
 
               
             
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Capabilities
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Capabilities
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/merchant/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Merchant
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/orders/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pedidos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/logistics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logística
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
               
                 
   
@@ -647,7 +1949,7 @@
   <span class="md-ellipsis">
     
   
-    Customer & Loyalty
+    Customer & Fidelidade
   
 
     
@@ -675,7 +1977,7 @@
   <span class="md-ellipsis">
     
   
-    Indoor / Salão
+    Indoor
   
 
     
@@ -684,6 +1986,14 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -723,10 +2033,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-overview" class="md-nav__link">
+  <a href="#visao-geral" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Overview
+        Visão Geral
       
     </span>
   </a>
@@ -734,10 +2044,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-scope-and-extensions" class="md-nav__link">
+  <a href="#papeis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Scope and Extensions
+        Papéis
       
     </span>
   </a>
@@ -745,22 +2055,33 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-players" class="md-nav__link">
+  <a href="#modelo-de-dados" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Players
+        Modelo de dados
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. Players">
+    <nav class="md-nav" aria-label="Modelo de dados">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#providerconsumer-mapping" class="md-nav__link">
+  <a href="#entidade-delivery" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Provider/Consumer Mapping
+        Entidade Delivery
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ciclo-de-vida-da-entrega" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ciclo de vida da entrega
       
     </span>
   </a>
@@ -773,66 +2094,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-interaction-between-players" class="md-nav__link">
+  <a href="#fluxo-principal" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Interaction Between Players
+        Fluxo principal
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-flows-statuses-and-events" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Flows (Statuses and Events)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-discovery-well-known-configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Discovery / Well-Known Configuration
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-authorization" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. Authorization
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#8-operations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. Operations
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="8. Operations">
+    <nav class="md-nav" aria-label="Fluxo principal">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#delivery-fields-top-level" class="md-nav__link">
+  <a href="#1-verificar-disponibilidade-e-obter-cotacao" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Delivery Fields (Top Level)
+        1. Verificar disponibilidade e obter cotação
       
     </span>
   </a>
@@ -840,10 +2117,54 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#delivery-example" class="md-nav__link">
+  <a href="#2-criar-a-entrega" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Delivery Example
+        2. Criar a entrega
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-acompanhar-a-progressao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Acompanhar a progressão
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-sinalizar-prontidao-para-coleta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Sinalizar prontidão para coleta
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-confirmar-coleta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Confirmar coleta
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-confirmar-entrega" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Confirmar entrega
       
     </span>
   </a>
@@ -852,6 +2173,61 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#problemas-durante-a-entrega" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problemas durante a entrega
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cancelamento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cancelamento
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#discovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discovery
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#autorizacao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Autorização
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#regras-normativas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regras normativas
+      
+    </span>
+  </a>
   
 </li>
       
@@ -872,174 +2248,278 @@
 
 
   
+    <a href="https://github.com/Abrasel-Nacional/opendelivery-v2/edit/main/docs/protocol/logistics.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
   
 
 
-<h1 id="logistics-capability">Logistics Capability<a class="headerlink" href="#logistics-capability" title="Permanent link">&para;</a></h1>
-<h2 id="1-overview">1. Overview<a class="headerlink" href="#1-overview" title="Permanent link">&para;</a></h2>
-<p>Logistics Capability defines delivery coordination primitives linked to an order context.</p>
-<p>Delivery coordination MUST reference an existing order identifier.</p>
-<h2 id="2-scope-and-extensions">2. Scope and Extensions<a class="headerlink" href="#2-scope-and-extensions" title="Permanent link">&para;</a></h2>
-<p>Logistics Capability covers:</p>
+<h1 id="logistica">Logística<a class="headerlink" href="#logistica" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>Capability name: <code>logistics</code></p>
+</blockquote>
+<h2 id="visao-geral">Visão Geral<a class="headerlink" href="#visao-geral" title="Permanent link">&para;</a></h2>
+<p>A capability <strong>Logística</strong> define os primitivos de coordenação de entrega vinculados a um contexto de pedido. Ela conecta a Ordering Application ou o Software Service à Plataforma de Logística que executará ou orquestrará a entrega.</p>
+<p>Esta capability cobre:</p>
 <ul>
-<li>Delivery request and delivery context exchange</li>
-<li>Delivery progression tracking</li>
-<li>Delivery problem and incident signaling</li>
-<li>Delivery cancellation and completion outcomes</li>
-<li>Availability and pricing declarations</li>
+<li>Consulta de disponibilidade e cotação de entrega</li>
+<li>Criação e acompanhamento de uma entrega</li>
+<li>Progressão do status (despacho, coleta, trânsito, entrega)</li>
+<li>Reporte de problemas com preservação de histórico</li>
+<li>Cancelamento explícito e auditável</li>
 </ul>
-<p>Logistics Capability does not cover:</p>
+<p>Esta capability <strong>não</strong> cobre:</p>
 <ul>
-<li>Core order fulfillment status ownership</li>
-<li>Merchant catalog publication</li>
-<li>Customer CRM/loyalty behavior</li>
+<li>Ciclo de vida do pedido (capability Orders)</li>
+<li>Publicação de catálogo (capability Merchant)</li>
+<li>Relacionamento com cliente e CRM (capability Customer)</li>
 </ul>
-<p>Current extension set: no Logistics extensions are defined in this version.</p>
-<h2 id="3-players">3. Players<a class="headerlink" href="#3-players" title="Permanent link">&para;</a></h2>
-<ul>
-<li><code>ORDERING_APPLICATION</code>: sends delivery demand and receives tracking updates</li>
-<li><code>SOFTWARE_SERVICE</code>: coordinates merchant-side delivery context</li>
-<li><code>DELIVERY_PLATFORM</code>: executes or orchestrates delivery progression</li>
-</ul>
-<h3 id="providerconsumer-mapping">Provider/Consumer Mapping<a class="headerlink" href="#providerconsumer-mapping" title="Permanent link">&para;</a></h3>
+<hr />
+<h2 id="papeis">Papéis<a class="headerlink" href="#papeis" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>participant</th>
-<th>typical role as Provider</th>
-<th>typical role as Consumer</th>
+<th>Papel</th>
+<th>Responsabilidade</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>DELIVERY_PLATFORM</code></td>
-<td>Exposes delivery quote/tracking/status interfaces</td>
-<td>Consumes dispatch and order-delivery context</td>
+<td><strong>Delivery Platform</strong></td>
+<td>Executa ou orquestra a entrega. Expõe as interfaces de disponibilidade, despacho, rastreamento e cancelamento.</td>
 </tr>
 <tr>
-<td><code>SOFTWARE_SERVICE</code></td>
-<td>Exposes merchant operational delivery context interfaces</td>
-<td>Consumes delivery progression and incident events</td>
+<td><strong>Software Service</strong></td>
+<td>Disponibiliza contexto operacional do estabelecimento (endereço, horário, readiness). Consome progressão e eventos de entrega.</td>
 </tr>
 <tr>
-<td><code>ORDERING_APPLICATION</code></td>
-<td>Exposes optional callback/webhook targets when agreed</td>
-<td>Consumes delivery status and ETA updates</td>
+<td><strong>Ordering Application</strong></td>
+<td>Origina a demanda de entrega e acompanha o status. Consome atualizações de rastreamento e ETA.</td>
 </tr>
 </tbody>
 </table>
-<h2 id="4-interaction-between-players">4. Interaction Between Players<a class="headerlink" href="#4-interaction-between-players" title="Permanent link">&para;</a></h2>
-<p>Typical interaction model:</p>
-<ol>
-<li>Order context is mapped to delivery context.</li>
-<li>Delivery participant accepts/rejects service and returns estimates.</li>
-<li>Delivery progression updates are exchanged asynchronously.</li>
-<li>Delivery exceptions and cancellation are communicated explicitly.</li>
-</ol>
-<p>Cancellation of delivery MUST be explicit and auditable.</p>
-<h2 id="5-flows-statuses-and-events">5. Flows (Statuses and Events)<a class="headerlink" href="#5-flows-statuses-and-events" title="Permanent link">&para;</a></h2>
-<p>Logistics progression MUST expose explicit delivery facts/states.</p>
-<p>Expected flow includes:</p>
-<ul>
-<li>Dispatch or assignment</li>
-<li>Pickup readiness and pickup completion</li>
-<li>In-transit progression</li>
-<li>Delivered or canceled terminal state</li>
-<li>Problem reporting with history continuity</li>
-</ul>
-<p>Problem reporting MUST preserve problem history context to support traceability.</p>
-<h2 id="6-discovery-well-known-configuration">6. Discovery / Well-Known Configuration<a class="headerlink" href="#6-discovery-well-known-configuration" title="Permanent link">&para;</a></h2>
-<p>Participants exposing logistics behavior MUST declare capability name <code>logistics</code> in discovery.</p>
-<p>Discovery declaration SHOULD include:</p>
-<ul>
-<li>Service coverage and operation mode support</li>
-<li>Pricing/availability endpoint references</li>
-<li>Tracking and event callback/polling support</li>
-</ul>
-<p>Availability and pricing declarations SHOULD be deterministic for the same input context.</p>
-<h2 id="7-authorization">7. Authorization<a class="headerlink" href="#7-authorization" title="Permanent link">&para;</a></h2>
-<p>Logistics operations require authenticated calls with scope validation.</p>
-<p>Implementations MUST enforce scope-based authorization according to <a href="../authentication/">Authentication and Authorization</a>.</p>
-<p>Recommended minimum scope families:</p>
-<ul>
-<li><code>logistics.read</code></li>
-<li><code>logistics.write</code></li>
-<li><code>logistics.events.write</code></li>
-</ul>
-<h2 id="8-operations">8. Operations<a class="headerlink" href="#8-operations" title="Permanent link">&para;</a></h2>
-<p>Reference operations include quote/availability, dispatch coordination, tracking updates, incident reporting, and cancellation. Final endpoint contracts are defined in REST API Binding pages.</p>
-<h3 id="delivery-fields-top-level">Delivery Fields (Top Level)<a class="headerlink" href="#delivery-fields-top-level" title="Permanent link">&para;</a></h3>
+<p>Em todas as operações desta capability, a <strong>Delivery Platform é o Provider</strong> das interfaces; os demais papéis são Consumers.</p>
+<hr />
+<h2 id="modelo-de-dados">Modelo de dados<a class="headerlink" href="#modelo-de-dados" title="Permanent link">&para;</a></h2>
+<h3 id="entidade-delivery">Entidade Delivery<a class="headerlink" href="#entidade-delivery" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
-<th>name</th>
-<th>type</th>
-<th>required</th>
-<th>description</th>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Obrigatório</th>
+<th>Descrição</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>delivery.id</code></td>
+<td><code>id</code></td>
 <td>string</td>
-<td>YES</td>
-<td>Delivery coordination identifier</td>
+<td>SIM</td>
+<td>Identificador único da entrega</td>
 </tr>
 <tr>
-<td><code>delivery.orderId</code></td>
+<td><code>orderId</code></td>
 <td>string</td>
-<td>YES</td>
-<td>Related order identifier</td>
+<td>SIM</td>
+<td>Identificador do pedido — referência compartilhada entre as partes</td>
 </tr>
 <tr>
-<td><code>delivery.merchant</code></td>
+<td><code>status</code></td>
+<td>string (enum)</td>
+<td>SIM</td>
+<td>Status atual da entrega</td>
+</tr>
+<tr>
+<td><code>merchant</code></td>
 <td>object</td>
-<td>YES</td>
-<td>Merchant context</td>
+<td>SIM</td>
+<td>Estabelecimento de origem (endereço, contato)</td>
 </tr>
 <tr>
-<td><code>delivery.pickup</code></td>
+<td><code>pickup</code></td>
 <td>object</td>
-<td>YES</td>
-<td>Pickup context</td>
+<td>SIM</td>
+<td>Contexto de coleta (endereço, contato)</td>
 </tr>
 <tr>
-<td><code>delivery.dropoff</code></td>
+<td><code>dropoff</code></td>
 <td>object</td>
-<td>YES</td>
-<td>Destination context</td>
+<td>SIM</td>
+<td>Contexto de entrega (endereço, contato)</td>
 </tr>
 <tr>
-<td><code>delivery.vehicle</code></td>
+<td><code>courier</code></td>
 <td>object</td>
-<td>NO</td>
-<td>Vehicle context</td>
+<td>NÃO</td>
+<td>Informações do entregador (nome, telefone, veículo, rastreamento)</td>
 </tr>
 <tr>
-<td><code>delivery.price</code></td>
+<td><code>price</code></td>
 <td>object</td>
-<td>NO</td>
-<td>Delivery pricing context</td>
+<td>NÃO</td>
+<td>Custo da entrega (valor, moeda)</td>
 </tr>
 <tr>
-<td><code>delivery.eta</code></td>
+<td><code>eta</code></td>
 <td>string</td>
-<td>NO</td>
-<td>Estimated delivery timing (ISO 8601 date-time)</td>
+<td>NÃO</td>
+<td>Estimativa de tempo de entrega (ISO 8601 date-time)</td>
+</tr>
+<tr>
+<td><code>trackingUrl</code></td>
+<td>string</td>
+<td>NÃO</td>
+<td>URL de rastreamento em tempo real</td>
 </tr>
 </tbody>
 </table>
-<h3 id="delivery-example">Delivery Example<a class="headerlink" href="#delivery-example" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;delivery&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;delivery-001&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;orderId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;order-123&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;merchant&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;merchant-123&quot;</span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;pickup&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
-<span class="w">    </span><span class="nt">&quot;dropoff&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<h3 id="ciclo-de-vida-da-entrega">Ciclo de vida da entrega<a class="headerlink" href="#ciclo-de-vida-da-entrega" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>stateDiagram-v2
+    direction LR
+    [*] --&gt; PENDING : POST /logistics/delivery
+    PENDING --&gt; ASSIGNED : entregador designado
+    ASSIGNED --&gt; IN_TRANSIT : coleta confirmada
+    IN_TRANSIT --&gt; DELIVERED : entrega confirmada
+    PENDING --&gt; CANCELLED : cancelamento
+    ASSIGNED --&gt; CANCELLED : cancelamento
+    IN_TRANSIT --&gt; FAILED : falha irrecuperável</code></pre>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Significado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>PENDING</code></td>
+<td>Entrega criada, aguardando designação de entregador</td>
+</tr>
+<tr>
+<td><code>ASSIGNED</code></td>
+<td>Entregador designado, a caminho da coleta</td>
+</tr>
+<tr>
+<td><code>IN_TRANSIT</code></td>
+<td>Item coletado, em trânsito para o endereço de entrega</td>
+</tr>
+<tr>
+<td><code>DELIVERED</code></td>
+<td>Entrega concluída</td>
+</tr>
+<tr>
+<td><code>CANCELLED</code></td>
+<td>Entrega cancelada (antes da coleta)</td>
+</tr>
+<tr>
+<td><code>FAILED</code></td>
+<td>Falha irrecuperável após coleta iniciada</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="fluxo-principal">Fluxo principal<a class="headerlink" href="#fluxo-principal" title="Permanent link">&para;</a></h2>
+<h3 id="1-verificar-disponibilidade-e-obter-cotacao">1. Verificar disponibilidade e obter cotação<a class="headerlink" href="#1-verificar-disponibilidade-e-obter-cotacao" title="Permanent link">&para;</a></h3>
+<p>Antes de criar uma entrega, o Consumer DEVE verificar se a Delivery Platform cobre o par origem/destino e obter a cotação:</p>
+<div class="highlight"><pre><span></span><code>POST /logistics/availability
+</code></pre></div>
+<p>A resposta inclui <code>available: true/false</code>, a cotação de preço e o tempo estimado. Se <code>available: false</code>, o Consumer DEVE <strong>não</strong> criar a entrega com esta plataforma e tentar outra (se declarada no discovery).</p>
+<h3 id="2-criar-a-entrega">2. Criar a entrega<a class="headerlink" href="#2-criar-a-entrega" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>POST /logistics/delivery
+</code></pre></div>
+<p>Retorna <code>202 Accepted</code>. A entrega é criada em status <code>PENDING</code>. O <code>orderId</code> é o identificador compartilhado que as partes usam para correlacionar a entrega com o pedido de negócio — não pressupõe que a capability Orders esteja implementada.</p>
+<p>A Delivery Platform DEVE associar o <code>orderId</code> ao registro interno de entrega. Este vínculo é permanente e DEVE ser preservado em todos os eventos subsequentes.</p>
+<h3 id="3-acompanhar-a-progressao">3. Acompanhar a progressão<a class="headerlink" href="#3-acompanhar-a-progressao" title="Permanent link">&para;</a></h3>
+<p>O Consumer consulta o status atual via:</p>
+<div class="highlight"><pre><span></span><code>GET /logistics/delivery/{orderId}
+</code></pre></div>
+<p>Ou recebe atualizações assíncronas via eventos (push), se declarado no discovery.</p>
+<h3 id="4-sinalizar-prontidao-para-coleta">4. Sinalizar prontidão para coleta<a class="headerlink" href="#4-sinalizar-prontidao-para-coleta" title="Permanent link">&para;</a></h3>
+<p>Quando o pedido está pronto para ser coletado pelo entregador, o Software Service ou Ordering Application notifica a Delivery Platform:</p>
+<div class="highlight"><pre><span></span><code>POST /logistics/delivery/{orderId}/ready-for-pickup
+</code></pre></div>
+<h3 id="5-confirmar-coleta">5. Confirmar coleta<a class="headerlink" href="#5-confirmar-coleta" title="Permanent link">&para;</a></h3>
+<p>A Delivery Platform confirma que o entregador coletou o pedido:</p>
+<div class="highlight"><pre><span></span><code>POST /logistics/delivery/{orderId}/collected
+</code></pre></div>
+<p>A entrega transita para <code>IN_TRANSIT</code>.</p>
+<h3 id="6-confirmar-entrega">6. Confirmar entrega<a class="headerlink" href="#6-confirmar-entrega" title="Permanent link">&para;</a></h3>
+<p>A Delivery Platform confirma que o pedido chegou ao cliente:</p>
+<div class="highlight"><pre><span></span><code>POST /logistics/delivery/{orderId}/delivered
+</code></pre></div>
+<p>A entrega transita para <code>DELIVERED</code>.</p>
+<hr />
+<h2 id="problemas-durante-a-entrega">Problemas durante a entrega<a class="headerlink" href="#problemas-durante-a-entrega" title="Permanent link">&para;</a></h2>
+<p>Incidentes (endereço não encontrado, cliente ausente, problema no veículo) são reportados sem encerrar a entrega:</p>
+<div class="highlight"><pre><span></span><code>POST /logistics/delivery/{orderId}/problem
+</code></pre></div>
+<p>O reporte de problema DEVE preservar o histórico de ocorrências — cada chamada adiciona uma entrada, não substitui as anteriores. O status da entrega permanece <code>IN_TRANSIT</code> exceto se o problema for irrecuperável (<code>FAILED</code>).</p>
+<hr />
+<h2 id="cancelamento">Cancelamento<a class="headerlink" href="#cancelamento" title="Permanent link">&para;</a></h2>
+<p>O cancelamento é explícito e auditável:</p>
+<div class="highlight"><pre><span></span><code>POST /logistics/delivery/{orderId}/cancel
+</code></pre></div>
+<p>O cancelamento DEVE ser possível nos status <code>PENDING</code> e <code>ASSIGNED</code>. Em <code>IN_TRANSIT</code>, o cancelamento pode ser rejeitado pela Delivery Platform com <code>422 Unprocessable Entity</code> — neste caso, o Consumer deve tratar a situação como falha e acionar suporte.</p>
+<hr />
+<h2 id="discovery">Discovery<a class="headerlink" href="#discovery" title="Permanent link">&para;</a></h2>
+<p>Participantes que expõem a capability Logística DEVEM declarar <code>logistics</code> no documento well-known.</p>
+<div class="highlight"><pre><span></span><code><span class="nt">&quot;capabilities&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;logistics&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;baseUrl&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://api.example.com&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;operations&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;availability&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;delivery&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;tracking&quot;</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;trackingMode&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;push&quot;</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
+<p>O campo <code>trackingMode</code> DEVE ser <code>push</code> (eventos assíncronos) ou <code>pull</code> (polling via GET). A Ordering Application DEVE adaptar sua estratégia de acompanhamento conforme o modo declarado.</p>
+<hr />
+<h2 id="autorizacao">Autorização<a class="headerlink" href="#autorizacao" title="Permanent link">&para;</a></h2>
+<p>Todas as operações da capability Logística exigem autenticação Bearer (OAuth 2.0) com credenciais geradas <strong>por aplicação</strong> (não por estabelecimento).</p>
+<p>Escopos mínimos recomendados:</p>
+<table>
+<thead>
+<tr>
+<th>Escopo</th>
+<th>Operações</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>logistics.read</code></td>
+<td>Consulta de disponibilidade e status</td>
+</tr>
+<tr>
+<td><code>logistics.write</code></td>
+<td>Criação e progressão de entregas</td>
+</tr>
+<tr>
+<td><code>logistics.events.write</code></td>
+<td>Emissão de eventos de entrega</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="regras-normativas">Regras normativas<a class="headerlink" href="#regras-normativas" title="Permanent link">&para;</a></h2>
+<p><strong>A Delivery Platform DEVE:</strong></p>
+<ul>
+<li>Retornar <code>202 Accepted</code> para todas as operações de mutação</li>
+<li>Preservar o <code>orderId</code> em todos os eventos emitidos</li>
+<li>Manter histórico de problemas — cada <code>POST /problem</code> adiciona uma entrada</li>
+<li>Responder <code>422 Unprocessable Entity</code> para transições de estado inválidas</li>
+<li>Declarar <code>trackingMode</code> no discovery</li>
+</ul>
+<p><strong>O Consumer (Ordering Application ou Software Service) DEVE:</strong></p>
+<ul>
+<li>Verificar disponibilidade (<code>POST /logistics/availability</code>) antes de criar uma entrega</li>
+<li>Tratar <code>202 Accepted</code> como confirmação de recebimento, não de execução</li>
+<li>Implementar estratégia de acompanhamento compatível com o <code>trackingMode</code> declarado</li>
+<li>Cancelar a entrega explicitamente antes de cancelar o pedido correspondente</li>
+</ul>
+<hr />
+<p><strong>Referência completa de campos e contratos REST:</strong> <a href="../../reference/logistics/">Referência da API — Logística →</a></p>
 
 
 
@@ -1057,6 +2537,8 @@
             </div>
           
           
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
         
@@ -1069,6 +2551,46 @@
       </main>
       
         <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../orders/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Orders / Pedidos">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Orders / Pedidos
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../customer/" class="md-footer__link md-footer__link--next" aria-label="Next: Customer / CRM">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Customer / CRM
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
@@ -1095,51 +2617,274 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "navigation.indexes"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "navigation.indexes", "navigation.footer", "content.code.copy", "content.tooltips", "content.tabs.link", "content.action.edit", "toc.follow", "search.suggest", "search.highlight", "search.share"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
 
       <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+      
     
+
+<!-- Filtro SVG: converte o logo branco para o verde escuro da marca (#004621) -->
+<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"
+     style="position:absolute;width:0;height:0;overflow:hidden">
+  <defs>
+    <filter id="od-logo-color" color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix"
+        values="0 0 0 0 0
+                0 0 0 0 0.2745
+                0 0 0 0 0.1294
+                0 0 0 1 0"/>
+    </filter>
+  </defs>
+</svg>
+
 <script>
+  /* Move (não clona) o componente de busca do Material para o topo do
+     menu lateral esquerdo. É um "move" de verdade — o mesmo nó de DOM
+     que o bundle.js do Material já vai inicializar — porque mover um
+     elemento via insertBefore preserva os listeners e a referência que
+     o JS do tema guarda; só a posição no documento muda. Como o nó
+     passa a viver dentro de #__sidebar-primary, ele herda o atributo
+     `hidden` que o Material aplica nessa sidebar via `page.meta.hide`
+     (ver docs/reference/*.md), então a busca some sozinha nas páginas
+     do ReDoc — sem precisar de lógica extra por rota. O CSS que
+     reestiliza esse componente está em stylesheets/theme.css: as
+     regras nativas de "aberto/foco" do Material exigem `.md-header`
+     como ancestral, o que deixa de ser verdade aqui. */
+  (function () {
+    var search = document.querySelector('[data-md-component="search"]');
+    var sidebarInner = document.querySelector('.md-sidebar--primary .md-sidebar__inner');
+    if (!search || !sidebarInner) return;
+    search.classList.add('od-sidebar-search');
+    sidebarInner.insertBefore(search, sidebarInner.firstChild);
+
+    /* O dropdown de resultados (.md-search__output) é position:fixed
+       (ver theme.css) para escapar do overflow-y:auto do menu, que do
+       contrário recortaria o painel na largura da coluna. Como ele
+       saiu do fluxo normal, a posição precisa ser calculada a partir
+       do retângulo real da caixa de busca — e recalculada sempre que
+       a página rola, porque .md-sidebar é position:sticky. */
+    var form = search.querySelector('.md-search__form');
+    var output = search.querySelector('.md-search__output');
+    var input = search.querySelector('.md-search__input');
+    if (!form || !output) return;
+
+    function positionOutput() {
+      var r = form.getBoundingClientRect();
+      output.style.setProperty('--od-search-left', r.left + 'px');
+      output.style.setProperty('--od-search-top', (r.bottom + 6) + 'px');
+      output.style.maxWidth = Math.max(280, window.innerWidth - r.left - 16) + 'px';
+    }
+
+    positionOutput();
+    window.addEventListener('resize', positionOutput);
+    window.addEventListener('scroll', positionOutput, true);
+    if (input) input.addEventListener('input', positionOutput);
+    search.addEventListener('focusin', positionOutput);
+
+    /* Fechar ao clicar fora. Tentamos antes uma máscara full-screen
+       (div transparente cobrindo a tela, clique nela fecha), mas
+       .md-sidebar--primary é position:sticky com z-index:auto — então
+       TUDO dentro dela (form e output, não importa o z-index que a
+       gente desse a eles) fica preso na "fatia" auto dessa sidebar no
+       stacking context da página, sempre abaixo de qualquer elemento
+       com z-index explícito como a máscara. Resultado: a máscara
+       cobria até o próprio dropdown e bloqueava cliques e scroll nele.
+       Detectar o clique fora pelo alvo do evento não depende de
+       camadas/z-index, então não tem esse problema. */
+    var checkbox = document.getElementById('__search');
+
+    function closeSearch() {
+      if (!checkbox.checked) return;
+      checkbox.checked = false;
+      checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    document.addEventListener('click', function (e) {
+      if (!checkbox.checked) return;
+      /* Ao clicar no ícone de lupa (um <label for="__search">), o
+         navegador dispara DOIS cliques que chegam aqui: o do próprio
+         label e um clique sintético no checkbox #__search (a ativação
+         que alterna o estado). Esse clique sintético tem target = o
+         checkbox, que vive fora de .md-search — sem ignorá-lo, ele era
+         lido como "clique fora" e fechava a busca no mesmo gesto que a
+         abria. search.contains() cobre form, output e o label interno;
+         o `=== checkbox` cobre o clique sintético. */
+      if (e.target === checkbox) return;
+      if (search.contains(e.target)) return;
+      closeSearch();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeSearch();
+    });
+  })();
+</script><script>
 (function () {
+
+  /* Move as tabs para dentro da linha do header (logo | nav | github) */
+  (function () {
+    var tabs     = document.querySelector('.md-tabs');
+    var tabsList = tabs && tabs.querySelector('.md-tabs__list');
+    var inner    = document.querySelector('.md-header__inner');
+    var title    = inner && inner.querySelector('.md-header__title');
+    var source   = inner && inner.querySelector('.md-header__source');
+    if (!tabsList || !inner) return;
+
+    var nav = document.createElement('nav');
+    nav.className = 'od-header-nav';
+    nav.appendChild(tabsList);
+
+    inner.insertBefore(nav, source || null);
+    if (title)  title.style.display  = 'none';
+    if (tabs)   tabs.remove();
+  })();
+
   var NAV = [
     
     {
-      title: "Guide",
-      children: [
-        
-        
-        { title: "Home", url: "https://abrasel-nacional.github.io/opendelivery-v2/", active: false },
-        
-        { title: "Core Concepts", url: "https://abrasel-nacional.github.io/opendelivery-v2/documentation/core-concepts/", active: false },
-        
-        { title: "Discovery", url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/discovery/", active: false },
-        
-        { title: "Roadmap", url: "https://abrasel-nacional.github.io/opendelivery-v2/documentation/roadmap/", active: false }
-        
-        
-      ]
+      title: "Guia",
+      children: [{
+      title: "In\u00edcio",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/",
+      active: false
+    },{
+      title: "Primeiros Passos",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/guide/getting-started/",
+      active: false
+    },{
+      title: "Conceitos",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/documentation/core-concepts/",
+      active: false
+    },{
+      title: "Pap\u00e9is e Responsabilidades",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/roles-and-responsibilities/",
+      active: false
+    },{
+      title: "Migra\u00e7\u00e3o e Hist\u00f3rico",
+      children: [{
+      title: "Changelog",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/guide/changelog/",
+      active: false
+    },{
+      title: "Migra\u00e7\u00e3o V1\u2192V2",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/guide/migration-v1-v2/",
+      active: false
+    },{
+      title: "Roadmap",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/documentation/roadmap/",
+      active: false
+    }]
+    }]
     },
     
     {
-      title: "API Reference",
-      children: [
-        
-        
-        { title: "Overview", url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/", active: false },
-        
-        { title: "Authentication", url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/authentication/", active: false },
-        
-        { title: "Discovery", url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/discovery/", active: false },
-        
-        { title: "Customer \u0026 Loyalty", url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/customer/", active: false },
-        
-        { title: "Indoor / Sal\u00e3o", url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/indoor/", active: false }
-        
-        
-      ]
+      title: "Protocolo",
+      children: [{
+      title: "Fundamentos",
+      children: [{
+      title: "Princ\u00edpios",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/principles/",
+      active: false
+    },{
+      title: "Regras Gerais",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/guidelines/",
+      active: false
+    },{
+      title: "Tratamento de Erros",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/error-handling/",
+      active: false
+    },{
+      title: "Fluxos",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/flows/",
+      active: false
+    },{
+      title: "Evolu\u00e7\u00e3o",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/evolution/",
+      active: false
+    }]
+    },{
+      title: "Discovery",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/discovery/",
+      active: false
+    },{
+      title: "Autentica\u00e7\u00e3o",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/authentication/",
+      active: false
+    },{
+      title: "Capabilities",
+      children: [{
+      title: "Merchant / Card\u00e1pio",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/merchant/",
+      active: false
+    },{
+      title: "Orders / Pedidos",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/orders/",
+      active: false
+    },{
+      title: "Log\u00edstica",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/logistics/",
+      active: true
+    },{
+      title: "Customer / CRM",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/customer/",
+      active: false
+    },{
+      title: "Fidelidade",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/extensions/loyalty/",
+      active: false
+    },{
+      title: "Indoor / Sal\u00e3o",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/indoor/",
+      active: false
+    }]
+    }]
+    },
+    
+    {
+      title: "Refer\u00eancia da API",
+      children: [{
+      title: "Vis\u00e3o Geral",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/",
+      active: false
+    },{
+      title: "Infraestrutura",
+      children: [{
+      title: "Autentica\u00e7\u00e3o",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/authentication/",
+      active: false
+    },{
+      title: "Discovery",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/discovery/",
+      active: false
+    }]
+    },{
+      title: "Capabilities",
+      children: [{
+      title: "Merchant",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/merchant/",
+      active: false
+    },{
+      title: "Pedidos",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/orders/",
+      active: false
+    },{
+      title: "Log\u00edstica",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/logistics/",
+      active: false
+    },{
+      title: "Customer \u0026 Fidelidade",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/customer/",
+      active: false
+    },{
+      title: "Indoor",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/indoor/",
+      active: false
+    }]
+    }]
     }
     
   ];
@@ -1150,42 +2895,78 @@
   document.body.appendChild(portal);
 
   var hideTimer = null;
+  var hideEndTimer = null;
+  var currentTab = null;
 
-  function fillPortal(children) {
-    portal.innerHTML = "";
+  function appendItems(children, nested) {
     children.forEach(function (child) {
+      /* Seção aninhada (sem url, mas com filhos): cabeçalho + itens recuados */
+      if (child.children) {
+        var label = document.createElement("li");
+        label.className = "od-group-label";
+        label.textContent = child.title;
+        portal.appendChild(label);
+        appendItems(child.children, true);
+        return;
+      }
+
       if (!child.url) return;
+
       var li = document.createElement("li");
       var a  = document.createElement("a");
       a.href = child.url;
       a.textContent = child.title;
-
-      if (child.active) {
-        a.classList.add("od-active");
-      }
+      if (nested) a.classList.add("od-nested");
+      if (child.active) a.classList.add("od-active");
 
       li.appendChild(a);
       portal.appendChild(li);
     });
   }
 
+  function fillPortal(children) {
+    portal.innerHTML = "";
+    appendItems(children, false);
+  }
+
   function showPortal(tab, children) {
     clearTimeout(hideTimer);
+    clearTimeout(hideEndTimer);
+    if (currentTab && currentTab !== tab) currentTab.classList.remove('od-tab-open');
+    currentTab = tab;
+    tab.classList.add('od-tab-open');
     fillPortal(children);
-    var r = tab.getBoundingClientRect();
+    var r   = tab.getBoundingClientRect();
+    var hdr = document.querySelector('.md-header');
+    var top = hdr ? hdr.getBoundingClientRect().bottom : r.bottom;
     portal.style.left = r.left + "px";
-    portal.style.top  = r.bottom + "px";
+    portal.style.top  = top + "px";
     portal.style.display = "block";
+    requestAnimationFrame(function () {
+      portal.classList.add("od-dropdown--visible");
+    });
   }
 
   function scheduleHide() {
     hideTimer = setTimeout(function () {
-      portal.style.display = "none";
-    }, 150);
+      /* Remove a classe primeiro — dispara a animação de fechar (CSS) */
+      portal.classList.remove("od-dropdown--visible");
+      /* Só esconde do DOM depois que a animação terminar */
+      hideEndTimer = setTimeout(function () {
+        portal.style.display = "none";
+        if (currentTab) {
+          currentTab.classList.remove('od-tab-open');
+          currentTab = null;
+        }
+      }, 160);
+    }, 80);
   }
 
   /* Manter aberto enquanto o mouse está sobre o próprio dropdown */
-  portal.addEventListener("mouseenter", function () { clearTimeout(hideTimer); });
+  portal.addEventListener("mouseenter", function () {
+    clearTimeout(hideTimer);
+    clearTimeout(hideEndTimer);
+  });
   portal.addEventListener("mouseleave", scheduleHide);
 
   function wireTabs() {
@@ -1198,6 +2979,15 @@
       if (!section || !section.children || section.children.length === 0) return;
 
       tab.classList.add("od-tab-has-dropdown");
+
+      /* Injeta o <span> da seta se ainda não existe */
+      var link = tab.querySelector('.md-tabs__link');
+      if (link && !link.querySelector('.od-chevron')) {
+        var chevron = document.createElement('span');
+        chevron.className = 'od-chevron';
+        chevron.setAttribute('aria-hidden', 'true');
+        link.appendChild(chevron);
+      }
 
       tab.addEventListener("mouseenter", function () {
         showPortal(tab, section.children);

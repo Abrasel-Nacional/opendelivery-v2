@@ -17,12 +17,65 @@
      quebrando a navegação e o realce do menu. O posicionamento abaixo do
      header + tabs é feito via `scrollYOffset` no Redoc.init (ver abaixo),
      que também desloca o menu fixo do ReDoc para fora da área do header. */
+  /* margin-top negativo afeta só conteúdo + painel direito (a sidebar
+     é position:fixed, então fica de fora do fluxo normal e não se
+     move com isso — ver odHeaderOffset no script abaixo, que é o
+     controle dela). Reduzido de -16 pra -8: -16 deixou a coluna do
+     meio colada demais no menu de tabs. */
   #redoc-container {
     background: #fff;
+    margin-top: -8px;
   }
 
   #redoc-container a {
     text-decoration: none;
+  }
+
+  /* ── Sidebar: grupo (depth0) ─────────────────────────────────────────────
+     Cabeçalhos dos x-tagGroups. Seletores de profundidade (-depthN) são
+     estáveis entre versões do ReDoc — não dependem de classes hash geradas. */
+  #redoc-container label.-depth0 {
+    font-size: 0.62rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: #00652e !important;
+    border-top: 1px solid #e2ede4;
+    margin-top: 2px !important;
+    padding-top: 12px !important;
+    padding-bottom: 2px !important;
+  }
+
+  /* Primeiro grupo: sem borda superior */
+  #redoc-container ul > li:first-child > label.-depth0 {
+    border-top: none;
+    padding-top: 4px !important;
+  }
+
+  /* ── Sidebar: tags e traits (depth1) ──────────────────────────────────── */
+  #redoc-container label.-depth1 {
+    font-size: 0.68rem !important;
+    font-weight: 500 !important;
+    border-radius: 6px;
+    transition: background-color .12s;
+  }
+
+  #redoc-container label.-depth1:hover {
+    background-color: rgba(0, 101, 46, 0.06);
+  }
+
+  /* ── Sidebar: endpoints e seções de traits (depth2) ───────────────────── */
+  #redoc-container label.-depth2 {
+    font-size: 0.64rem !important;
+    font-weight: 400 !important;
+    opacity: 0.8;
+    border-radius: 6px;
+    transition: background-color .12s, opacity .12s;
+  }
+
+  #redoc-container label.-depth2:hover {
+    background-color: rgba(0, 101, 46, 0.06);
+    opacity: 1;
   }
 </style>
 {% endblock %}
@@ -54,8 +107,72 @@
     var tabs = document.querySelector(".md-tabs");
     var h = header ? header.getBoundingClientRect().height : 48;
     var t = tabs ? tabs.getBoundingClientRect().height : 0;
-    return h + t;
+    /* -28: a sidebar do ReDoc é position:fixed (não participa do fluxo
+       normal), então o margin-top negativo do #redoc-container não a
+       move — esse offset é o único jeito de aproximá-la do header. */
+    return Math.max(0, h + t - 40);
   }
+
+  /* Mermaid é carregado globalmente via extra_javascript (mkdocs.yml), cujo
+     <script> fica no rodapé do documento — depois deste bloco inline, que
+     roda em tempo de parse. Por isso não podemos chamar `mermaid.*` direto
+     aqui: o global ainda não existe. Adiamos toda a configuração até o
+     `mermaid` estar disponível (poll leve; resolve antes do `load`, já que
+     o script do rodapé não é async/defer). */
+  var odMermaidObserver = null;
+
+  function odProcessMermaid() {
+    var blocks = document.querySelectorAll(
+      '#redoc-container code.language-mermaid:not([data-mermaid-processed])'
+    );
+    if (!blocks.length) return;
+    blocks.forEach(function (code) {
+      code.dataset.mermaidProcessed = '1';
+      var pre = code.closest('pre');
+      if (!pre) return;
+      var div = document.createElement('div');
+      div.className = 'mermaid';
+      div.textContent = code.textContent;
+      pre.replaceWith(div);
+    });
+    mermaid.run({ querySelector: '#redoc-container .mermaid:not([data-processed])' });
+  }
+
+  function odInitMermaid() {
+    if (typeof mermaid === 'undefined') {
+      setTimeout(odInitMermaid, 50);
+      return;
+    }
+
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'neutral',
+      flowchart: { curve: 'basis', useMaxWidth: true },
+      stateDiagram: { useMaxWidth: true }
+    });
+
+    odMermaidObserver = new MutationObserver(function (mutations) {
+      var hasNew = mutations.some(function (m) {
+        return Array.from(m.addedNodes).some(function (n) {
+          return n.nodeType === 1 && (
+            n.matches && n.matches('.language-mermaid') ||
+            n.querySelector && n.querySelector('.language-mermaid')
+          );
+        });
+      });
+      if (hasNew) odProcessMermaid();
+    });
+
+    /* ReDoc já pode ter renderizado blocos mermaid enquanto aguardávamos o
+       global carregar — processa o que já existe antes de observar novos. */
+    odProcessMermaid();
+    odMermaidObserver.observe(document.getElementById('redoc-container'), {
+      childList: true,
+      subtree: true
+    });
+  }
+
+  odInitMermaid();
 
   Redoc.init(
     {{ page.meta.openapi_spec | tojson }},
@@ -69,25 +186,55 @@
       showWebhookVerb: true,
       expandResponses: "200,201,202,203,204",
       theme: {
-        spacing: { sectionVertical: 20 },
+        spacing: { sectionVertical: 10 },
         colors: {
-          primary: { main: "#009688" }
+          primary: { main: "#00652e" }
         },
         typography: {
           fontSize: "15px",
-          lineHeight: "1.5",
-          fontFamily: "Roboto, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif",
+          lineHeight: "1.6",
+          fontFamily: "Inter, Roboto, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif",
           headings: {
-            fontFamily: "Roboto, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif",
+            fontFamily: "Inter, Roboto, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif",
             fontWeight: "600"
+          },
+          code: {
+            fontSize: "12.5px",
+            fontFamily: "'JetBrains Mono', 'Roboto Mono', monospace",
+            color: "#00652e",
+            backgroundColor: "#eef6f0",
+            wrap: true
+          },
+          links: {
+            color: "#00652e",
+            hover: "#004621"
           }
         },
         sidebar: {
-          width: "280px",
-          backgroundColor: "#fafafa"
+          width: "230px",
+          backgroundColor: "#f8faf8",
+          textColor: "#33453a",
+          activeTextColor: "#00652e",
+          groupItems: {
+            textTransform: "uppercase",
+            activeTextColor: "#00652e",
+            activeBackgroundColor: "rgba(0,101,46,0.08)"
+          },
+          level1Items: {
+            textTransform: "none",
+            activeTextColor: "#00652e",
+            activeBackgroundColor: "rgba(0,101,46,0.08)"
+          },
+          arrow: {
+            color: "#00652e"
+          }
         },
         rightPanel: {
-          width: "40%"
+          width: "35%",
+          backgroundColor: "#1f3b2c"
+        },
+        codeBlock: {
+          backgroundColor: "#18301f"
         }
       }
     },

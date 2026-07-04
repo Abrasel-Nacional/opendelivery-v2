@@ -1,6 +1,6 @@
 # Indoor Endpoints (REST/HTTP Binding)
 
-> Protocol specification: [Indoor Extension](../extensions/indoor.md)
+> Protocol specification: [Indoor Extension](../protocol/indoor.md)
 > This document defines the REST/HTTP transport contract for Indoor operations. It does not redefine protocol semantics.
 
 ## Fundamentals
@@ -225,4 +225,4 @@ Content-Type: application/json
 
 ## OpenAPI Artifact
 
-- Download: [rest-http-indoor.openapi.yaml](../reference/v2/rest-http-indoor.openapi.yaml)
+- Download: [indoor.openapi.yaml](../reference/v2/indoor.openapi.yaml)
