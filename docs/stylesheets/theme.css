@@ -93,7 +93,7 @@
 
 .md-header__button.md-logo img,
 .md-header__button.md-logo svg {
-  height: 2.2rem;
+  height: 2.8rem;
   width: auto;
   filter: url(#od-logo-color);
 }
@@ -159,12 +159,100 @@
   .od-header-nav { display: none; }
 }
 
-/* ── Sidebar esquerda: encostar no topo ───────────────────────────────
-   O Material reserva 1.2rem de padding-top por padrão (.md-sidebar) antes
-   do primeiro item — com a busca custom ocupando esse topo, o respiro
-   ficava grande demais em relação à barra de tabs. */
+/* ── Sidebar esquerda ─────────────────────────────────────────────────
+   Remove o recuo lateral que o Material aplica por padrão, encostando
+   a sidebar na borda esquerda da página. O grid (.md-main__inner) tem
+   margin: 0 auto que o centraliza — zerando o margin-left ele passa a
+   alinhar à esquerda e a sidebar toca a borda do viewport. */
+.md-main__inner {
+  margin-left: 0 !important;
+}
+
 .md-sidebar--primary {
-  padding-top: 0.3rem;
+  padding-top: 1.4rem;
+  padding-left: 0;
+  left: 0 !important;
+  border-right: 1px solid var(--od-border);
+}
+
+.md-sidebar--primary .md-sidebar__scrollwrap {
+  margin: 0;
+  padding-left: 0;
+}
+
+.md-sidebar--primary .md-sidebar__inner {
+  padding-left: 0;
+}
+
+/* ── Sidebar nav: equiparado ao estilo do ReDoc ───────────────────────
+   Mesmo fundo (#fafafa), mesmas fontes/tamanhos/cores e hover,
+   espelhando a hierarquia depth0/depth1/depth2 do ReDoc. */
+
+/* Fundo igual ao sidebar do ReDoc — precisa cobrir a sidebar inteira,
+   incluindo scrollwrap e inner que têm background próprio no Material. */
+.md-sidebar--primary,
+.md-sidebar--primary .md-sidebar__scrollwrap,
+.md-sidebar--primary .md-sidebar__inner {
+  background-color: #fafafa !important;
+}
+
+/* Seção de nível 0: título do nav (ex: "Guia", "Protocolo") →
+   equivalente ao depth0 do ReDoc */
+.md-sidebar--primary .md-nav__title {
+  font-size: 0.62rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--od-green) !important;
+  padding: 12px 1rem 2px;
+  border-top: 1px solid var(--od-border);
+  background-color: transparent;
+}
+
+.md-sidebar--primary .md-nav--primary > .md-nav__title {
+  border-top: none;
+  padding-top: 4px;
+}
+
+/* Links: o hover/active é aplicado no <li> (bloco de largura total)
+   em vez do <a>, evitando o efeito de "quadrado" em volta do texto. */
+.md-sidebar--primary .md-nav__item {
+  padding: 0 0.5rem;
+}
+
+.md-sidebar--primary .md-nav__link {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--od-text);
+  display: block;
+  border-radius: 6px;
+  padding: 0.3rem 0.5rem;
+  transition: background-color 0.12s;
+}
+
+.md-sidebar--primary .md-nav__link:hover {
+  background-color: rgba(0, 101, 46, 0.06);
+  color: var(--od-text);
+}
+
+/* Links de segundo nível (sub-itens) → equivalente ao depth2 do ReDoc */
+.md-sidebar--primary .md-nav__item .md-nav .md-nav__link {
+  font-size: 0.64rem;
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+.md-sidebar--primary .md-nav__item .md-nav .md-nav__link:hover {
+  background-color: rgba(0, 101, 46, 0.06);
+  opacity: 1;
+}
+
+/* Item ativo */
+.md-sidebar--primary .md-nav__link--active {
+  color: var(--od-green) !important;
+  font-weight: 600;
+  background-color: rgba(0, 101, 46, 0.08);
+  opacity: 1;
 }
 
 /* ── Medida de leitura ──────────────────────────────────────────────
@@ -274,7 +362,9 @@
   display: block;
   position: relative;
   z-index: 999;
-  padding: 0.15rem 0 0.4rem;
+  padding: 0.15rem 0 1.2rem;
+  margin-bottom: 0.6rem;
+  border-bottom: 1px solid var(--od-border);
 }
 
 .md-search.od-sidebar-search .md-search__inner {
@@ -369,10 +459,14 @@
 }
 
 @media screen and (max-width: 59.984375em) {
-  .md-search.od-sidebar-search .md-search__inner {
-    position: static;
-    height: auto;
-    opacity: 1;
-    transform: none;
+  /* No mobile o sidebar vira drawer — esconde o search customizado
+     para não conflitar com o botão de fechar (back) do drawer, e
+     reabilita o ícone de busca nativo no cabeçalho. */
+  .md-search.od-sidebar-search {
+    display: none;
+  }
+
+  .md-header__button.md-icon[for="__search"] {
+    display: inline-flex;
   }
 }
