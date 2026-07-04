@@ -31,6 +31,8 @@
   --od-shadow-sm:      0 1px 2px rgba(0, 70, 33, 0.06);
   --od-shadow-md:      0 4px 14px rgba(0, 70, 33, 0.10);
   --od-shadow-lg:      0 12px 32px rgba(0, 70, 33, 0.16);
+
+  --od-font-family:   "Google Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 /* ============================================================
@@ -58,6 +60,13 @@
 /* ── Header ──────────────────────────────────────────────────────────── */
 :root {
   --md-header-height: 3.4rem;
+}
+
+/* Aplicar fonte Google Sans globalmente */
+body,
+html,
+.md-typeset {
+  font-family: var(--od-font-family);
 }
 
 .md-header {
@@ -98,7 +107,7 @@
   filter: url(#od-logo-color);
 }
 
-/* ── Nav no header (tabs movidas via JS para a linha do logo) ─────────── */
+/* ── Nav no header (tabs com dropdown) ───────────────────────────────── */
 .od-header-nav {
   flex: 1;
   align-self: stretch;
@@ -145,7 +154,6 @@
 .od-header-nav .md-tabs__link--active {
   color: var(--od-green-dark);
   font-weight: 600;
-  /* underline na borda inferior — igual ao Google Docs */
   box-shadow: inset 0 -3px 0 var(--od-green-dark);
 }
 
@@ -157,102 +165,6 @@
 
 @media screen and (max-width: 59.9375em) {
   .od-header-nav { display: none; }
-}
-
-/* ── Sidebar esquerda ─────────────────────────────────────────────────
-   Remove o recuo lateral que o Material aplica por padrão, encostando
-   a sidebar na borda esquerda da página. O grid (.md-main__inner) tem
-   margin: 0 auto que o centraliza — zerando o margin-left ele passa a
-   alinhar à esquerda e a sidebar toca a borda do viewport. */
-.md-main__inner {
-  margin-left: 0 !important;
-}
-
-.md-sidebar--primary {
-  padding-top: 1.4rem;
-  padding-left: 0;
-  left: 0 !important;
-  border-right: 1px solid var(--od-border);
-}
-
-.md-sidebar--primary .md-sidebar__scrollwrap {
-  margin: 0;
-  padding-left: 0;
-}
-
-.md-sidebar--primary .md-sidebar__inner {
-  padding-left: 0;
-}
-
-/* ── Sidebar nav: equiparado ao estilo do ReDoc ───────────────────────
-   Mesmo fundo (#fafafa), mesmas fontes/tamanhos/cores e hover,
-   espelhando a hierarquia depth0/depth1/depth2 do ReDoc. */
-
-/* Fundo igual ao sidebar do ReDoc — precisa cobrir a sidebar inteira,
-   incluindo scrollwrap e inner que têm background próprio no Material. */
-.md-sidebar--primary,
-.md-sidebar--primary .md-sidebar__scrollwrap,
-.md-sidebar--primary .md-sidebar__inner {
-  background-color: #fafafa !important;
-}
-
-/* Seção de nível 0: título do nav (ex: "Guia", "Protocolo") →
-   equivalente ao depth0 do ReDoc */
-.md-sidebar--primary .md-nav__title {
-  font-size: 0.62rem !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--od-green) !important;
-  padding: 12px 1rem 2px;
-  border-top: 1px solid var(--od-border);
-  background-color: transparent;
-}
-
-.md-sidebar--primary .md-nav--primary > .md-nav__title {
-  border-top: none;
-  padding-top: 4px;
-}
-
-/* Links: o hover/active é aplicado no <li> (bloco de largura total)
-   em vez do <a>, evitando o efeito de "quadrado" em volta do texto. */
-.md-sidebar--primary .md-nav__item {
-  padding: 0 0.5rem;
-}
-
-.md-sidebar--primary .md-nav__link {
-  font-size: 0.68rem;
-  font-weight: 500;
-  color: var(--od-text);
-  display: block;
-  border-radius: 6px;
-  padding: 0.3rem 0.5rem;
-  transition: background-color 0.12s;
-}
-
-.md-sidebar--primary .md-nav__link:hover {
-  background-color: rgba(0, 101, 46, 0.06);
-  color: var(--od-text);
-}
-
-/* Links de segundo nível (sub-itens) → equivalente ao depth2 do ReDoc */
-.md-sidebar--primary .md-nav__item .md-nav .md-nav__link {
-  font-size: 0.64rem;
-  font-weight: 400;
-  opacity: 0.8;
-}
-
-.md-sidebar--primary .md-nav__item .md-nav .md-nav__link:hover {
-  background-color: rgba(0, 101, 46, 0.06);
-  opacity: 1;
-}
-
-/* Item ativo */
-.md-sidebar--primary .md-nav__link--active {
-  color: var(--od-green) !important;
-  font-weight: 600;
-  background-color: rgba(0, 101, 46, 0.08);
-  opacity: 1;
 }
 
 /* ── Medida de leitura ──────────────────────────────────────────────
@@ -338,135 +250,4 @@
   background-color: var(--od-green-soft);
 }
 
-/* ── Busca: migrada do cabeçalho para o topo do menu lateral ──────────
-   O ícone de busca original do cabeçalho fica escondido; o componente
-   real (.md-search) é movido via JS em main.html para dentro da
-   sidebar primária. Por isso as regras nativas do Material que regem
-   o estado "aberto" (`[data-md-toggle=search]:checked~.md-header ...`)
-   não se aplicam mais — replicamos aqui o equivalente, trocando o
-   ancestral por `.md-container`, que continua sendo irmão do checkbox
-   #__search no <body>. */
-.md-header__button.md-icon[for="__search"] {
-  display: none;
-}
 
-/* Visual inspirado no campo de busca do próprio ReDoc (extraído do
-   bundle: input.search-input) — sem caixa preenchida, só uma linha
-   inferior, fundo transparente e respiro nas laterais, bem menos
-   chamativo que o input padrão do Material. */
-/* position:relative + z-index eleva o stacking deste bloco; sem isso o
-   .md-search__output (position:fixed) é pintado atrás do conteúdo da
-   página e os resultados "somem". Não tem relação com a máscara antiga
-   (já removida) — é o que mantém o dropdown visível por cima de tudo. */
-.md-search.od-sidebar-search {
-  display: block;
-  position: relative;
-  z-index: 999;
-  padding: 0.15rem 0 1.2rem;
-  margin-bottom: 0.6rem;
-  border-bottom: 1px solid var(--od-border);
-}
-
-.md-search.od-sidebar-search .md-search__inner {
-  position: static;
-  float: none;
-  width: 100% !important;
-  padding: 0;
-  transform: none;
-  opacity: 1;
-  height: auto;
-}
-
-.md-search.od-sidebar-search .md-search__form {
-  margin: 0 1rem;
-  width: auto;
-  background-color: transparent;
-  border: none;
-  border-bottom: 1px solid var(--od-border);
-  border-radius: 0;
-  height: 1.7rem;
-  box-shadow: none;
-}
-
-.md-search.od-sidebar-search .md-search__form:hover {
-  background-color: transparent;
-  border-bottom-color: var(--od-green);
-}
-
-.md-search.od-sidebar-search .md-search__input {
-  color: var(--od-text);
-  font-weight: 600;
-  font-size: 0.72rem;
-  height: 1.7rem;
-}
-
-.md-search.od-sidebar-search .md-search__input::placeholder {
-  color: var(--od-text);
-  opacity: 0.5;
-}
-
-.md-search.od-sidebar-search .md-search__input ~ .md-search__icon,
-.md-search.od-sidebar-search .md-search__icon[for="__search"] {
-  color: var(--od-text);
-  opacity: 0.65;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.md-search.od-sidebar-search .md-search__icon svg {
-  height: 0.9rem;
-  width: 0.9rem;
-}
-
-.md-search.od-sidebar-search .md-search__options {
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-/* position:fixed escapa do overflow-y:auto do .md-sidebar__scrollwrap
-   (que recortaria o dropdown na largura do menu). left/top são
-   calculados via JS em main.html, a partir do retângulo real da caixa
-   de busca — não dá pra resolver isso só com CSS porque a posição
-   muda com o scroll (.md-sidebar é position:sticky). */
-.md-search.od-sidebar-search .md-search__output {
-  position: fixed;
-  left: var(--od-search-left, 0);
-  top: var(--od-search-top, 0);
-  /* Sobrescreve o width:100% nativo do Material (pensado pra viver
-     dentro da caixa de busca no cabeçalho). Em position:fixed, 100%
-     vira 100% da viewport — sem isso a sombra/borda do dropdown se
-     estica até a borda da página mesmo o conteúdo visível (que segue
-     a largura própria do .md-search__scrollwrap) terminando antes. */
-  width: auto;
-  opacity: 0;
-  max-height: 0;
-  overflow: hidden;
-  border-radius: var(--od-radius-sm);
-  transition: opacity 0.15s, max-height 0.15s;
-  z-index: 1000;
-  pointer-events: none;
-}
-
-#__search:checked ~ .md-container .od-sidebar-search.md-search .md-search__output {
-  opacity: 1;
-  max-height: 60vh;
-  pointer-events: auto;
-  box-shadow: var(--od-shadow-lg);
-}
-
-#__search:checked ~ .md-container .od-sidebar-search.md-search .md-search__scrollwrap {
-  max-height: 60vh;
-}
-
-@media screen and (max-width: 59.984375em) {
-  /* No mobile o sidebar vira drawer — esconde o search customizado
-     para não conflitar com o botão de fechar (back) do drawer, e
-     reabilita o ícone de busca nativo no cabeçalho. */
-  .md-search.od-sidebar-search {
-    display: none;
-  }
-
-  .md-header__button.md-icon[for="__search"] {
-    display: inline-flex;
-  }
-}
