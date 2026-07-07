@@ -32,7 +32,7 @@
   --od-shadow-md:      0 4px 14px rgba(0, 70, 33, 0.10);
   --od-shadow-lg:      0 12px 32px rgba(0, 70, 33, 0.16);
 
-  --od-font-family:   "Google Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --od-font-family:   "Google Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 /* ============================================================
@@ -172,7 +172,7 @@ html,
    só o conteúdo de prosa (não mexe no grid geral, então não afeta o
    layout full-bleed do ReDoc nem a largura da landing page). */
 .md-typeset {
-  font-size: 0.74rem;
+  font-size: 0.875rem;
   line-height: 1.7;
 }
 
@@ -198,8 +198,8 @@ html,
 }
 
 .md-typeset .highlight {
-  background-color: #f6faf7;
-  border: 1px solid var(--od-gray-200);
+  background-color: #edf2ee;
+  border: 1px solid #b8cfbc;
 }
 
 .md-clipboard {
@@ -250,4 +250,16 @@ html,
   background-color: var(--od-green-soft);
 }
 
+/* ── Pesos dos headings de conteúdo ────────────────────────────── */
+.md-typeset h1 { font-weight: 450; }
+.md-typeset h2 { font-weight: 500; }
+.md-typeset h3 { font-weight: 500; }
 
+/* ── Sidebar nav — item ativo ───────────────────────────────────── */
+.md-sidebar--primary .md-nav__link {
+  border-left: 3px solid transparent;
+}
+
+.md-sidebar--primary .md-nav__link--active {
+  border-left-color: var(--od-green);
+}

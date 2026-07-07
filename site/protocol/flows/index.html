@@ -65,50 +65,54 @@
     
 
 <style>
-  /* Caixa da seta (borda estática, não gira) */
+  /* Esconde as tabs originais antes do JS movê-las — evita flash visual */
+  .md-tabs {
+    display: none !important;
+  }
+
+  /* Remove o título "Open Delivery Protocol" do header */
+  .md-header__title {
+    display: none !important;
+  }
+
+  /* Círculo da seta */
   .od-chevron {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 1.35rem;
-    height: 1.35rem;
+    width: 1.05rem;
+    height: 1.05rem;
     margin-left: 3px;
-    border: 1.5px solid transparent;
-    border-radius: 4px;
+    border-radius: 50%;
+    background: rgba(0, 101, 46, 0.12);
     flex-shrink: 0;
     vertical-align: middle;
-    transition: border-color 0.18s ease;
+    transition: background 0.18s ease;
   }
 
-  /* A seta em si: chevron CSS (border), gira sem arrastar a caixa */
   .od-chevron::after {
     content: "";
     display: block;
     width: 7px;
-    height: 7px;
-    border-right: 2px solid var(--od-green-dark, #004621);
-    border-bottom: 2px solid var(--od-green-dark, #004621);
-    /* rotate(45deg) = canto inferior-direito aponta pra baixo → ∨
-       translateY(-1px) compensa centro visual sem sair do transition */
-    transform: rotate(45deg) translateY(-1px);
-    opacity: 0.5;
+    height: 5px;
+    background-color: var(--od-green-dark, #004621);
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+    opacity: 0.6;
     transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s;
   }
 
-  /* Hover ou aberto: borda aparece na caixa; só a seta gira */
   .od-tab-has-dropdown:hover .od-chevron,
   .od-tab-has-dropdown.od-tab-open .od-chevron {
-    border-color: var(--od-green-dark, #004621);
+    background: rgba(0, 101, 46, 0.2);
   }
 
-  /* -135° = 45° + 180° → canto aponta pra cima → ∧ */
   .od-tab-has-dropdown:hover .od-chevron::after,
   .od-tab-has-dropdown.od-tab-open .od-chevron::after {
-    transform: rotate(-135deg) translateY(-1px);
+    transform: rotate(180deg);
     opacity: 1;
   }
 
-  /* Dropdown — branco, borda, sombra suave */
+  /* Dropdown */
   .od-dropdown {
     display: none;
     position: fixed;
@@ -121,15 +125,12 @@
     border-radius: 0 0 var(--od-radius-md, .6rem) var(--od-radius-md, .6rem);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.09);
     min-width: 15rem;
-    /* abaixo do z-index do header (4) — header fica sempre por cima */
     z-index: 3;
     opacity: 0;
     transform: translateY(-8px);
-    /* Fechar: rápido, sobe */
     transition: opacity 0.13s ease-in, transform 0.13s ease-in;
   }
 
-  /* Abrir: suave, desce */
   .od-dropdown.od-dropdown--visible {
     opacity: 1;
     transform: translateY(0);
@@ -183,6 +184,10 @@
     padding-left: 1.8rem;
   }
 </style>
+
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js"
+  data-cf-beacon='{"token": "87d4a20a53ec410e91d508e91545ebdc"}'></script>
+
 
   </head>
   
@@ -317,7 +322,7 @@
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
   </div>
   <div class="md-source__repository">
-    Abrasel-Nacional/opendelivery-v2
+    ODP on GitHub
   </div>
 </a>
       </div>
@@ -453,7 +458,7 @@
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
   </div>
   <div class="md-source__repository">
-    Abrasel-Nacional/opendelivery-v2
+    ODP on GitHub
   </div>
 </a>
     </div>
@@ -2189,93 +2194,10 @@
                 0 0 0 1 0"/>
     </filter>
   </defs>
-</svg>
-
-<script>
-  /* Move (não clona) o componente de busca do Material para o topo do
-     menu lateral esquerdo. É um "move" de verdade — o mesmo nó de DOM
-     que o bundle.js do Material já vai inicializar — porque mover um
-     elemento via insertBefore preserva os listeners e a referência que
-     o JS do tema guarda; só a posição no documento muda. Como o nó
-     passa a viver dentro de #__sidebar-primary, ele herda o atributo
-     `hidden` que o Material aplica nessa sidebar via `page.meta.hide`
-     (ver docs/reference/*.md), então a busca some sozinha nas páginas
-     do ReDoc — sem precisar de lógica extra por rota. O CSS que
-     reestiliza esse componente está em stylesheets/theme.css: as
-     regras nativas de "aberto/foco" do Material exigem `.md-header`
-     como ancestral, o que deixa de ser verdade aqui. */
-  (function () {
-    var search = document.querySelector('[data-md-component="search"]');
-    var sidebarInner = document.querySelector('.md-sidebar--primary .md-sidebar__inner');
-    if (!search || !sidebarInner) return;
-    search.classList.add('od-sidebar-search');
-    sidebarInner.insertBefore(search, sidebarInner.firstChild);
-
-    /* O dropdown de resultados (.md-search__output) é position:fixed
-       (ver theme.css) para escapar do overflow-y:auto do menu, que do
-       contrário recortaria o painel na largura da coluna. Como ele
-       saiu do fluxo normal, a posição precisa ser calculada a partir
-       do retângulo real da caixa de busca — e recalculada sempre que
-       a página rola, porque .md-sidebar é position:sticky. */
-    var form = search.querySelector('.md-search__form');
-    var output = search.querySelector('.md-search__output');
-    var input = search.querySelector('.md-search__input');
-    if (!form || !output) return;
-
-    function positionOutput() {
-      var r = form.getBoundingClientRect();
-      output.style.setProperty('--od-search-left', r.left + 'px');
-      output.style.setProperty('--od-search-top', (r.bottom + 6) + 'px');
-      output.style.maxWidth = Math.max(280, window.innerWidth - r.left - 16) + 'px';
-    }
-
-    positionOutput();
-    window.addEventListener('resize', positionOutput);
-    window.addEventListener('scroll', positionOutput, true);
-    if (input) input.addEventListener('input', positionOutput);
-    search.addEventListener('focusin', positionOutput);
-
-    /* Fechar ao clicar fora. Tentamos antes uma máscara full-screen
-       (div transparente cobrindo a tela, clique nela fecha), mas
-       .md-sidebar--primary é position:sticky com z-index:auto — então
-       TUDO dentro dela (form e output, não importa o z-index que a
-       gente desse a eles) fica preso na "fatia" auto dessa sidebar no
-       stacking context da página, sempre abaixo de qualquer elemento
-       com z-index explícito como a máscara. Resultado: a máscara
-       cobria até o próprio dropdown e bloqueava cliques e scroll nele.
-       Detectar o clique fora pelo alvo do evento não depende de
-       camadas/z-index, então não tem esse problema. */
-    var checkbox = document.getElementById('__search');
-
-    function closeSearch() {
-      if (!checkbox.checked) return;
-      checkbox.checked = false;
-      checkbox.dispatchEvent(new Event('change', { bubbles: true }));
-    }
-
-    document.addEventListener('click', function (e) {
-      if (!checkbox.checked) return;
-      /* Ao clicar no ícone de lupa (um <label for="__search">), o
-         navegador dispara DOIS cliques que chegam aqui: o do próprio
-         label e um clique sintético no checkbox #__search (a ativação
-         que alterna o estado). Esse clique sintético tem target = o
-         checkbox, que vive fora de .md-search — sem ignorá-lo, ele era
-         lido como "clique fora" e fechava a busca no mesmo gesto que a
-         abria. search.contains() cobre form, output e o label interno;
-         o `=== checkbox` cobre o clique sintético. */
-      if (e.target === checkbox) return;
-      if (search.contains(e.target)) return;
-      closeSearch();
-    });
-
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') closeSearch();
-    });
-  })();
-</script><script>
+</svg><script>
 (function () {
 
-  /* Move as tabs para dentro da linha do header (logo | nav | github) */
+  /* Move as tabs para dentro da linha do header */
   (function () {
     var tabs     = document.querySelector('.md-tabs');
     var tabsList = tabs && tabs.querySelector('.md-tabs__list');
@@ -2288,8 +2210,11 @@
     nav.className = 'od-header-nav';
     nav.appendChild(tabsList);
 
-    inner.insertBefore(nav, source || null);
-    if (title)  title.style.display  = 'none';
+    // Posiciona: logo - menu - search - git
+    // Insere o menu depois do logo (title)
+    var insertBefore = title ? title.nextElementSibling : firstButton;
+    inner.insertBefore(nav, insertBefore);
+    if (title)  title.remove();
     if (tabs)   tabs.remove();
   })();
 
@@ -2439,7 +2364,6 @@
     
   ];
 
-  /* Um único dropdown compartilhado, filho direto de <body> */
   var portal = document.createElement("ul");
   portal.className = "od-dropdown";
   document.body.appendChild(portal);
@@ -2450,7 +2374,6 @@
 
   function appendItems(children, nested) {
     children.forEach(function (child) {
-      /* Seção aninhada (sem url, mas com filhos): cabeçalho + itens recuados */
       if (child.children) {
         var label = document.createElement("li");
         label.className = "od-group-label";
@@ -2459,16 +2382,13 @@
         appendItems(child.children, true);
         return;
       }
-
       if (!child.url) return;
-
       var li = document.createElement("li");
       var a  = document.createElement("a");
       a.href = child.url;
       a.textContent = child.title;
       if (nested) a.classList.add("od-nested");
       if (child.active) a.classList.add("od-active");
-
       li.appendChild(a);
       portal.appendChild(li);
     });
@@ -2499,9 +2419,7 @@
 
   function scheduleHide() {
     hideTimer = setTimeout(function () {
-      /* Remove a classe primeiro — dispara a animação de fechar (CSS) */
       portal.classList.remove("od-dropdown--visible");
-      /* Só esconde do DOM depois que a animação terminar */
       hideEndTimer = setTimeout(function () {
         portal.style.display = "none";
         if (currentTab) {
@@ -2512,41 +2430,26 @@
     }, 80);
   }
 
-  /* Manter aberto enquanto o mouse está sobre o próprio dropdown */
   portal.addEventListener("mouseenter", function () {
     clearTimeout(hideTimer);
     clearTimeout(hideEndTimer);
   });
   portal.addEventListener("mouseleave", scheduleHide);
 
-  function wireTabs() {
-    document.querySelectorAll(".od-tab-has-dropdown").forEach(function (el) {
-      el.classList.remove("od-tab-has-dropdown");
-    });
-
-    document.querySelectorAll(".md-tabs__item").forEach(function (tab, i) {
-      var section = NAV[i];
-      if (!section || !section.children || section.children.length === 0) return;
-
-      tab.classList.add("od-tab-has-dropdown");
-
-      /* Injeta o <span> da seta se ainda não existe */
-      var link = tab.querySelector('.md-tabs__link');
-      if (link && !link.querySelector('.od-chevron')) {
-        var chevron = document.createElement('span');
-        chevron.className = 'od-chevron';
-        chevron.setAttribute('aria-hidden', 'true');
-        link.appendChild(chevron);
-      }
-
-      tab.addEventListener("mouseenter", function () {
-        showPortal(tab, section.children);
-      });
-      tab.addEventListener("mouseleave", scheduleHide);
-    });
-  }
-
-  wireTabs();
+  document.querySelectorAll(".md-tabs__item").forEach(function (tab, i) {
+    var section = NAV[i];
+    if (!section || !section.children || section.children.length === 0) return;
+    tab.classList.add("od-tab-has-dropdown");
+    var link = tab.querySelector('.md-tabs__link');
+    if (link && !link.querySelector('.od-chevron')) {
+      var chevron = document.createElement('span');
+      chevron.className = 'od-chevron';
+      chevron.setAttribute('aria-hidden', 'true');
+      link.appendChild(chevron);
+    }
+    tab.addEventListener("mouseenter", function () { showPortal(tab, section.children); });
+    tab.addEventListener("mouseleave", scheduleHide);
+  });
 })();
 </script>
 

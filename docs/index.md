@@ -11,13 +11,12 @@ description: A linguagem de interoperabilidade do delivery de alimentos no Brasi
   <div class="hero-wrapper">
     <div class="hero-content">
       <h1>Open Delivery Protocol</h1>
-      <p class="hero-tagline">
-        Padrão aberto que conecta aplicações de pedido, sistemas de gestão e plataformas logísticas no delivery de alimentos do Brasil.
+      <p class="hero-tagline">A linguagem universal do food service.</p>
+      <p class="hero-body">
+        Open Delivery define como plataformas de pedido, sistemas de gestão e operações logísticas se comunicam — do pedido ao salão — permitindo que qualquer participante do ecossistema opere sob um único padrão, sem integrações customizadas ponto-a-ponto.
       </p>
     </div>
-    <div class="hero-image">
-      <img src="assets/images/opendelivery-logo.png" alt="Open Delivery Protocol" class="hero-logo">
-    </div>
+
   </div>
 
   <!-- ── POR ONDE COMEÇAR ──────────────────────────────────────── -->
@@ -43,8 +42,8 @@ description: A linguagem de interoperabilidade do delivery de alimentos no Brasi
     <!-- PATH 2: Vou implementar -->
     <div class="path-card path-card--implement">
       <div class="path-label path-label--implement">Quero implementar</div>
-      <h3>Conheço o projeto, vou integrar a V2</h3>
-      <p>Você já sabe o que é o Open Delivery — ou conhecia a V1 — e quer iniciar ou aprofundar sua integração com a V2.</p>
+      <h3>Conheço o projeto, vou implementar o protocolo V2</h3>
+      <p>Você já sabe o que é o Open Delivery — ou conhecia a V1 — e quer iniciar ou aprofundar sua implementação do protocolo V2.</p>
       <ul class="path-links">
         <li><a href="guide/getting-started/">Primeiros Passos</a></li>
         <li><a href="protocol/discovery/">Configurar o Discovery</a></li>
@@ -56,7 +55,7 @@ description: A linguagem de interoperabilidade do delivery de alimentos no Brasi
     <!-- PATH 3: Migrar da V1 -->
     <div class="path-card path-card--migrate">
       <div class="path-label path-label--migrate">Migrando da V1</div>
-      <h3>Tenho uma integração V1 e quero ir para V2</h3>
+      <h3>Tenho uma implementação V1 e quero migrar para V2</h3>
       <p>Você já implementou o protocolo V1 e precisa entender o que mudou, o que quebra e como planejar a migração.</p>
       <ul class="path-links">
         <li><a href="guide/changelog/">O que mudou na V2?</a></li>

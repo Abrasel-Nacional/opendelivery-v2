@@ -12,46 +12,34 @@
 
 /* ── Hero ─────────────────────────────────────────────────────── */
 .hero-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 48px;
-  padding: 28px 0 40px;
-}
-
-.hero-content {
-  flex: 1 1 0;
-  min-width: 0;
+  padding: 32px 0 48px;
+  max-width: 700px;
 }
 
 .hero-content h1 {
-  font-size: clamp(1.7rem, 3vw, 2.2rem);
-  font-weight: 800;
-  line-height: 1.15;
-  letter-spacing: -0.01em;
+  font-size: clamp(1.7rem, 3vw, 2.4rem);
+  font-weight: 450;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
   color: var(--od-green-dark);
-  margin: 0 0 10px;
+  margin: 0 0 12px;
 }
 
 .hero-tagline {
-  font-size: 0.97rem;
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--od-text);
+  line-height: 1.4;
+  margin: 0 0 14px;
+  max-width: 560px;
+}
+
+.hero-body {
+  font-size: 0.95rem;
   color: var(--od-text-soft);
   line-height: 1.65;
   margin: 0;
-}
-
-
-.hero-image {
-  flex: 1 1 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.hero-logo {
-  width: 100%;
-  height: auto;
-  max-height: 200px;
-  object-fit: contain;
+  max-width: 560px;
 }
 
 /* ── Section heading ──────────────────────────────────────────── */
@@ -62,7 +50,7 @@
 
 .section-intro h2 {
   font-size: 1.7rem;
-  font-weight: 700;
+  font-weight: 450;
   color: var(--od-green-dark);
   margin: 0 0 10px;
 }
@@ -99,9 +87,9 @@
   transform: translateY(-2px);
 }
 
-.path-card--new      { border-top-color: #4f7ef5; }
+.path-card--new       { border-top-color: var(--od-accent); }
 .path-card--implement { border-top-color: var(--od-green); }
-.path-card--migrate  { border-top-color: #d97706; }
+.path-card--migrate   { border-top-color: var(--od-green-soft); }
 
 .path-label {
   font-size: 0.7rem;
@@ -115,15 +103,15 @@
   width: fit-content;
 }
 
-.path-label--new      { background: #eff2ff; color: #4f7ef5; }
+.path-label--new       { background: rgba(139, 197, 63, 0.14); color: #4a6b00; }
 .path-label--implement { background: var(--od-bg-soft); color: var(--od-green); }
-.path-label--migrate  { background: #fffbeb; color: #b45309; }
+.path-label--migrate   { background: rgba(47, 138, 82, 0.10); color: var(--od-green-soft); }
 
 .path-card h3 {
   margin: 0 0 10px;
   color: var(--od-green-dark);
   font-size: 1.1rem;
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .path-card > p {
@@ -289,7 +277,6 @@
 }
 
 @media (max-width: 768px) {
-  .hero-wrapper { flex-direction: column-reverse; gap: 24px; padding: 24px 0 36px; }
-  .hero-image { width: 50%; }
+  .hero-wrapper { padding: 20px 0 32px; }
   .cap-strip { grid-template-columns: repeat(2, 1fr); }
 }
