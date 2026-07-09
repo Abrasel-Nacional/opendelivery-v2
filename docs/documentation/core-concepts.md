@@ -39,9 +39,7 @@ Capabilities são as áreas funcionais primárias do protocolo. Elas representam
 | **Merchant** | Identidade do estabelecimento, catálogo, serviços e contexto operacional |
 | **Orders** | Ciclo de vida de pedidos, gerenciamento de estado e coordenação |
 | **Customer** | CRM, leads, eventos de cliente e visões de pedidos centradas no cliente |
-| **Loyalty** | Identidade de fidelidade, acúmulo, resgate e validação de cupons |
 | **Logistics** | Coordenação de entrega, rastreamento e tratamento de problemas |
-| **Indoor** | Operações de pedidos em salão — serviço de mesa, balcão, comanda |
 
 Capabilities são **independentes** entre si. Uma plataforma pode implementar qualquer capability ou combinação sem precisar das demais. Não existe capability obrigatória nem capability central da qual outras dependam.
 
@@ -52,6 +50,7 @@ Extensões são módulos opcionais do protocolo que aumentam uma capability base
 | Extensão | Capability Pai | Descrição |
 |---|---|---|
 | **Indoor** | Orders | Agregação de conta em salão, pedidos incrementais, pagamentos parciais |
+| **Reviews** | Customer | Avaliações de clientes (notas, categorias, texto) |
 | **Loyalty** | Customer | Conta de fidelidade, acúmulo, resgate e validação de cupons/vouchers |
 
 ## Bindings de Transporte

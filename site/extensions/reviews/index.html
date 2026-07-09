@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://abrasel-nacional.github.io/opendelivery-v2/guide/migration-v1-v2/">
+        <link rel="canonical" href="https://abrasel-nacional.github.io/opendelivery-v2/extensions/reviews/">
       
       
-        <link rel="prev" href="../changelog/">
+        <link rel="prev" href="../../protocol/customer/">
       
       
-        <link rel="next" href="../../documentation/roadmap/">
+        <link rel="next" href="../loyalty/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>Migração V1→V2 - Open Delivery Protocol</title>
+        <title>Reviews - Open Delivery Protocol</title>
       
     
     
@@ -208,7 +208,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#migracao-v1-v2" class="md-skip">
+        <a href="#reviews-avaliacoes" class="md-skip">
           Skip to content
         </a>
       
@@ -243,7 +243,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Migração V1→V2
+              Reviews
             
           </span>
         </div>
@@ -339,12 +339,10 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
+      <li class="md-tabs__item">
         <a href="../.." class="md-tabs__link">
           
   
@@ -363,6 +361,8 @@
   
   
   
+    
+  
   
     
     
@@ -370,10 +370,12 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
+      <li class="md-tabs__item md-tabs__item--active">
         <a href="../../protocol/principles/" class="md-tabs__link">
           
   
@@ -467,8 +469,6 @@
       
   
   
-    
-  
   
   
     
@@ -494,17 +494,14 @@
     
     
       
-        
-        
-      
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -526,13 +523,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_1" id="__nav_1_label" tabindex="">
+              <label class="md-nav__link " for="__nav_1" id="__nav_1_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_1">
             <span class="md-nav__icon md-icon"></span>
             
@@ -552,7 +549,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/" class="md-nav__link">
+      <a href="../../guide/getting-started/" class="md-nav__link">
         
   
   
@@ -689,10 +686,8 @@
                 
   
   
-    
   
   
-  
     
     
       
@@ -709,11 +704,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_7" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_7" >
         
           
           <label class="md-nav__link" for="__nav_1_7" id="__nav_1_7_label" tabindex="0">
@@ -734,7 +729,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_7_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_7_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_1_7">
             <span class="md-nav__icon md-icon"></span>
             
@@ -752,7 +747,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../changelog/" class="md-nav__link">
+      <a href="../../guide/changelog/" class="md-nav__link">
         
   
   
@@ -777,37 +772,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Migração V1→V2
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../guide/migration-v1-v2/" class="md-nav__link">
         
   
   
@@ -823,209 +791,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1-autenticacao-por-aplicacao-em-vez-de-por-loja" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Autenticação — por aplicação em vez de por loja
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-escopos-oauth" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Escopos OAuth
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-merchant-id-gerado-pelo-originador" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Merchant ID — gerado pelo originador
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-cardapio-crud-granular-substituiu-webhook-monolitico" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Cardápio — CRUD granular substituiu webhook monolítico
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="4. Cardápio — CRUD granular substituiu webhook monolítico">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#campos-alterados-no-cardapio" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Campos alterados no cardápio
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-pedidos-cancelamento-e-eventos" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Pedidos — cancelamento e eventos
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="5. Pedidos — cancelamento e eventos">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#cancelamento-simplificado" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Cancelamento simplificado
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#evento-picked_up-removido" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Evento picked_up removido
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#separacao-status-evento" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Separação status / evento
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-discovery-well-known-agora-obrigatorio" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Discovery Well-Known — agora obrigatório
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-modulos-novos-nao-existiam-na-v1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. Módulos novos — não existiam na V1
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="7. Módulos novos — não existiam na V1">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#customer-crm" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Customer / CRM
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#fidelidade" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Fidelidade
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#indoor-salao" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Indoor / Salão
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#checklist-de-migracao" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Checklist de migração
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1078,8 +843,10 @@
       
   
   
+    
   
   
+  
     
     
       
@@ -1095,17 +862,20 @@
     
     
       
+        
+        
+      
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
             
   
   
@@ -1123,7 +893,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1468,8 +1238,10 @@
                 
   
   
+    
   
   
+  
     
     
       
@@ -1494,11 +1266,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" checked>
         
           
           <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
@@ -1519,7 +1291,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1646,10 +1418,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../extensions/reviews/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reviews
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1665,6 +1464,120 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#para-que-serve" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Para que serve
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#os-dois-lados-da-integracao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Os dois lados da integração
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conceitos-chave" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conceitos-chave
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Conceitos-chave">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#avaliacao-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Avaliação (Review)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#eventos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Eventos
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fluxo-tipico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fluxo típico
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#relacao-com-customer-e-loyalty" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Relação com Customer e Loyalty
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#discovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discovery
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1677,7 +1590,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../extensions/loyalty/" class="md-nav__link">
+      <a href="../loyalty/" class="md-nav__link">
         
   
   
@@ -2384,10 +2297,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-autenticacao-por-aplicacao-em-vez-de-por-loja" class="md-nav__link">
+  <a href="#para-que-serve" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Autenticação — por aplicação em vez de por loja
+        Para que serve
       
     </span>
   </a>
@@ -2395,10 +2308,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-escopos-oauth" class="md-nav__link">
+  <a href="#os-dois-lados-da-integracao" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Escopos OAuth
+        Os dois lados da integração
       
     </span>
   </a>
@@ -2406,33 +2319,33 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-merchant-id-gerado-pelo-originador" class="md-nav__link">
+  <a href="#conceitos-chave" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Merchant ID — gerado pelo originador
+        Conceitos-chave
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-cardapio-crud-granular-substituiu-webhook-monolitico" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Cardápio — CRUD granular substituiu webhook monolítico
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="4. Cardápio — CRUD granular substituiu webhook monolítico">
+    <nav class="md-nav" aria-label="Conceitos-chave">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#campos-alterados-no-cardapio" class="md-nav__link">
+  <a href="#avaliacao-review" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Campos alterados no cardápio
+        Avaliação (Review)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#eventos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Eventos
       
     </span>
   </a>
@@ -2445,60 +2358,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-pedidos-cancelamento-e-eventos" class="md-nav__link">
+  <a href="#fluxo-tipico" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Pedidos — cancelamento e eventos
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="5. Pedidos — cancelamento e eventos">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#cancelamento-simplificado" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Cancelamento simplificado
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#evento-picked_up-removido" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Evento picked_up removido
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#separacao-status-evento" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Separação status / evento
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-discovery-well-known-agora-obrigatorio" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Discovery Well-Known — agora obrigatório
+        Fluxo típico
       
     </span>
   </a>
@@ -2506,60 +2369,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-modulos-novos-nao-existiam-na-v1" class="md-nav__link">
+  <a href="#relacao-com-customer-e-loyalty" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. Módulos novos — não existiam na V1
+        Relação com Customer e Loyalty
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="7. Módulos novos — não existiam na V1">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#customer-crm" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Customer / CRM
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#fidelidade" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Fidelidade
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#indoor-salao" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Indoor / Salão
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#checklist-de-migracao" class="md-nav__link">
+  <a href="#discovery" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Checklist de migração
+        Discovery
       
     </span>
   </a>
@@ -2583,7 +2407,7 @@
 
 
   
-    <a href="https://github.com/Abrasel-Nacional/opendelivery-v2/edit/main/docs/guide/migration-v1-v2.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/Abrasel-Nacional/opendelivery-v2/edit/main/docs/extensions/reviews.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -2591,230 +2415,155 @@
   
 
 
-<h1 id="migracao-v1-v2">Migração V1 → V2<a class="headerlink" href="#migracao-v1-v2" title="Permanent link">&para;</a></h1>
-<p>Este guia descreve as mudanças entre o Open Delivery Protocol V1 e V2, focando nos breaking changes
-que exigem adaptação de código. Consulte o <a href="../changelog/">Changelog</a> para a lista completa de novidades.</p>
+<h1 id="reviews-avaliacoes">Reviews / Avaliações<a class="headerlink" href="#reviews-avaliacoes" title="Permanent link">&para;</a></h1>
+<p class="od-meta">
+  <span class="od-badge od-badge--ext">Extensão</span>
+  <span class="od-badge od-badge--code">reviews</span>
+  <span class="od-badge">pai: Customer</span>
+</p>
+
+<blockquote>
+<p>Extensão da <a href="../../protocol/customer/">Customer Capability</a> · Extension name: <code>reviews</code><br />
+REST/HTTP binding: <a href="../../reference/customer/">Referência da API — Customer</a></p>
+</blockquote>
+<h2 id="para-que-serve">Para que serve<a class="headerlink" href="#para-que-serve" title="Permanent link">&para;</a></h2>
+<p>A extensão <strong>Reviews</strong> padroniza o envio e a consulta de avaliações de clientes entre a plataforma de pedidos e o sistema de CRM — notas, categorias de pergunta e texto livre — sem impor um questionário único do mercado.</p>
+<p>Sem um padrão, cada integração precisava negociar bilateralmente como representar escala de notas (estrelas, NPS, like/dislike), se a avaliação é simples ou categorizada, e como amarrar (quando existir) pedido, merchant e cliente. O Reviews elimina essa negociação ao definir um modelo flexível de avaliação e eventos associados.</p>
+<div class="admonition warning">
+<p class="admonition-title">Reviews é uma extensão, não uma capability autônoma</p>
+<p>Esta extensão pressupõe a <strong>capability Customer</strong>. Cadastro de cliente, leads e contexto relacional trafegam pelo Customer; o Reviews adiciona, sobre esse contexto, a camada de avaliações.</p>
+<p>Implementações que não possuem a capability Customer ativa não podem usar esta extensão.</p>
+</div>
 <div class="admonition info">
-<p class="admonition-title">V1 continua ativa</p>
-<p>A V1 permanece ativa durante o período de transição. Não há prazo de descontinuação definido ainda.
-Novas integrações devem usar V2.</p>
+<p class="admonition-title">O que o Reviews NÃO padroniza</p>
+<p>Disparo de pesquisa (timing, canal, QR Code), moderação editorial, agregação multi-canal (Google, marketplaces) e regras internas de score — ficam a cargo de cada implementação.</p>
 </div>
 <hr />
-<h2 id="1-autenticacao-por-aplicacao-em-vez-de-por-loja">1. Autenticação — por aplicação em vez de por loja<a class="headerlink" href="#1-autenticacao-por-aplicacao-em-vez-de-por-loja" title="Permanent link">&para;</a></h2>
-<p><strong>V1:</strong> Um par <code>client_id</code> / <code>client_secret</code> por loja. Cada novo merchant exigia novas credenciais.</p>
-<p><strong>V2:</strong> Um único <code>client_id</code> por aplicação, independente de quantas lojas ela integra.</p>
-<div class="highlight"><pre><span></span><code># V1 — token por loja
-POST /oauth/token
-<span class="gd">- client_id=credencial_da_loja_123</span>
-<span class="gd">- client_secret=segredo_da_loja_123</span>
-
-# V2 — token por aplicação
-POST /oauth/token
-<span class="gi">+ client_id=credencial_da_aplicacao</span>
-<span class="gi">+ client_secret=segredo_da_aplicacao</span>
-<span class="gi">+ scope=od.orders od.menu</span>
-</code></pre></div>
-<p>A lista de lojas autorizadas para a aplicação é obtida via:</p>
-<div class="highlight"><pre><span></span><code>GET /merchants
-Authorization: Bearer {token_da_aplicacao}
-</code></pre></div>
-<p><strong>Compatibilidade V1:</strong> O modelo <code>by_merchant</code> (um <code>client_id</code> por loja) ainda é suportado na V2 para
-facilitar a migração gradual. Declare <code>clientIdGeneration: [by_merchant]</code> no Discovery.</p>
-<hr />
-<h2 id="2-escopos-oauth">2. Escopos OAuth<a class="headerlink" href="#2-escopos-oauth" title="Permanent link">&para;</a></h2>
-<p><strong>V1:</strong> Escopo único <code>OD.ALL</code> (ou sem escopo explícito).</p>
-<p><strong>V2:</strong> Escopos granulares por domínio.</p>
+<h2 id="os-dois-lados-da-integracao">Os dois lados da integração<a class="headerlink" href="#os-dois-lados-da-integracao" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Escopo</th>
-<th>Acesso</th>
+<th>Papel</th>
+<th>Responsabilidade</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>od.orders</code></td>
-<td>Ciclo de vida de pedidos</td>
+<td><strong>Ordering Application</strong></td>
+<td>Origina ou coleta a avaliação (app, totem, pós-pedido, salão). <strong>Envia</strong> avaliações e eventos ao CRM.</td>
 </tr>
 <tr>
-<td><code>od.menu</code></td>
-<td>Cardápio e dados do merchant</td>
-</tr>
-<tr>
-<td><code>od.logistics</code></td>
-<td>Operações de logística</td>
-</tr>
-<tr>
-<td><code>od.crm</code></td>
-<td>Customer, fidelidade e reviews</td>
-</tr>
-<tr>
-<td><code>od.all</code></td>
-<td>Todos os domínios (compatibilidade V1)</td>
+<td><strong>CRM Software Service</strong></td>
+<td><strong>Consome</strong> avaliações para inteligência, NPS e qualidade; pode <strong>consultar</strong> histórico por cliente.</td>
 </tr>
 </tbody>
 </table>
 <hr />
-<h2 id="3-merchant-id-gerado-pelo-originador">3. Merchant ID — gerado pelo originador<a class="headerlink" href="#3-merchant-id-gerado-pelo-originador" title="Permanent link">&para;</a></h2>
-<p><strong>V1:</strong> O PDV gerava o <code>merchantId</code> e o comunicava ao originador.</p>
-<p><strong>V2:</strong> O originador gera o <code>merchantId</code>. O PDV mantém seu próprio identificador interno e
-usa o campo <code>externalCode</code> para correlacionar os dois sistemas.</p>
-<div class="highlight"><pre><span></span><code># V1 — PDV define o ID
-{
-<span class="gd">-  &quot;merchant&quot;: { &quot;id&quot;: &quot;id_gerado_pelo_pdv&quot; }</span>
-}
-
-# V2 — originador define o ID; PDV tem seu próprio código
-{
-<span class="gi">+  &quot;merchant&quot;: {</span>
-<span class="gi">+    &quot;id&quot;: &quot;id_gerado_pelo_originador&quot;,</span>
-<span class="gi">+    &quot;externalCode&quot;: &quot;codigo_interno_do_pdv&quot;</span>
-<span class="gi">+  }</span>
-}
-</code></pre></div>
-<hr />
-<h2 id="4-cardapio-crud-granular-substituiu-webhook-monolitico">4. Cardápio — CRUD granular substituiu webhook monolítico<a class="headerlink" href="#4-cardapio-crud-granular-substituiu-webhook-monolitico" title="Permanent link">&para;</a></h2>
-<p><strong>V1:</strong> Toda atualização de cardápio era enviada via webhook <code>merchantUpdate</code> com o payload completo.</p>
-<p><strong>V2:</strong> Cada entidade tem seu próprio endpoint CRUD. Não existe mais o <code>merchantUpdate</code> monolítico.</p>
+<h2 id="conceitos-chave">Conceitos-chave<a class="headerlink" href="#conceitos-chave" title="Permanent link">&para;</a></h2>
+<h3 id="avaliacao-review">Avaliação (Review)<a class="headerlink" href="#avaliacao-review" title="Permanent link">&para;</a></h3>
+<p>Uma avaliação registra a opinião do cliente sobre um pedido, uma experiência de salão ou outro contexto declarado.</p>
 <table>
 <thead>
 <tr>
-<th>Entidade</th>
-<th>Endpoints V2</th>
+<th>Aspecto</th>
+<th>Diretriz V2</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Merchant (basic info)</td>
-<td><code>GET /merchants/{id}</code> · <code>PATCH /merchants/{id}</code></td>
+<td>Escalas</td>
+<td>Estrelas, NPS (0–10), like/dislike — o modelo deve acomodar os três</td>
 </tr>
 <tr>
-<td>Services</td>
-<td><code>GET/PUT/PATCH /merchants/{id}/services/{type}</code></td>
+<td>Overall</td>
+<td>Nota geral opcional (ou como tipo de pergunta), sem forçar média automática de categorias</td>
 </tr>
 <tr>
-<td>Menus</td>
-<td><code>GET /merchants/{id}/menus</code></td>
+<td>Categorias / perguntas</td>
+<td>Vocabulário <strong>aberto</strong> (string), não enum fechado do protocolo</td>
 </tr>
 <tr>
-<td>Categorias</td>
-<td><code>GET/POST/PUT/DELETE /merchants/{id}/menus/{menuId}/categories</code></td>
+<td>Identificadores</td>
+<td><code>merchantId</code> relevante na prática; <code>orderId</code> frequentemente ausente no mundo real</td>
 </tr>
 <tr>
-<td>ItemOffers</td>
-<td><code>GET/POST/PUT/DELETE /merchants/{id}/menus/{menuId}/item-offers</code></td>
-</tr>
-<tr>
-<td>OptionGroups</td>
-<td><code>GET/POST/PUT/DELETE .../item-offers/{id}/option-groups</code></td>
-</tr>
-<tr>
-<td>Options</td>
-<td><code>GET/POST/PUT/DELETE .../option-groups/{id}/options</code></td>
-</tr>
-<tr>
-<td>Snapshot completo</td>
-<td><code>GET /merchants/{id}/menus/{menuId}/snapshot</code></td>
-</tr>
-<tr>
-<td>Pausa de serviço</td>
-<td><code>POST /merchants/{id}/services/{type}/pause</code></td>
+<td>Cliente</td>
+<td>Preferir vínculo com Customer quando houver identificador; permitir enriquecimento posterior</td>
 </tr>
 </tbody>
 </table>
-<h3 id="campos-alterados-no-cardapio">Campos alterados no cardápio<a class="headerlink" href="#campos-alterados-no-cardapio" title="Permanent link">&para;</a></h3>
+<h3 id="eventos">Eventos<a class="headerlink" href="#eventos" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
-<th>Campo</th>
-<th>V1</th>
-<th>V2</th>
+<th>Evento</th>
+<th>Gatilho</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>merchantType</code></td>
-<td>Existia</td>
-<td><strong>Removido</strong></td>
-</tr>
-<tr>
-<td><code>subtotal</code> em opcionais</td>
-<td>Existia</td>
-<td><strong>Removido</strong> — use <code>option_price</code></td>
-</tr>
-<tr>
-<td><code>option_price</code></td>
-<td>Opcional</td>
-<td><strong>Obrigatório</strong></td>
-</tr>
-<tr>
-<td><code>unity_price</code></td>
-<td>Implícito</td>
-<td><strong>Explícito</strong></td>
-</tr>
-<tr>
-<td><code>quantity_available</code></td>
-<td>Não existia</td>
-<td><strong>Novo</strong> — disponibilidade operacional do item</td>
-</tr>
-<tr>
-<td>Service ID</td>
-<td>Identificado por ID</td>
-<td><strong>Identificado apenas por tipo</strong> (<code>DELIVERY</code>, <code>TAKEOUT</code>, <code>INDOOR</code>)</td>
+<td><code>review.created</code></td>
+<td>Avaliação submetida pelo cliente</td>
 </tr>
 </tbody>
 </table>
+<p>Eventos <strong>DEVEM</strong> representar fatos de negócio, não comandos. O CRM DEVE processá-los de forma idempotente.</p>
 <hr />
-<h2 id="5-pedidos-cancelamento-e-eventos">5. Pedidos — cancelamento e eventos<a class="headerlink" href="#5-pedidos-cancelamento-e-eventos" title="Permanent link">&para;</a></h2>
-<h3 id="cancelamento-simplificado">Cancelamento simplificado<a class="headerlink" href="#cancelamento-simplificado" title="Permanent link">&para;</a></h3>
-<p><strong>V1:</strong> Handshake de três etapas: <code>requestCancellation</code> → <code>acceptCancellation</code> / <code>denyCancellation</code>.</p>
-<p><strong>V2:</strong> Cancelamento direto, sem handshake obrigatório.</p>
-<div class="highlight"><pre><span></span><code># V1
-POST /v1/orders/{id}/requestCancellation
-POST /v1/orders/{id}/acceptCancellation   # ou denyCancellation
+<h2 id="fluxo-tipico">Fluxo típico<a class="headerlink" href="#fluxo-tipico" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>sequenceDiagram
+    participant OA as Ordering Application
+    participant CRM as CRM Software Service
 
-# V2
-POST /orders/{id}/cancel
-</code></pre></div>
-<p>O handshake foi eliminado porque, na prática da V1, o deny nunca era implementado em escala.</p>
-<h3 id="evento-picked_up-removido">Evento <code>picked_up</code> removido<a class="headerlink" href="#evento-picked_up-removido" title="Permanent link">&para;</a></h3>
-<p>O evento <code>picked_up</code> era ambíguo (usado tanto para takeout quanto para coleta logística) e foi removido.
-Use os eventos de logística para rastreamento de coleta.</p>
-<h3 id="separacao-status-evento">Separação status / evento<a class="headerlink" href="#separacao-status-evento" title="Permanent link">&para;</a></h3>
-<p><strong>V1:</strong> Eventos e status eram frequentemente confundidos.</p>
-<p><strong>V2:</strong> Regra clara:
-- <code>status</code> no <code>GET /orders/{id}</code> → estado atual do pedido (fonte de verdade)
-- Eventos (webhooks) → informativos; não redefinem o estado</p>
-<p>Nunca infira o status de um pedido apenas pelos eventos recebidos. Sempre consulte o GET para reconciliação.</p>
+    Note over OA,CRM: Cliente avalia pedido ou experiência
+    OA-&gt;&gt;CRM: POST /v1/customer/reviews:ingest
+    CRM--&gt;&gt;OA: 202 Accepted
+
+    OA-&gt;&gt;CRM: POST /v1/customer/events
+    Note over OA,CRM: eventType: review.created
+    CRM--&gt;&gt;OA: 202 Accepted
+
+    opt CRM consulta avaliações do cliente
+        CRM-&gt;&gt;OA: GET /v1/customer/customers/{customerId}/reviews
+        OA--&gt;&gt;CRM: 200 OK (array de Review)
+    end</code></pre>
+<p>Detalhes de endpoints, schemas e códigos de erro estão na <a href="../../reference/customer/">referência OpenAPI de Customer</a>.</p>
 <hr />
-<h2 id="6-discovery-well-known-agora-obrigatorio">6. Discovery Well-Known — agora obrigatório<a class="headerlink" href="#6-discovery-well-known-agora-obrigatorio" title="Permanent link">&para;</a></h2>
-<p><strong>V1:</strong> Discovery era opcional e pouco utilizado.</p>
-<p><strong>V2:</strong> <code>GET /.well-known/opendelivery</code> é <strong>obrigatório</strong> antes de qualquer integração.</p>
-<p>Sem o endpoint de Discovery publicado e acessível, a integração não pode ser estabelecida.</p>
+<h2 id="relacao-com-customer-e-loyalty">Relação com Customer e Loyalty<a class="headerlink" href="#relacao-com-customer-e-loyalty" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Módulo</th>
+<th>Papel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Customer</strong> (capability)</td>
+<td>Identidade, leads, pedidos no contexto CRM, eventos de relacionamento</td>
+</tr>
+<tr>
+<td><strong>Reviews</strong> (extensão)</td>
+<td>Avaliações e <code>review.created</code></td>
+</tr>
+<tr>
+<td><strong>Loyalty</strong> (extensão)</td>
+<td>Programas, saldo, resgate, cupons</td>
+</tr>
+</tbody>
+</table>
+<p>As três peças são declaradas no <a href="../../protocol/discovery/">Discovery</a>. Reviews e Loyalty podem ser adotadas de forma independente <strong>desde que</strong> Customer esteja ativo e o manifesto declare o suporte.</p>
 <hr />
-<h2 id="7-modulos-novos-nao-existiam-na-v1">7. Módulos novos — não existiam na V1<a class="headerlink" href="#7-modulos-novos-nao-existiam-na-v1" title="Permanent link">&para;</a></h2>
-<h3 id="customer-crm">Customer / CRM<a class="headerlink" href="#customer-crm" title="Permanent link">&para;</a></h3>
-<p>Entidade de cliente com identificação flexível (tipo + valor: CPF, e-mail, telefone).
-Reviews com escalas abertas (estrelas, NPS, like/dislike). Leads com estrutura mínima.</p>
-<h3 id="fidelidade">Fidelidade<a class="headerlink" href="#fidelidade" title="Permanent link">&para;</a></h3>
-<p>Programa de fidelidade como entidade principal. Pontos, cashback, cupons e catálogo de recompensas.
-Múltiplos programas por loja, rede ou franquia.</p>
-<h3 id="indoor-salao">Indoor / Salão<a class="headerlink" href="#indoor-salao" title="Permanent link">&para;</a></h3>
-<p>Conta como entidade central que agrega pedidos, pagamentos e fiscal. Modos: mesa, comanda, balcão.
-Suporte a pagamento parcial, transferência de itens e fechamento com emissão fiscal assíncrona.</p>
+<h2 id="discovery">Discovery<a class="headerlink" href="#discovery" title="Permanent link">&para;</a></h2>
+<p>Implementações que expõem Reviews DEVEM declarar a extensão sob a capability <code>customer</code> no documento well-known (por exemplo via lista de <code>extensions</code>).</p>
 <hr />
-<h2 id="checklist-de-migracao">Checklist de migração<a class="headerlink" href="#checklist-de-migracao" title="Permanent link">&para;</a></h2>
-<ul>
-<li>[ ] Atualizar mecanismo de autenticação para <code>by_app</code> (ou declarar <code>by_merchant</code> para compatibilidade)</li>
-<li>[ ] Adicionar escopos ao token request</li>
-<li>[ ] Publicar endpoint <code>/.well-known/opendelivery</code> com capabilities corretas</li>
-<li>[ ] Atualizar geração de <code>merchantId</code> (originador passa a gerar)</li>
-<li>[ ] Substituir <code>merchantUpdate</code> pelo CRUD granular de cardápio</li>
-<li>[ ] Remover lógica de <code>requestCancellation</code> / <code>acceptCancellation</code> / <code>denyCancellation</code></li>
-<li>[ ] Remover emissão e consumo do evento <code>picked_up</code></li>
-<li>[ ] Atualizar campos do cardápio: remover <code>subtotal</code>, tornar <code>option_price</code> obrigatório</li>
-<li>[ ] Remover <code>merchantType</code> dos payloads</li>
-</ul>
+<div class="od-next-step">
+  <div class="od-next-step__label">Próximo passo</div>
+  <div class="od-next-step__links">
+    <a href="../protocol/customer/">Voltar ao protocolo Customer</a>
+    <a href="../reference/customer/">Abrir referência OpenAPI</a>
+    <a href="loyalty/">Ver extensão Loyalty</a>
+  </div>
+</div>
 
 
 
@@ -2852,7 +2601,7 @@ Suporte a pagamento parcial, transferência de itens e fechamento com emissão f
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../changelog/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Changelog">
+          <a href="../../protocol/customer/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Customer / CRM">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -2862,20 +2611,20 @@ Suporte a pagamento parcial, transferência de itens e fechamento com emissão f
                 Previous
               </span>
               <div class="md-ellipsis">
-                Changelog
+                Customer / CRM
               </div>
             </div>
           </a>
         
         
           
-          <a href="../../documentation/roadmap/" class="md-footer__link md-footer__link--next" aria-label="Next: Roadmap">
+          <a href="../loyalty/" class="md-footer__link md-footer__link--next" aria-label="Next: Fidelidade">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Roadmap
+                Fidelidade
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -2995,7 +2744,7 @@ Suporte a pagamento parcial, transferência de itens e fechamento com emissão f
     },{
       title: "Migra\u00e7\u00e3o V1\u2192V2",
       url: "https://abrasel-nacional.github.io/opendelivery-v2/guide/migration-v1-v2/",
-      active: true
+      active: false
     },{
       title: "Roadmap",
       url: "https://abrasel-nacional.github.io/opendelivery-v2/documentation/roadmap/",
@@ -3061,7 +2810,7 @@ Suporte a pagamento parcial, transferência de itens e fechamento com emissão f
     },{
       title: "Reviews",
       url: "https://abrasel-nacional.github.io/opendelivery-v2/extensions/reviews/",
-      active: false
+      active: true
     },{
       title: "Fidelidade",
       url: "https://abrasel-nacional.github.io/opendelivery-v2/extensions/loyalty/",

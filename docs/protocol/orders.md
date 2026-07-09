@@ -1,6 +1,14 @@
 # Orders / Pedidos
 
-> Capability name: `orders`
+<p class="od-meta">
+  <span class="od-badge od-badge--core">Capability</span>
+  <span class="od-badge od-badge--code">orders</span>
+</p>
+
+<div class="od-api-callout">
+  <p>Regras, status e eventos nesta página. Contrato HTTP na referência OpenAPI.</p>
+  <a href="../reference/orders/">Abrir referência OpenAPI →</a>
+</div>
 
 ## Visão Geral
 
@@ -249,3 +257,14 @@ Todas as operações de Orders exigem autenticação Bearer (OAuth 2.0) com cred
 ---
 
 **Referência completa de campos e contratos REST:** [Referência da API — Pedidos →](../reference/orders.md)
+
+---
+
+<div class="od-next-step">
+  <div class="od-next-step__label">Próximo passo</div>
+  <div class="od-next-step__links">
+    <a href="../reference/orders/">Abrir referência OpenAPI</a>
+    <a href="indoor/">Extensão Indoor</a>
+    <a href="../guide/migration-v1-v2/">Migração V1→V2</a>
+  </div>
+</div>

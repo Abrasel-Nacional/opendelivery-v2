@@ -1,5 +1,16 @@
 # Discovery
 
+<p class="od-meta">
+  <span class="od-badge od-badge--core">Infraestrutura</span>
+  <span class="od-badge od-badge--code">discovery</span>
+  <span class="od-badge od-badge--must">Obrigatório</span>
+</p>
+
+<div class="od-api-callout">
+  <p>Primeiro passo de qualquer integração V2. Contrato HTTP na referência OpenAPI.</p>
+  <a href="../reference/discovery/">Abrir referência OpenAPI →</a>
+</div>
+
 Before any capability operation can happen, each participant publishes a public, machine-readable document that tells the other side exactly what it supports. That document is the **discovery manifest**, served at a well-known URL.
 
 This page explains what discovery is for, how each side of the integration uses it, and how to read and publish a manifest. Normative rules and the full field reference are in the [Discovery API spec](../reference/discovery.md).
@@ -271,3 +282,14 @@ If you are reading a counterpart's manifest before connecting, here is how to us
 ---
 
 **Full field reference and normative rules:** [Discovery API →](../reference/discovery.md)
+
+---
+
+<div class="od-next-step">
+  <div class="od-next-step__label">Próximo passo</div>
+  <div class="od-next-step__links">
+    <a href="../reference/discovery/">Abrir referência OpenAPI</a>
+    <a href="authentication/">Autenticação</a>
+    <a href="../guide/getting-started/">Primeiros Passos</a>
+  </div>
+</div>

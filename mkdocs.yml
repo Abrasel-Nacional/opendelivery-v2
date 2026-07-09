@@ -8,11 +8,18 @@ repo_url: https://github.com/Abrasel-Nacional/opendelivery-v2
 docs_dir: docs
 site_dir: site
 
+# Atas e artefatos internos não entram no site publicado
+exclude_docs: |
+  reference/v2/comites/**
+  reference/v2/scalar.html
+
 nav:
   - Guia:
     - Início: index.md
     - Primeiros Passos: guide/getting-started.md
     - Conceitos: documentation/core-concepts.md
+    - Visão Geral do Protocolo: overview.md
+    - Protocolo vs Binding: PROTOCOL_VS_BINDING.md
     - Papéis e Responsabilidades: protocol/roles-and-responsibilities.md
     - Migração e Histórico:
       - Changelog: guide/changelog.md
@@ -25,20 +32,28 @@ nav:
       - Tratamento de Erros: protocol/error-handling.md
       - Fluxos: protocol/flows.md
       - Evolução: protocol/evolution.md
-    - Discovery: protocol/discovery.md
-    - Autenticação: protocol/authentication.md
+    - Infraestrutura:
+      - Discovery: protocol/discovery.md
+      - Autenticação: protocol/authentication.md
     - Capabilities:
       - Merchant / Cardápio: protocol/merchant.md
       - Orders / Pedidos: protocol/orders.md
       - Logística: protocol/logistics.md
       - Customer / CRM: protocol/customer.md
+      - Reviews: extensions/reviews.md
       - Fidelidade: extensions/loyalty.md
       - Indoor / Salão: protocol/indoor.md
+    - Bindings REST:
+      - Visão Geral: transport-bindings/rest-http.md
+      - Discovery: transport-bindings/rest-http-discovery.md
+      - Orders: transport-bindings/rest-http-orders.md
+      - Customer: transport-bindings/rest-http-customer.md
+      - Indoor: transport-bindings/rest-http-indoor.md
   - Referência da API:
     - Visão Geral: reference/index.md
     - Infraestrutura:
-      - Autenticação: reference/authentication.md
       - Discovery: reference/discovery.md
+      - Autenticação: reference/authentication.md
     - Capabilities:
       - Merchant: reference/merchant.md
       - Pedidos: reference/orders.md

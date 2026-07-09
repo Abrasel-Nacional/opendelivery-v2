@@ -1,16 +1,27 @@
 # Customer / CRM
 
-> Capability name: `customer` · Extension associada: [Loyalty](../extensions/loyalty.md)
-> REST/HTTP binding: [Customer Endpoints](../transport-bindings/rest-http-customer.md)
+<p class="od-meta">
+  <span class="od-badge od-badge--core">Capability</span>
+  <span class="od-badge od-badge--code">customer</span>
+  <span class="od-badge od-badge--new">Novo na V2</span>
+</p>
+
+<div class="od-api-callout">
+  <p>Regras e fluxos nesta página. Contrato HTTP na referência OpenAPI.</p>
+  <a href="../reference/customer/">Abrir referência OpenAPI →</a>
+</div>
 
 ## Para que serve
 
-A capability **Customer** padroniza a troca de dados de clientes e eventos de relacionamento entre a plataforma de pedidos e o sistema de CRM. Ela cobre o cadastro de clientes, leads, pedidos no contexto de CRM, avaliações e eventos de engajamento — sem assumir controle sobre o ciclo de vida operacional dos pedidos.
+A capability **Customer** padroniza a troca de dados de clientes e eventos de relacionamento entre a plataforma de pedidos e o sistema de CRM. Ela cobre o cadastro de clientes, leads, pedidos no contexto de CRM e eventos de engajamento — sem assumir controle sobre o ciclo de vida operacional dos pedidos.
 
-Sem um padrão, cada integração entre plataforma e CRM precisava negociar bilateralmente como representar dados de cliente: qual identificador usar para deduplicação, como sincronizar leads, quando enviar eventos, como lidar com avaliações. O Customer elimina essa negociação ao definir o **cliente** como entidade central e um conjunto fixo de operações e eventos sobre ele.
+Sem um padrão, cada integração entre plataforma e CRM precisava negociar bilateralmente como representar dados de cliente: qual identificador usar para deduplicação, como sincronizar leads e quando enviar eventos. O Customer elimina essa negociação ao definir o **cliente** como entidade central e um conjunto fixo de operações e eventos sobre ele.
 
-!!! info "Customer não é loyalty"
-    Esta capability cobre a estrutura de dados e os eventos do relacionamento com o cliente. Regras de negócio de fidelidade — pontos, cashback, catálogo de prêmios — são responsabilidade da [extensão Loyalty](../extensions/loyalty.md).
+!!! info "Extensões de Customer"
+    Avaliações e fidelidade **não** são a capability base — são extensões opcionais:
+
+    - [Reviews](../extensions/reviews.md) — avaliações e `review.created`
+    - [Loyalty](../extensions/loyalty.md) — pontos, cashback, cupons e catálogo
 
 ---
 
@@ -173,7 +184,7 @@ sequenceDiagram
 
 ### Fluxo de avaliação
 
-Cliente submete avaliação; plataforma envia ao CRM e emite evento.
+Cliente submete avaliação; plataforma envia ao CRM e emite evento. Detalhamento da extensão em [Reviews](../extensions/reviews.md).
 
 ```mermaid
 sequenceDiagram
@@ -251,3 +262,14 @@ Se você é a origem dos dados e expõe interfaces para o CRM, atente para:
 ---
 
 **Referência completa de campos e regras normativas:** [API Customer →](../reference/customer.md)
+
+---
+
+<div class="od-next-step">
+  <div class="od-next-step__label">Próximo passo</div>
+  <div class="od-next-step__links">
+    <a href="../reference/customer/">Abrir referência OpenAPI</a>
+    <a href="../extensions/reviews/">Extensão Reviews</a>
+    <a href="../extensions/loyalty/">Extensão Loyalty</a>
+  </div>
+</div>

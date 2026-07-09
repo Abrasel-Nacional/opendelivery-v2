@@ -10,14 +10,50 @@ description: A linguagem de interoperabilidade do delivery de alimentos no Brasi
   <!-- ── HERO ─────────────────────────────────────────────────── -->
   <div class="hero-wrapper">
     <div class="hero-content">
+      <div class="hero-badges">
+        <span class="od-badge od-badge--rc">V2.0.0-rc</span>
+        <span class="od-badge">Protocolo de interoperabilidade</span>
+      </div>
       <h1>Open Delivery Protocol</h1>
       <p class="hero-tagline">A linguagem universal do food service.</p>
       <p class="hero-body">
         Open Delivery define como plataformas de pedido, sistemas de gestão e operações logísticas se comunicam — do pedido ao salão — permitindo que qualquer participante do ecossistema opere sob um único padrão, sem integrações customizadas ponto-a-ponto.
       </p>
+      <div class="hero-actions">
+        <a href="guide/getting-started/" class="hero-btn hero-btn--primary">Começar integração</a>
+        <a href="guide/migration-v1-v2/" class="hero-btn hero-btn--secondary">Migrar da V1</a>
+        <a href="guide/changelog/" class="hero-btn hero-btn--ghost">O que mudou na V2</a>
+      </div>
     </div>
-
   </div>
+
+  <hr class="od-divider">
+
+  <!-- ── 3 CAMADAS ────────────────────────────────────────────── -->
+  <div class="section-intro">
+    <h2>Como a documentação se organiza</h2>
+    <p>O Open Delivery é um <strong>protocolo</strong>, não um produto. A documentação separa entendimento, regras e contrato de implementação.</p>
+  </div>
+
+  <div class="layers-grid">
+    <a href="documentation/core-concepts/" class="layer-card">
+      <span class="layer-card__step">1</span>
+      <h3>Guia</h3>
+      <p>Conceitos, papéis, primeiros passos e migração. Entenda o ecossistema antes de codar.</p>
+    </a>
+    <a href="protocol/principles/" class="layer-card">
+      <span class="layer-card__step">2</span>
+      <h3>Protocolo</h3>
+      <p>Regras normativas, fluxos, status e eventos por capability — independente de framework.</p>
+    </a>
+    <a href="reference/" class="layer-card">
+      <span class="layer-card__step">3</span>
+      <h3>Referência da API</h3>
+      <p>Contrato OpenAPI (REST/HTTP) com endpoints, schemas e exemplos — renderizado com ReDoc.</p>
+    </a>
+  </div>
+
+  <hr class="od-divider">
 
   <!-- ── POR ONDE COMEÇAR ──────────────────────────────────────── -->
   <div class="section-intro">
@@ -36,6 +72,7 @@ description: A linguagem de interoperabilidade do delivery de alimentos no Brasi
         <li><a href="documentation/core-concepts/">O que é o Open Delivery?</a></li>
         <li><a href="protocol/principles/">Princípios do protocolo</a></li>
         <li><a href="protocol/roles-and-responsibilities/">Papéis no ecossistema</a></li>
+        <li><a href="PROTOCOL_VS_BINDING/">Protocolo vs Binding</a></li>
       </ul>
     </div>
 
@@ -71,7 +108,7 @@ description: A linguagem de interoperabilidade do delivery de alimentos no Brasi
   <!-- ── CAPABILITIES ──────────────────────────────────────────── -->
   <div class="section-intro">
     <h2>Capabilities do protocolo</h2>
-    <p>Implemente qualquer capability de forma independente. Não há capability central ou obrigatória.</p>
+    <p>Implemente qualquer capability de forma independente. Extensões dependem da capability pai e são declaradas no Discovery.</p>
   </div>
 
   <div class="cap-strip">
@@ -86,6 +123,7 @@ description: A linguagem de interoperabilidade do delivery de alimentos no Brasi
         </svg>
       </div>
       <span class="cap-item-name">Merchant</span>
+      <span class="cap-item-ext">core</span>
     </a>
 
     <a href="protocol/orders/" class="cap-item">
@@ -97,6 +135,7 @@ description: A linguagem de interoperabilidade do delivery de alimentos no Brasi
         </svg>
       </div>
       <span class="cap-item-name">Orders</span>
+      <span class="cap-item-ext">core</span>
     </a>
 
     <a href="protocol/logistics/" class="cap-item">
@@ -107,6 +146,7 @@ description: A linguagem de interoperabilidade do delivery de alimentos no Brasi
         </svg>
       </div>
       <span class="cap-item-name">Logistics</span>
+      <span class="cap-item-ext">core</span>
     </a>
 
     <a href="protocol/customer/" class="cap-item">
@@ -117,6 +157,17 @@ description: A linguagem de interoperabilidade do delivery de alimentos no Brasi
         </svg>
       </div>
       <span class="cap-item-name">Customer</span>
+      <span class="cap-item-ext">core · novo V2</span>
+    </a>
+
+    <a href="extensions/reviews/" class="cap-item">
+      <div class="cap-item-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      </div>
+      <span class="cap-item-name">Reviews</span>
+      <span class="cap-item-ext">ext. Customer</span>
     </a>
 
     <a href="extensions/loyalty/" class="cap-item">

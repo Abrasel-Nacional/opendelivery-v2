@@ -1,6 +1,14 @@
 # Merchant / Cardápio
 
-> Capability name: `merchant`
+<p class="od-meta">
+  <span class="od-badge od-badge--core">Capability</span>
+  <span class="od-badge od-badge--code">merchant</span>
+</p>
+
+<div class="od-api-callout">
+  <p>Regras e fluxos nesta página. Contrato HTTP na referência OpenAPI.</p>
+  <a href="../reference/merchant/">Abrir referência OpenAPI →</a>
+</div>
 
 ## Visão Geral
 
@@ -197,3 +205,13 @@ Escopos mínimos recomendados:
 ---
 
 **Referência completa de campos e contratos REST:** [Referência da API — Merchant →](../reference/merchant.md)
+
+---
+
+<div class="od-next-step">
+  <div class="od-next-step__label">Próximo passo</div>
+  <div class="od-next-step__links">
+    <a href="../reference/merchant/">Abrir referência OpenAPI</a>
+    <a href="discovery/">Configurar Discovery</a>
+  </div>
+</div>

@@ -1,5 +1,15 @@
 # Autenticação
 
+<p class="od-meta">
+  <span class="od-badge od-badge--core">Infraestrutura</span>
+  <span class="od-badge od-badge--code">authentication</span>
+</p>
+
+<div class="od-api-callout">
+  <p>Modelos OAuth e regras nesta página. Contrato HTTP na referência OpenAPI.</p>
+  <a href="../reference/authentication/">Abrir referência OpenAPI →</a>
+</div>
+
 Autenticação não é um domínio de capability.
 
 É um mecanismo transversal ao protocolo que governa como os participantes obtêm e apresentam credenciais para acessar operações protegidas. A autenticação se aplica uniformemente a todas as capabilities do ODP — Merchant, Orders, Logistics e outras.
@@ -177,3 +187,14 @@ Essa declaração aparece na definição da operação, com referência a esta s
 A autenticação protege recursos e operações expostos pelas capabilities como Merchant, Orders e Logistics. Algumas operações do protocolo (como o próprio endpoint de Discovery) são públicas. A maioria das interações produtivas requer autenticação.
 
 A autenticação não define lógica de coordenação de negócio. É um pré-requisito para acesso às capabilities.
+
+---
+
+<div class="od-next-step">
+  <div class="od-next-step__label">Próximo passo</div>
+  <div class="od-next-step__links">
+    <a href="../reference/authentication/">Abrir referência OpenAPI</a>
+    <a href="discovery/">Discovery</a>
+    <a href="../guide/getting-started/">Primeiros Passos</a>
+  </div>
+</div>

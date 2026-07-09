@@ -1,7 +1,18 @@
 # Loyalty / Fidelidade
 
+<p class="od-meta">
+  <span class="od-badge od-badge--ext">Extensão</span>
+  <span class="od-badge od-badge--code">loyalty</span>
+  <span class="od-badge">pai: Customer</span>
+  <span class="od-badge od-badge--new">Novo na V2</span>
+</p>
+
+<div class="od-api-callout">
+  <p>Regras e fluxos nesta página. Contrato HTTP na referência OpenAPI (Customer).</p>
+  <a href="../reference/customer/">Abrir referência OpenAPI →</a>
+</div>
+
 > Extensão da [Customer Capability](../protocol/customer.md) · Extension name: `loyalty`
-> REST/HTTP binding: [Referência da API — Customer & Fidelidade](../reference/customer.md)
 
 ## Para que serve
 
@@ -252,3 +263,14 @@ Se você consome as interfaces de fidelidade e exibe saldo e benefícios ao clie
 ---
 
 **Referência completa de campos e regras normativas:** [API Customer & Loyalty →](../reference/customer.md)
+
+---
+
+<div class="od-next-step">
+  <div class="od-next-step__label">Próximo passo</div>
+  <div class="od-next-step__links">
+    <a href="../reference/customer/">Abrir referência OpenAPI</a>
+    <a href="../protocol/customer/">Protocolo Customer</a>
+    <a href="reviews/">Extensão Reviews</a>
+  </div>
+</div>

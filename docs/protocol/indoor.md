@@ -1,5 +1,17 @@
 # Indoor / Salão
 
+<p class="od-meta">
+  <span class="od-badge od-badge--ext">Extensão</span>
+  <span class="od-badge od-badge--code">indoor</span>
+  <span class="od-badge">pai: Orders</span>
+  <span class="od-badge od-badge--new">Novo na V2</span>
+</p>
+
+<div class="od-api-callout">
+  <p>Regras e fluxos nesta página. Contrato HTTP na referência OpenAPI.</p>
+  <a href="../reference/indoor/">Abrir referência OpenAPI →</a>
+</div>
+
 A capability **Indoor** padroniza as operações de consumo no local — mesa, comanda e balcão — cobrindo tanto atendimento mediado por garçom quanto **autoatendimento completo** via totem, QR Code ou tablet. Ela cobre o ciclo completo de uma sessão de salão: agrupar os pedidos numa **conta**, registrar pagamentos (inclusive parciais), emitir documento fiscal e fechar a conta — tudo sincronizado entre o sistema de gestão do restaurante e a aplicação de pedido.
 
 Esta página explica o que é a capability, os conceitos que você precisa dominar, os fluxos de interação e como implementar cada lado. As regras normativas e a referência completa de campos estão na [spec da API Indoor](../reference/indoor.md).
@@ -360,3 +372,13 @@ Se você consome os endpoints e exibe a conta ao operador ou cliente, atente par
 ---
 
 **Referência completa de campos e regras normativas:** [API Indoor →](../reference/indoor.md)
+
+---
+
+<div class="od-next-step">
+  <div class="od-next-step__label">Próximo passo</div>
+  <div class="od-next-step__links">
+    <a href="../reference/indoor/">Abrir referência OpenAPI</a>
+    <a href="orders/">Protocolo Orders</a>
+  </div>
+</div>

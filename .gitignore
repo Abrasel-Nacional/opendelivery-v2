@@ -1,3 +1,10 @@
 .venv/
 __pycache__/
 *.pyc
+
+# Extratos locais de atas (análise; não publicam no site)
+artifacts/comites_extract/
+artifacts/comites_by_group/
+artifacts/comites_keyword_hits.txt
+artifacts/comites_summary.md
+artifacts/comites_synthesis.md

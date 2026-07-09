@@ -33,6 +33,16 @@
   --od-shadow-lg:      0 12px 32px rgba(0, 70, 33, 0.16);
 
   --od-font-family:   "Google Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  /* Semântica normativa (MUST / SHOULD / MAY) */
+  --od-must:          #b42318;
+  --od-must-bg:       rgba(180, 35, 24, 0.08);
+  --od-should:        #b54708;
+  --od-should-bg:     rgba(181, 71, 8, 0.10);
+  --od-may:           #027a48;
+  --od-may-bg:        rgba(2, 122, 72, 0.10);
+  --od-rc:            #175cd3;
+  --od-rc-bg:         rgba(23, 92, 211, 0.10);
 }
 
 /* ============================================================
@@ -262,4 +272,187 @@ html,
 
 .md-sidebar--primary .md-nav__link--active {
   border-left-color: var(--od-green);
+}
+
+/* ============================================================
+   Componentes de página (capabilities / extensões)
+   ============================================================ */
+
+/* Meta bar sob o H1: badges de tipo, código, pai */
+.md-typeset .od-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin: -0.4rem 0 1.25rem;
+  max-width: none;
+}
+
+.md-typeset .od-badge,
+.od-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.55rem;
+  border-radius: 99px;
+  border: 1px solid var(--od-border);
+  background: var(--od-gray-100);
+  color: var(--od-text-soft);
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.od-badge--core {
+  background: var(--od-bg-soft);
+  border-color: var(--od-green-soft);
+  color: var(--od-green);
+}
+
+.od-badge--ext {
+  background: rgba(139, 197, 63, 0.12);
+  border-color: rgba(139, 197, 63, 0.45);
+  color: #4a6b00;
+}
+
+.od-badge--code {
+  font-family: "JetBrains Mono", "Roboto Mono", monospace;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  background: #edf2ee;
+  color: var(--od-green-dark);
+}
+
+.od-badge--rc {
+  background: var(--od-rc-bg);
+  border-color: rgba(23, 92, 211, 0.35);
+  color: var(--od-rc);
+}
+
+.od-badge--must {
+  background: var(--od-must-bg);
+  border-color: rgba(180, 35, 24, 0.35);
+  color: var(--od-must);
+}
+
+.od-badge--should {
+  background: var(--od-should-bg);
+  border-color: rgba(181, 71, 8, 0.35);
+  color: var(--od-should);
+}
+
+.od-badge--may {
+  background: var(--od-may-bg);
+  border-color: rgba(2, 122, 72, 0.35);
+  color: var(--od-may);
+}
+
+.od-badge--new {
+  background: rgba(139, 197, 63, 0.16);
+  border-color: var(--od-accent);
+  color: #3d5a00;
+}
+
+/* Callout Protocolo ↔ API */
+.md-typeset .od-api-callout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.25rem;
+  margin: 1rem 0 1.5rem;
+  padding: 0.85rem 1.1rem;
+  border: 1px solid var(--od-border);
+  border-left: 4px solid var(--od-green);
+  border-radius: var(--od-radius-md);
+  background: var(--od-bg-soft);
+  max-width: 46rem;
+}
+
+.md-typeset .od-api-callout p {
+  margin: 0;
+  color: var(--od-text-soft);
+  font-size: 0.875rem;
+  max-width: none;
+}
+
+.md-typeset .od-api-callout a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.md-typeset .od-api-callout a:hover {
+  text-decoration: underline;
+}
+
+/* Próximo passo (fim de página) */
+.md-typeset .od-next-step {
+  margin: 2.5rem 0 1rem;
+  padding: 1.1rem 1.25rem;
+  border: 1px solid var(--od-border);
+  border-radius: var(--od-radius-lg);
+  background: linear-gradient(180deg, var(--od-bg-soft) 0%, #fff 100%);
+  max-width: 46rem;
+  box-shadow: var(--od-shadow-sm);
+}
+
+.md-typeset .od-next-step__label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--od-text-soft);
+  margin-bottom: 0.55rem;
+}
+
+.md-typeset .od-next-step__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+}
+
+.md-typeset .od-next-step__links a {
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.md-typeset .od-next-step__links a:hover {
+  text-decoration: underline;
+}
+
+/* Tabela normativa: coluna de obrigação */
+.md-typeset table:not([class]) td .od-badge,
+.md-typeset table:not([class]) th .od-badge {
+  font-size: 0.62rem;
+  padding: 0.12rem 0.45rem;
+}
+
+/* Focus ring da marca */
+.md-typeset a:focus-visible,
+.md-header__button:focus-visible,
+.od-header-nav .md-tabs__link:focus-visible {
+  outline: 2px solid var(--od-green-soft);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .path-card,
+  .cap-item,
+  .layer-card {
+    transition: none;
+  }
+  .path-card:hover,
+  .cap-item:hover,
+  .layer-card:hover {
+    transform: none;
+  }
 }
