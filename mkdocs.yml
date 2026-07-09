@@ -37,7 +37,9 @@ nav:
       - Discovery: protocol/discovery.md
       - Autenticação: protocol/authentication.md
     - Capabilities:
-      - Merchant / Cardápio: protocol/merchant.md
+      - Merchant:
+        - Visão geral: protocol/merchant.md
+        - Menu / Cardápio: protocol/menu.md
       - Orders / Pedidos:
         - Visão geral: protocol/orders.md
         - Indoor / Salão: protocol/indoor.md

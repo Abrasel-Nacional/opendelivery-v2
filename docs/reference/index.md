@@ -27,7 +27,7 @@ Comece por aqui em toda integração nova.
 
 | Spec | Descrição | Protocolo |
 |---|---|---|
-| [Merchant](merchant.md) | Estabelecimento, catálogo, serviços e disponibilidade | [Regras](../protocol/merchant.md) |
+| [Merchant](merchant.md) | Estabelecimento, catálogo, serviços e disponibilidade | [Merchant](../protocol/merchant.md) · [Menu](../protocol/menu.md) |
 | [Pedidos](orders.md) | Ciclo de vida de pedidos, estados e eventos | [Regras](../protocol/orders.md) |
 | [Logística](logistics.md) | Coordenação de entrega, rastreamento e problemas | [Regras](../protocol/logistics.md) |
 | [Customer & Fidelidade](customer.md) | CRM, leads, reviews, loyalty e eventos | [Customer](../protocol/customer.md) · [Reviews](../extensions/reviews.md) · [Loyalty](../extensions/loyalty.md) |

@@ -1331,6 +1331,62 @@
   
   
   
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3_1" id="__nav_2_3_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Merchant
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Merchant
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
     <li class="md-nav__item">
       <a href="protocol/merchant/" class="md-nav__link">
         
@@ -1339,7 +1395,7 @@
   <span class="md-ellipsis">
     
   
-    Merchant / Cardápio
+    Visão geral
   
 
     
@@ -1348,6 +1404,42 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="protocol/menu/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Menu / Cardápio
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -2529,12 +2621,12 @@
   <!-- ── CAPABILITIES ──────────────────────────────────────────── -->
   <div class="section-intro">
     <h2>Capabilities do protocolo</h2>
-    <p>Implemente qualquer capability de forma independente. Extensões dependem da capability pai e são declaradas no Discovery.</p>
+    <p>Capabilities independentes. <strong>Módulos</strong> (ex.: Menu) organizam o conteúdo da capability; <strong>extensões</strong> (Indoor, Reviews, Loyalty) são opcionais e dependem do pai no Discovery.</p>
   </div>
 
   <div class="cap-strip">
 
-    <!-- Merchant (sem extensões) -->
+    <!-- Merchant + Menu (módulo, não extensão) -->
     <div class="cap-group">
       <a href="protocol/merchant/" class="cap-item">
         <div class="cap-item-icon">
@@ -2548,6 +2640,18 @@
         <span class="cap-item-name">Merchant</span>
         <span class="cap-item-ext">core</span>
       </a>
+      <div class="cap-group__children">
+        <div class="cap-group__children-label">Módulo</div>
+        <a href="protocol/menu/" class="cap-item cap-item--child">
+          <div class="cap-item-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 6h16M4 12h16M4 18h10"/>
+            </svg>
+          </div>
+          <span class="cap-item-name">Menu</span>
+          <span class="cap-item-ext cap-item-ext--module">módulo</span>
+        </a>
+      </div>
     </div>
 
     <!-- Orders + Indoor -->
@@ -2896,9 +3000,16 @@
     },{
       title: "Capabilities",
       children: [{
-      title: "Merchant / Card\u00e1pio",
+      title: "Merchant",
+      children: [{
+      title: "Vis\u00e3o geral",
       url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/merchant/",
       active: false
+    },{
+      title: "Menu / Card\u00e1pio",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/menu/",
+      active: false
+    }]
     },{
       title: "Orders / Pedidos",
       children: [{

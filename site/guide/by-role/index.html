@@ -1572,6 +1572,62 @@
   
   
   
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3_1" id="__nav_2_3_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Merchant
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Merchant
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
     <li class="md-nav__item">
       <a href="../../protocol/merchant/" class="md-nav__link">
         
@@ -1580,7 +1636,7 @@
   <span class="md-ellipsis">
     
   
-    Merchant / Cardápio
+    Visão geral
   
 
     
@@ -1589,6 +1645,42 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../protocol/menu/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Menu / Cardápio
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -2874,7 +2966,7 @@
 <ol>
 <li><a href="../../protocol/discovery/">Discovery</a> — manifesto well-known</li>
 <li><a href="../../protocol/authentication/">Autenticação</a> — OAuth por aplicação</li>
-<li><a href="../../protocol/merchant/">Merchant</a> — consumir / sincronizar catálogo conforme dono do cardápio</li>
+<li><a href="../../protocol/merchant/">Merchant</a> + <a href="../../protocol/menu/">Menu</a> — identidade, services e catálogo</li>
 <li><a href="../../protocol/orders/">Orders</a> — criar pedidos, cancelar, consumir eventos/status</li>
 <li>Opcional: <a href="../../protocol/logistics/">Logistics</a>, <a href="../../protocol/customer/">Customer</a> (push de clientes), <a href="../../protocol/indoor/">Indoor</a> (totem/QR)</li>
 </ol>
@@ -2893,7 +2985,7 @@
 </tr>
 <tr>
 <td>Protocolo</td>
-<td><a href="../../protocol/orders/">Orders</a> · <a href="../../protocol/merchant/">Merchant</a></td>
+<td><a href="../../protocol/orders/">Orders</a> · <a href="../../protocol/merchant/">Merchant</a> · <a href="../../protocol/menu/">Menu</a></td>
 </tr>
 <tr>
 <td>API</td>
@@ -2919,7 +3011,7 @@
 <h3 id="o-que-implementar_1">O que implementar<a class="headerlink" href="#o-que-implementar_1" title="Permanent link">&para;</a></h3>
 <ol>
 <li><a href="../../protocol/discovery/">Discovery</a> + <a href="../../protocol/authentication/">Auth</a></li>
-<li><a href="../../protocol/merchant/">Merchant</a> — CRUD/snapshot de catálogo, services, pause</li>
+<li><a href="../../protocol/merchant/">Merchant</a> + <a href="../../protocol/menu/">Menu</a> — services, pause, CRUD/snapshot de catálogo</li>
 <li><a href="../../protocol/orders/">Orders</a> — confirmação, preparo, eventos, cancelamento V2</li>
 <li><a href="../../protocol/indoor/">Indoor</a> — se houver salão (Account, pagamentos, fiscal)</li>
 <li>Webhooks de eventos (e/ou polling onde o manifesto declarar)</li>
@@ -2935,7 +3027,7 @@
 <tbody>
 <tr>
 <td>Protocolo</td>
-<td><a href="../../protocol/merchant/">Merchant</a> · <a href="../../protocol/orders/">Orders</a> · <a href="../../protocol/indoor/">Indoor</a></td>
+<td><a href="../../protocol/merchant/">Merchant</a> · <a href="../../protocol/menu/">Menu</a> · <a href="../../protocol/orders/">Orders</a> · <a href="../../protocol/indoor/">Indoor</a></td>
 </tr>
 <tr>
 <td>API</td>
@@ -3294,9 +3386,16 @@
     },{
       title: "Capabilities",
       children: [{
-      title: "Merchant / Card\u00e1pio",
+      title: "Merchant",
+      children: [{
+      title: "Vis\u00e3o geral",
       url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/merchant/",
       active: false
+    },{
+      title: "Menu / Card\u00e1pio",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/menu/",
+      active: false
+    }]
     },{
       title: "Orders / Pedidos",
       children: [{

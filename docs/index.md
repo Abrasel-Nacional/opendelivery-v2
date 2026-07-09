@@ -145,12 +145,12 @@ description: A linguagem de interoperabilidade do delivery de alimentos no Brasi
   <!-- ── CAPABILITIES ──────────────────────────────────────────── -->
   <div class="section-intro">
     <h2>Capabilities do protocolo</h2>
-    <p>Implemente qualquer capability de forma independente. Extensões dependem da capability pai e são declaradas no Discovery.</p>
+    <p>Capabilities independentes. <strong>Módulos</strong> (ex.: Menu) organizam o conteúdo da capability; <strong>extensões</strong> (Indoor, Reviews, Loyalty) são opcionais e dependem do pai no Discovery.</p>
   </div>
 
   <div class="cap-strip">
 
-    <!-- Merchant (sem extensões) -->
+    <!-- Merchant + Menu (módulo, não extensão) -->
     <div class="cap-group">
       <a href="protocol/merchant/" class="cap-item">
         <div class="cap-item-icon">
@@ -164,6 +164,18 @@ description: A linguagem de interoperabilidade do delivery de alimentos no Brasi
         <span class="cap-item-name">Merchant</span>
         <span class="cap-item-ext">core</span>
       </a>
+      <div class="cap-group__children">
+        <div class="cap-group__children-label">Módulo</div>
+        <a href="protocol/menu/" class="cap-item cap-item--child">
+          <div class="cap-item-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 6h16M4 12h16M4 18h10"/>
+            </svg>
+          </div>
+          <span class="cap-item-name">Menu</span>
+          <span class="cap-item-ext cap-item-ext--module">módulo</span>
+        </a>
+      </div>
     </div>
 
     <!-- Orders + Indoor -->

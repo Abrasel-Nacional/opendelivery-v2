@@ -708,6 +708,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Capabilities">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#modulos-de-documentacao-nao-sao-extensions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Módulos de documentação (não são extensions)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1449,6 +1466,62 @@
   
   
   
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3_1" id="__nav_2_3_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Merchant
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Merchant
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
     <li class="md-nav__item">
       <a href="../../protocol/merchant/" class="md-nav__link">
         
@@ -1457,7 +1530,7 @@
   <span class="md-ellipsis">
     
   
-    Merchant / Cardápio
+    Visão geral
   
 
     
@@ -1466,6 +1539,42 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../protocol/menu/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Menu / Cardápio
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -2519,6 +2628,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Capabilities">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#modulos-de-documentacao-nao-sao-extensions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Módulos de documentação (não são extensions)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2619,7 +2745,7 @@
 <tbody>
 <tr>
 <td><strong>Merchant</strong></td>
-<td>Identidade do estabelecimento, catálogo, serviços e contexto operacional</td>
+<td>Identidade do estabelecimento, serviços e catálogo (ver módulo Menu)</td>
 </tr>
 <tr>
 <td><strong>Orders</strong></td>
@@ -2636,8 +2762,26 @@
 </tbody>
 </table>
 <p>Capabilities são <strong>independentes</strong> entre si. Uma plataforma pode implementar qualquer capability ou combinação sem precisar das demais. Não existe capability obrigatória nem capability central da qual outras dependam.</p>
+<h3 id="modulos-de-documentacao-nao-sao-extensions">Módulos de documentação (não são extensions)<a class="headerlink" href="#modulos-de-documentacao-nao-sao-extensions" title="Permanent link">&para;</a></h3>
+<p>Alguns domínios grandes são fatiados em páginas de protocolo para legibilidade, <strong>sem</strong> mudar o Discovery:</p>
+<table>
+<thead>
+<tr>
+<th>Módulo</th>
+<th>Capability</th>
+<th>Descrição</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Menu / Cardápio</strong></td>
+<td>Merchant</td>
+<td>Hierarquia de catálogo, snapshot e sincronismo</td>
+</tr>
+</tbody>
+</table>
 <h2 id="extensoes">Extensões<a class="headerlink" href="#extensoes" title="Permanent link">&para;</a></h2>
-<p>Extensões são módulos opcionais do protocolo que aumentam uma capability base sem redefiní-la. Uma extensão é sempre declarada junto com sua capability pai e NÃO DEVE ser usada de forma independente.</p>
+<p>Extensões são módulos <strong>opcionais</strong> do protocolo que aumentam uma capability base sem redefiní-la. Uma extensão é sempre declarada junto com sua capability pai e NÃO DEVE ser usada de forma independente.</p>
 <table>
 <thead>
 <tr>
@@ -2909,9 +3053,16 @@
     },{
       title: "Capabilities",
       children: [{
-      title: "Merchant / Card\u00e1pio",
+      title: "Merchant",
+      children: [{
+      title: "Vis\u00e3o geral",
       url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/merchant/",
       active: false
+    },{
+      title: "Menu / Card\u00e1pio",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/menu/",
+      active: false
+    }]
     },{
       title: "Orders / Pedidos",
       children: [{

@@ -364,6 +364,13 @@
   margin-top: -4px;
 }
 
+/* Módulo (ex.: Menu) ≠ extensão formal (Indoor, Loyalty) */
+.cap-item-ext--module {
+  background: rgba(0, 101, 46, 0.08);
+  border-color: rgba(0, 101, 46, 0.22);
+  color: var(--od-green);
+}
+
 /* Extensões aninhadas sob o pai */
 .cap-group__children {
   display: flex;

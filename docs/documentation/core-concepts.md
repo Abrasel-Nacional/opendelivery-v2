@@ -41,16 +41,24 @@ Capabilities são as áreas funcionais primárias do protocolo. Elas representam
 
 | Capability | Descrição |
 |---|---|
-| **Merchant** | Identidade do estabelecimento, catálogo, serviços e contexto operacional |
+| **Merchant** | Identidade do estabelecimento, serviços e catálogo (ver módulo Menu) |
 | **Orders** | Ciclo de vida de pedidos, gerenciamento de estado e coordenação |
 | **Customer** | CRM, leads, eventos de cliente e visões de pedidos centradas no cliente |
 | **Logistics** | Coordenação de entrega, rastreamento e tratamento de problemas |
 
 Capabilities são **independentes** entre si. Uma plataforma pode implementar qualquer capability ou combinação sem precisar das demais. Não existe capability obrigatória nem capability central da qual outras dependam.
 
+### Módulos de documentação (não são extensions)
+
+Alguns domínios grandes são fatiados em páginas de protocolo para legibilidade, **sem** mudar o Discovery:
+
+| Módulo | Capability | Descrição |
+|---|---|---|
+| **Menu / Cardápio** | Merchant | Hierarquia de catálogo, snapshot e sincronismo |
+
 ## Extensões
 
-Extensões são módulos opcionais do protocolo que aumentam uma capability base sem redefiní-la. Uma extensão é sempre declarada junto com sua capability pai e NÃO DEVE ser usada de forma independente.
+Extensões são módulos **opcionais** do protocolo que aumentam uma capability base sem redefiní-la. Uma extensão é sempre declarada junto com sua capability pai e NÃO DEVE ser usada de forma independente.
 
 | Extensão | Capability Pai | Descrição |
 |---|---|---|

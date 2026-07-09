@@ -18,7 +18,8 @@ Open Delivery Protocol v2
 │   ├── Fundamentos (princípios, regras, erros, fluxos, evolução)
 │   ├── Infraestrutura (Discovery, Autenticação)
 │   ├── Capabilities
-│   │   ├── Merchant / Cardápio
+│   │   ├── Merchant
+│   │   │   └── Menu / Cardápio (módulo de documentação, não extension)
 │   │   ├── Orders / Pedidos
 │   │   │   └── Indoor / Salão (extensão)
 │   │   ├── Logística
