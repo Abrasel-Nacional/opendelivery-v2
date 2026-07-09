@@ -145,7 +145,7 @@ description: A linguagem de interoperabilidade do delivery de alimentos no Brasi
   <!-- ── CAPABILITIES ──────────────────────────────────────────── -->
   <div class="section-intro">
     <h2>Capabilities do protocolo</h2>
-    <p>Implemente só o que o seu papel precisa. Itens aninhados detalham a capability pai; o que é novo na V2 aparece marcado.</p>
+    <p>Capabilities são as áreas funcionais do protocolo. Elas são <strong>independentes</strong>: cada participante implementa apenas o que faz sentido para o seu papel.</p>
   </div>
 
   <div class="cap-strip">
@@ -261,6 +261,24 @@ description: A linguagem de interoperabilidade do delivery de alimentos no Brasi
       </div>
     </div>
 
+  </div>
+
+  <hr class="od-divider">
+
+  <!-- ── O QUE MUDOU ───────────────────────────────────────────── -->
+  <div class="section-intro">
+    <h2>O que mudou na V2</h2>
+    <p>Principais mudanças da Release Candidate. Detalhes e tabelas no changelog.</p>
+  </div>
+
+  <div class="wn-strip">
+    <a href="guide/changelog/" class="wn-pill wn-pill--break">Auth por aplicação</a>
+    <a href="guide/changelog/" class="wn-pill wn-pill--break">Merchant ID do originador</a>
+    <a href="guide/changelog/" class="wn-pill wn-pill--break">Cardápio com CRUD</a>
+    <a href="protocol/customer/" class="wn-pill wn-pill--new">Customer / CRM</a>
+    <a href="protocol/indoor/" class="wn-pill wn-pill--new">Indoor / Salão</a>
+    <a href="protocol/discovery/" class="wn-pill wn-pill--improve">Discovery obrigatório</a>
+    <a href="guide/changelog/" class="wn-pill wn-pill--more">Ver changelog completo →</a>
   </div>
 
   <hr class="od-divider">

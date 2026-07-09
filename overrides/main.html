@@ -52,20 +52,24 @@
     opacity: 1;
   }
 
-  /* Dropdown */
+  /* ── Dropdown / mega-menu ─────────────────────────────────────── */
   .od-dropdown {
     display: none;
     position: fixed;
     margin: 0;
-    padding: 0.3rem 0;
+    padding: 0;
     list-style: none;
     background: #fff;
     border: 1px solid var(--od-border, #d3e4d6);
     border-top: none;
     border-radius: 0 0 var(--od-radius-md, .6rem) var(--od-radius-md, .6rem);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.09);
+    box-shadow: 0 12px 32px rgba(0, 70, 33, 0.12);
     min-width: 15rem;
-    z-index: 3;
+    max-width: min(920px, calc(100vw - 24px));
+    max-height: min(72vh, 32rem);
+    overflow-x: hidden;
+    overflow-y: auto;
+    z-index: 5;
     opacity: 0;
     transform: translateY(-8px);
     transition: opacity 0.13s ease-in, transform 0.13s ease-in;
@@ -75,6 +79,11 @@
     opacity: 1;
     transform: translateY(0);
     transition: opacity 0.18s ease-out, transform 0.22s cubic-bezier(0, 0, 0.2, 1);
+  }
+
+  /* Lista simples (Guia, Referência) */
+  .od-dropdown:not(.od-dropdown--mega) {
+    padding: 0.3rem 0;
   }
 
   .od-dropdown li { margin: 0; }
@@ -123,6 +132,87 @@
 
   .od-dropdown a.od-nested {
     padding-left: 1.8rem;
+  }
+
+  /* Mega-menu em colunas (Protocolo) */
+  .od-dropdown--mega {
+    padding: 1rem 0.85rem 1.1rem;
+  }
+
+  .od-mega {
+    display: grid;
+    grid-template-columns: repeat(var(--od-mega-cols, 3), minmax(11.5rem, 1fr));
+    gap: 0.25rem 1.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .od-mega__col {
+    margin: 0;
+    padding: 0 0.35rem;
+    min-width: 0;
+    border-left: 1px solid var(--od-border, #d3e4d6);
+  }
+
+  .od-mega__col:first-child {
+    border-left: none;
+    padding-left: 0.15rem;
+  }
+
+  .od-mega__title {
+    display: block;
+    padding: 0.15rem 0.55rem 0.45rem;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--od-text-soft, #4a6151);
+  }
+
+  .od-mega__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .od-mega__list a {
+    padding: 0.42rem 0.55rem;
+    border-radius: 6px;
+    white-space: normal;
+    line-height: 1.35;
+  }
+
+  .od-mega__list a.od-mega__sub {
+    padding-left: 1.15rem;
+    font-weight: 400;
+    font-size: 0.72rem;
+    color: var(--od-text-soft, #4a6151);
+  }
+
+  .od-mega__list a.od-mega__sub:hover,
+  .od-mega__list a.od-mega__sub:focus {
+    color: var(--od-green, #00652e);
+  }
+
+  .od-mega__list a.od-mega__sub.od-active {
+    font-weight: 600;
+  }
+
+  .od-mega__hint {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 0.65rem;
+    font-weight: 400;
+    color: var(--od-text-soft, #4a6151);
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  @media screen and (max-width: 52em) {
+    .od-mega {
+      grid-template-columns: 1fr 1fr;
+    }
   }
 
   /* Mobile: header nav some; drawer Material permanece disponível */
@@ -203,7 +293,7 @@
     {% endfor %}
   ];
 
-  var portal = document.createElement('ul');
+  var portal = document.createElement('div');
   portal.className = 'od-dropdown';
   portal.setAttribute('role', 'menu');
   portal.setAttribute('aria-label', 'Submenu');
@@ -220,20 +310,151 @@
     return Array.prototype.slice.call(portal.querySelectorAll('a[href]'));
   }
 
-  function appendItems(children, nested) {
+  /** Primeira URL folha na árvore (ex.: "Visão geral" sob Merchant). */
+  function firstUrl(node) {
+    if (!node) return null;
+    if (node.url) return { url: node.url, active: !!node.active };
+    if (!node.children) return null;
+    for (var i = 0; i < node.children.length; i++) {
+      var hit = firstUrl(node.children[i]);
+      if (hit) return hit;
+    }
+    return null;
+  }
+
+  function anyActive(node) {
+    if (!node) return false;
+    if (node.active) return true;
+    if (!node.children) return false;
+    return node.children.some(anyActive);
+  }
+
+  /** Mega-menu se ≥2 grupos de 1º nível com filhos. */
+  function shouldUseMega(children) {
+    if (!children || children.length < 2) return false;
+    var groups = children.filter(function (c) { return c.children && c.children.length; });
+    return groups.length >= 2;
+  }
+
+  /**
+   * Itens de uma coluna:
+   * - folha → link direto
+   * - grupo com filhos (capability) → link da capability (visão geral)
+   *   + sublinks (módulos/extensões: Menus, Indoor, Reviews…)
+   */
+  function columnEntries(groupChildren) {
+    return (groupChildren || []).map(function (item) {
+      if (item.url) {
+        return {
+          title: item.title,
+          url: item.url,
+          active: !!item.active,
+          subs: []
+        };
+      }
+      if (item.children && item.children.length) {
+        var leaf = firstUrl(item);
+        if (!leaf) return null;
+        var subs = item.children
+          .filter(function (c) { return c.url && c.url !== leaf.url; })
+          .map(function (c) {
+            return {
+              title: c.title,
+              url: c.url,
+              active: !!c.active
+            };
+          });
+        return {
+          title: item.title,
+          url: leaf.url,
+          active: anyActive(item),
+          subs: subs
+        };
+      }
+      return null;
+    }).filter(Boolean);
+  }
+
+  function makeLink(entry, isSub) {
+    var a = document.createElement('a');
+    a.href = entry.url;
+    a.setAttribute('role', 'menuitem');
+    a.tabIndex = -1;
+    a.textContent = entry.title;
+    if (isSub) a.classList.add('od-mega__sub');
+    if (entry.active) a.classList.add('od-active');
+    return a;
+  }
+
+  function fillMega(children) {
+    portal.classList.add('od-dropdown--mega');
+    portal.innerHTML = '';
+
+    var mega = document.createElement('ul');
+    mega.className = 'od-mega';
+    mega.setAttribute('role', 'none');
+
+    var cols = children.filter(function (c) {
+      return (c.children && c.children.length) || c.url;
+    });
+    mega.style.setProperty('--od-mega-cols', String(Math.min(cols.length, 4)));
+
+    cols.forEach(function (col) {
+      var li = document.createElement('li');
+      li.className = 'od-mega__col';
+      li.setAttribute('role', 'none');
+
+      var title = document.createElement('span');
+      title.className = 'od-mega__title';
+      title.textContent = col.title;
+      li.appendChild(title);
+
+      var list = document.createElement('ul');
+      list.className = 'od-mega__list';
+      list.setAttribute('role', 'none');
+
+      var entries;
+      if (col.children && col.children.length) {
+        entries = columnEntries(col.children);
+      } else if (col.url) {
+        entries = [{ title: col.title, url: col.url, active: !!col.active }];
+      } else {
+        entries = [];
+      }
+
+      entries.forEach(function (entry) {
+        var item = document.createElement('li');
+        item.setAttribute('role', 'none');
+        item.appendChild(makeLink(entry, false));
+        list.appendChild(item);
+
+        (entry.subs || []).forEach(function (sub) {
+          var subItem = document.createElement('li');
+          subItem.setAttribute('role', 'none');
+          subItem.appendChild(makeLink(sub, true));
+          list.appendChild(subItem);
+        });
+      });
+
+      li.appendChild(list);
+      mega.appendChild(li);
+    });
+
+    portal.appendChild(mega);
+  }
+
+  function appendFlatItems(children, nested) {
     children.forEach(function (child) {
       if (child.children) {
-        var label = document.createElement('li');
+        var label = document.createElement('div');
         label.className = 'od-group-label';
         label.setAttribute('role', 'presentation');
         label.textContent = child.title;
         portal.appendChild(label);
-        appendItems(child.children, true);
+        appendFlatItems(child.children, true);
         return;
       }
       if (!child.url) return;
-      var li = document.createElement('li');
-      li.setAttribute('role', 'none');
       var a = document.createElement('a');
       a.href = child.url;
       a.textContent = child.title;
@@ -241,14 +462,19 @@
       a.tabIndex = -1;
       if (nested) a.classList.add('od-nested');
       if (child.active) a.classList.add('od-active');
-      li.appendChild(a);
-      portal.appendChild(li);
+      portal.appendChild(a);
     });
   }
 
-  function fillPortal(children) {
+  function fillFlat(children) {
+    portal.classList.remove('od-dropdown--mega');
     portal.innerHTML = '';
-    appendItems(children, false);
+    appendFlatItems(children, false);
+  }
+
+  function fillPortal(children) {
+    if (shouldUseMega(children)) fillMega(children);
+    else fillFlat(children);
   }
 
   function setExpanded(link, expanded) {
@@ -259,14 +485,20 @@
     var r = tab.getBoundingClientRect();
     var hdr = document.querySelector('.md-header');
     var top = hdr ? hdr.getBoundingClientRect().bottom : r.bottom;
-    var left = r.left;
     portal.style.display = 'block';
-    /* evita cortar à direita em telas estreitas desktop */
+    portal.style.top = top + 'px';
+
     requestAnimationFrame(function () {
-      var w = portal.offsetWidth || 240;
-      var maxLeft = Math.max(8, window.innerWidth - w - 8);
+      var w = portal.offsetWidth || 280;
+      var left = r.left;
+      /* mega: alinha sob a tab, mas centraliza se couber melhor */
+      if (portal.classList.contains('od-dropdown--mega')) {
+        left = Math.min(r.left, Math.max(12, (window.innerWidth - w) / 2));
+        /* prefere alinhar ao início da tab se houver espaço */
+        if (r.left + w <= window.innerWidth - 12) left = r.left;
+      }
+      var maxLeft = Math.max(12, window.innerWidth - w - 12);
       portal.style.left = Math.min(left, maxLeft) + 'px';
-      portal.style.top = top + 'px';
     });
   }
 
@@ -300,6 +532,7 @@
       portal.classList.remove('od-dropdown--visible');
       hideEndTimer = setTimeout(function () {
         portal.style.display = 'none';
+        portal.classList.remove('od-dropdown--mega');
         if (currentTab) {
           currentTab.classList.remove('od-tab-open');
           setExpanded(currentLink, false);
@@ -314,7 +547,6 @@
   }
 
   function scheduleHide() {
-    /* não fecha no hover-out se abriu por teclado/click até blur externo */
     if (openMode === 'keyboard' || openMode === 'click') return;
     hidePortal(false);
   }
@@ -365,7 +597,6 @@
     tab.addEventListener('mouseleave', scheduleHide);
 
     link.addEventListener('click', function (e) {
-      /* toggle por click (touch / preferência) */
       if (currentTab === tab && portal.classList.contains('od-dropdown--visible')) {
         hidePortal(true);
         e.preventDefault();

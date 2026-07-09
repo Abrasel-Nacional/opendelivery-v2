@@ -6,7 +6,7 @@
 </p>
 
 <div class="od-api-callout">
-  <p>Regras, status e eventos nesta página. Contrato HTTP na referência OpenAPI.</p>
+  <p>Regras, status e eventos nesta página. Contrato OpenAPI <strong>somente em inglês</strong>.</p>
   <a href="../reference/orders/">Abrir referência OpenAPI →</a>
 </div>
 

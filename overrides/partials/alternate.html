@@ -1,0 +1,62 @@
+{% import "partials/language.html" as lang with context %}
+{# Language switcher: bandeira SVG + código (PT / EN) — sem emoji (falha no Windows) #}
+<div class="md-header__option">
+  <div class="md-select od-lang-select">
+    {% set current_lang = config.theme.language or "pt" %}
+    {% if current_lang == "en" %}
+      {% set current_code = "EN" %}
+      {% set current_flag = "assets/images/flags/us.svg" %}
+    {% else %}
+      {% set current_code = "PT" %}
+      {% set current_flag = "assets/images/flags/br.svg" %}
+    {% endif %}
+
+    <button
+      class="md-header__button od-lang-button"
+      aria-label="{{ lang.t('select.language') }}"
+      title="{{ lang.t('select.language') }}"
+    >
+      <img
+        class="od-lang-flag"
+        src="{{ current_flag | url }}"
+        alt=""
+        width="20"
+        height="14"
+        decoding="async"
+      >
+      <span class="od-lang-code">{{ current_code }}</span>
+      <span class="od-lang-button__chevron" aria-hidden="true"></span>
+    </button>
+
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        {% for alt in config.extra.alternate %}
+          {% if alt.lang == "en" %}
+            {% set code = "EN" %}
+            {% set flag = "assets/images/flags/us.svg" %}
+          {% else %}
+            {% set code = "PT" %}
+            {% set flag = "assets/images/flags/br.svg" %}
+          {% endif %}
+          <li class="md-select__item">
+            <a
+              href="{{ alt.link | url }}"
+              hreflang="{{ alt.lang }}"
+              class="md-select__link od-lang-link{% if alt.lang == current_lang %} od-lang-active{% endif %}"
+            >
+              <img
+                class="od-lang-flag"
+                src="{{ flag | url }}"
+                alt=""
+                width="20"
+                height="14"
+                decoding="async"
+              >
+              <span class="od-lang-code">{{ code }}</span>
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>

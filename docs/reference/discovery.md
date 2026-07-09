@@ -5,3 +5,7 @@ hide:
   - toc
   - navigation
 ---
+
+!!! note "Idioma do contrato"
+    O contrato OpenAPI desta pagina esta **somente em ingles**.
+

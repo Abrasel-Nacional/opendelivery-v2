@@ -1,0 +1,4242 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open standard for ordering, fulfillment, and delivery interoperability">
+      
+      
+      
+        <link rel="canonical" href="https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/indoor/">
+      
+      
+        <link rel="prev" href="../orders/">
+      
+      
+        <link rel="next" href="../logistics/">
+      
+      
+        
+          <link rel="alternate" href="../../../protocol/indoor/" hreflang="pt">
+        
+          <link rel="alternate" href="./" hreflang="en">
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/opendelivery-logo.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Indoor - Open Delivery Protocol</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Google+Sans:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Google Sans";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/theme.css">
+    
+      <link rel="stylesheet" href="../../../stylesheets/landing.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+
+<style>
+  /* Esconde as tabs originais antes do JS movê-las — evita flash visual */
+  .md-tabs {
+    display: none !important;
+  }
+
+  /* Remove o título "Open Delivery Protocol" do header */
+  .md-header__title {
+    display: none !important;
+  }
+
+  /* Círculo da seta */
+  .od-chevron {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.05rem;
+    height: 1.05rem;
+    margin-left: 3px;
+    border-radius: 50%;
+    background: rgba(0, 101, 46, 0.12);
+    flex-shrink: 0;
+    vertical-align: middle;
+    transition: background 0.18s ease;
+  }
+
+  .od-chevron::after {
+    content: "";
+    display: block;
+    width: 7px;
+    height: 5px;
+    background-color: var(--od-green-dark, #004621);
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+    opacity: 0.6;
+    transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s;
+  }
+
+  .od-tab-has-dropdown:hover .od-chevron,
+  .od-tab-has-dropdown.od-tab-open .od-chevron,
+  .od-tab-has-dropdown .md-tabs__link[aria-expanded="true"] .od-chevron {
+    background: rgba(0, 101, 46, 0.2);
+  }
+
+  .od-tab-has-dropdown:hover .od-chevron::after,
+  .od-tab-has-dropdown.od-tab-open .od-chevron::after,
+  .od-tab-has-dropdown .md-tabs__link[aria-expanded="true"] .od-chevron::after {
+    transform: rotate(180deg);
+    opacity: 1;
+  }
+
+  /* ── Dropdown / mega-menu ─────────────────────────────────────── */
+  .od-dropdown {
+    display: none;
+    position: fixed;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: #fff;
+    border: 1px solid var(--od-border, #d3e4d6);
+    border-top: none;
+    border-radius: 0 0 var(--od-radius-md, .6rem) var(--od-radius-md, .6rem);
+    box-shadow: 0 12px 32px rgba(0, 70, 33, 0.12);
+    min-width: 15rem;
+    max-width: min(920px, calc(100vw - 24px));
+    max-height: min(72vh, 32rem);
+    overflow-x: hidden;
+    overflow-y: auto;
+    z-index: 5;
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity 0.13s ease-in, transform 0.13s ease-in;
+  }
+
+  .od-dropdown.od-dropdown--visible {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.18s ease-out, transform 0.22s cubic-bezier(0, 0, 0.2, 1);
+  }
+
+  /* Lista simples (Guia, Referência) */
+  .od-dropdown:not(.od-dropdown--mega) {
+    padding: 0.3rem 0;
+  }
+
+  .od-dropdown li { margin: 0; }
+
+  .od-dropdown a {
+    display: block;
+    padding: 0.52rem 1.2rem;
+    color: var(--od-green-dark, #004621);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.12s, color 0.12s;
+  }
+
+  .od-dropdown a:hover,
+  .od-dropdown a:focus {
+    background: var(--od-bg-soft, #f4f9f5);
+    color: var(--od-green, #00652e);
+    text-decoration: none;
+  }
+
+  .od-dropdown a.od-active {
+    color: var(--od-green, #00652e);
+    background: rgba(0, 101, 46, 0.07);
+    font-weight: 700;
+  }
+
+  .od-dropdown .od-group-label {
+    padding: 0.6rem 1.2rem 0.25rem;
+    margin-top: 0.2rem;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--od-text-soft, #4a6151);
+    border-top: 1px solid var(--od-border, #d3e4d6);
+    white-space: nowrap;
+  }
+
+  .od-dropdown .od-group-label:first-child {
+    border-top: none;
+    margin-top: 0;
+  }
+
+  .od-dropdown a.od-nested {
+    padding-left: 1.8rem;
+  }
+
+  /* Mega-menu em colunas (Protocolo) */
+  .od-dropdown--mega {
+    padding: 1rem 0.85rem 1.1rem;
+  }
+
+  .od-mega {
+    display: grid;
+    grid-template-columns: repeat(var(--od-mega-cols, 3), minmax(11.5rem, 1fr));
+    gap: 0.25rem 1.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .od-mega__col {
+    margin: 0;
+    padding: 0 0.35rem;
+    min-width: 0;
+    border-left: 1px solid var(--od-border, #d3e4d6);
+  }
+
+  .od-mega__col:first-child {
+    border-left: none;
+    padding-left: 0.15rem;
+  }
+
+  .od-mega__title {
+    display: block;
+    padding: 0.15rem 0.55rem 0.45rem;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--od-text-soft, #4a6151);
+  }
+
+  .od-mega__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .od-mega__list a {
+    padding: 0.42rem 0.55rem;
+    border-radius: 6px;
+    white-space: normal;
+    line-height: 1.35;
+  }
+
+  .od-mega__list a.od-mega__sub {
+    padding-left: 1.15rem;
+    font-weight: 400;
+    font-size: 0.72rem;
+    color: var(--od-text-soft, #4a6151);
+  }
+
+  .od-mega__list a.od-mega__sub:hover,
+  .od-mega__list a.od-mega__sub:focus {
+    color: var(--od-green, #00652e);
+  }
+
+  .od-mega__list a.od-mega__sub.od-active {
+    font-weight: 600;
+  }
+
+  .od-mega__hint {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 0.65rem;
+    font-weight: 400;
+    color: var(--od-text-soft, #4a6151);
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  @media screen and (max-width: 52em) {
+    .od-mega {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  /* Mobile: header nav some; drawer Material permanece disponível */
+  @media screen and (max-width: 59.9375em) {
+    .od-dropdown { display: none !important; }
+  }
+</style>
+
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js"
+  data-cf-beacon='{"token": "87d4a20a53ec410e91d508e91545ebdc"}'></script>
+
+
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#indoor-salao" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../" title="Open Delivery Protocol" class="md-header__button md-logo" aria-label="Open Delivery Protocol" data-md-component="logo">
+      
+  <img src="../../../assets/images/opendelivery-logo-header.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Open Delivery Protocol
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Indoor
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input
+        type="text"
+        class="md-search__input"
+        name="query"
+        aria-label="Search capabilities, endpoints, events…"
+        placeholder="Search capabilities, endpoints, events…"
+        autocapitalize="off"
+        autocorrect="off"
+        autocomplete="off"
+        spellcheck="false"
+        data-md-component="search-query"
+        required
+      >
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a
+            href="javascript:void(0)"
+            class="md-search__icon md-icon"
+            title="Share"
+            aria-label="Share"
+            data-clipboard
+            data-clipboard-text=""
+            data-md-component="search-share"
+            tabindex="-1"
+          >
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button
+          type="reset"
+          class="md-search__icon md-icon"
+          title="Clear"
+          aria-label="Clear"
+          tabindex="-1"
+        >
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+    
+      
+
+<div class="md-header__option">
+  <div class="md-select od-lang-select">
+    
+    
+      
+      
+    
+
+    <button
+      class="md-header__button od-lang-button"
+      aria-label="Select language"
+      title="Select language"
+    >
+      <img
+        class="od-lang-flag"
+        src="../../../assets/images/flags/us.svg"
+        alt=""
+        width="20"
+        height="14"
+        decoding="async"
+      >
+      <span class="od-lang-code">EN</span>
+      <span class="od-lang-button__chevron" aria-hidden="true"></span>
+    </button>
+
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          
+            
+            
+          
+          <li class="md-select__item">
+            <a
+              href="../../../protocol/indoor/"
+              hreflang="pt"
+              class="md-select__link od-lang-link"
+            >
+              <img
+                class="od-lang-flag"
+                src="../../../assets/images/flags/br.svg"
+                alt=""
+                width="20"
+                height="14"
+                decoding="async"
+              >
+              <span class="od-lang-code">PT</span>
+            </a>
+          </li>
+        
+          
+            
+            
+          
+          <li class="md-select__item">
+            <a
+              href="./"
+              hreflang="en"
+              class="md-select__link od-lang-link od-lang-active"
+            >
+              <img
+                class="od-lang-flag"
+                src="../../../assets/images/flags/us.svg"
+                alt=""
+                width="20"
+                height="14"
+                decoding="async"
+              >
+              <span class="od-lang-code">EN</span>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Abrasel-Nacional/opendelivery-v2" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ODP on GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../principles/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Protocol
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../reference/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  API reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="Open Delivery Protocol" class="md-nav__button md-logo" aria-label="Open Delivery Protocol" data-md-component="logo">
+      
+  <img src="../../../assets/images/opendelivery-logo-header.png" alt="logo">
+
+    </a>
+    Open Delivery Protocol
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Abrasel-Nacional/opendelivery-v2" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ODP on GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guide
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_1" id="__nav_1_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/by-role/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paths by role
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../documentation/core-concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protocol overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../PROTOCOL_VS_BINDING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protocol vs binding
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../roles-and-responsibilities/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roles and responsibilities
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_1_8" id="__nav_1_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migration and history
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Migration and history
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/migration-v1-v2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migration V1→V2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../documentation/roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protocol
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Protocol
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_1" id="__nav_2_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Fundamentals
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../principles/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Principles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guidelines/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    General rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../error-handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error handling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../flows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Flows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../evolution/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evolution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Infrastructure
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../discovery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Discovery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Capabilities
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Capabilities
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3_1" id="__nav_2_3_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Merchant
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Merchant
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../merchant/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../merchant-store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store data
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../menu/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Menus
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_3_2" id="__nav_2_3_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orders
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Orders
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../orders/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Indoor
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Indoor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#para-que-serve" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Para que serve
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pre-requisito-protocolo-de-orders" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pré-requisito: protocolo de Orders
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#os-dois-lados-da-integracao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Os dois lados da integração
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conceitos-chave" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conceitos-chave
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Conceitos-chave">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-conta-account" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A conta (Account)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#canais-de-origem-originchannel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Canais de origem (originChannel)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#como-a-conta-nasce" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Como a conta nasce
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#status-da-conta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Status da conta
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pagamentos-e-fechamento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pagamentos e fechamento
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#eventos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Eventos
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Eventos">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#matriz-de-eventos-da-conta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matriz de eventos da conta
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fluxos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fluxos
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Fluxos">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fluxo-normal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fluxo normal
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desbloqueio-unlock" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Desbloqueio (unlock)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pagamentos-parciais" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pagamentos parciais
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#emissao-fiscal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Emissão fiscal
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cancelamento-de-item" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cancelamento de item
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transferencia-entre-contas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Transferência entre contas
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementando-o-software-service" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementando o Software Service
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementando-a-ordering-application" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementando a Ordering Application
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../logistics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logistics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3_4" id="__nav_2_3_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Customer / CRM
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Customer / CRM
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../customer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../extensions/reviews/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reviews
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../extensions/loyalty/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Loyalty
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../reference/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API reference
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Infrastructure
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/discovery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Discovery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Capabilities
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Capabilities
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/merchant/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Merchant
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3_2" id="__nav_3_3_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orders
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Orders
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/orders/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/indoor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Indoor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/logistics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logistics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/customer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Customer & Loyalty
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#para-que-serve" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Para que serve
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pre-requisito-protocolo-de-orders" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pré-requisito: protocolo de Orders
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#os-dois-lados-da-integracao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Os dois lados da integração
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conceitos-chave" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conceitos-chave
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Conceitos-chave">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-conta-account" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A conta (Account)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#canais-de-origem-originchannel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Canais de origem (originChannel)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#como-a-conta-nasce" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Como a conta nasce
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#status-da-conta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Status da conta
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pagamentos-e-fechamento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pagamentos e fechamento
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#eventos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Eventos
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Eventos">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#matriz-de-eventos-da-conta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matriz de eventos da conta
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fluxos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fluxos
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Fluxos">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fluxo-normal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fluxo normal
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desbloqueio-unlock" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Desbloqueio (unlock)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pagamentos-parciais" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pagamentos parciais
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#emissao-fiscal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Emissão fiscal
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cancelamento-de-item" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cancelamento de item
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transferencia-entre-contas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Transferência entre contas
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementando-o-software-service" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementando o Software Service
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementando-a-ordering-application" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementando a Ordering Application
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/Abrasel-Nacional/opendelivery-v2/edit/main/docs/protocol/indoor.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="indoor-salao">Indoor / Salão<a class="headerlink" href="#indoor-salao" title="Permanent link">&para;</a></h1>
+<p class="od-meta">
+  <span class="od-badge od-badge--ext">Extensão</span>
+  <span class="od-badge od-badge--code">indoor</span>
+  <span class="od-badge">pai: Orders</span>
+  <span class="od-badge od-badge--new">Novo na V2</span>
+</p>
+
+<div class="od-api-callout">
+  <p>Regras e fluxos nesta página. Contrato HTTP na referência OpenAPI.</p>
+  <a href="../reference/indoor/">Abrir referência OpenAPI →</a>
+</div>
+
+<p>A capability <strong>Indoor</strong> padroniza as operações de consumo no local — mesa, comanda e balcão — cobrindo tanto atendimento mediado por garçom quanto <strong>autoatendimento completo</strong> via totem, QR Code ou tablet. Ela cobre o ciclo completo de uma sessão de salão: agrupar os pedidos numa <strong>conta</strong>, registrar pagamentos (inclusive parciais), emitir documento fiscal e fechar a conta — tudo sincronizado entre o sistema de gestão do restaurante e a aplicação de pedido.</p>
+<p>Esta página explica o que é a capability, os conceitos que você precisa dominar, os fluxos de interação e como implementar cada lado. As regras normativas e a referência completa de campos estão na <a href="../../reference/indoor/">spec da API Indoor</a>.</p>
+<hr />
+<h2 id="para-que-serve">Para que serve<a class="headerlink" href="#para-que-serve" title="Permanent link">&para;</a></h2>
+<p>No delivery tradicional, um pedido nasce e morre como uma unidade isolada: é criado, preparado, entregue, encerrado. No salão a realidade é outra. Uma conta abre — numa mesa, numa comanda ou num balcão de autoatendimento — e recebe <strong>vários pedidos ao longo do tempo</strong>, possivelmente vindos de canais diferentes (garçom com tablet, cliente pelo QR Code, totem). Itens são cancelados ou transferidos para outra conta, o total é dividido, pago em partes, e só então a conta é fechada com emissão fiscal.</p>
+<p>Sem um padrão, cada integração entre PDV e aplicação de salão precisava negociar bilateralmente como representar esse acúmulo: onde fica o total, como cancelar um item sem cancelar o pedido inteiro, quando emitir a nota, como tratar pagamento parcial. O Indoor elimina essa negociação ao definir a <strong>conta</strong> como entidade central e um conjunto fixo de operações e eventos sobre ela.</p>
+<hr />
+<h2 id="pre-requisito-protocolo-de-orders">Pré-requisito: protocolo de Orders<a class="headerlink" href="#pre-requisito-protocolo-de-orders" title="Permanent link">&para;</a></h2>
+<div class="admonition warning">
+<p class="admonition-title">Indoor é uma extensão de Orders, não uma capability autônoma</p>
+<p>Esta capability pressupõe que ambas as partes já implementaram o <strong>protocolo de Orders</strong> do Open Delivery. Um pedido indoor (<code>orderType: INDOOR</code>) trafega pelo mesmo ciclo de vida e pelos mesmos mecanismos de evento de qualquer outro pedido. O Indoor adiciona, sobre esse fluxo base, a gestão da conta de salão.</p>
+<p>Implementações que não possuem o protocolo de Orders ativo não podem usar esta capability.</p>
+</div>
+<p>O pedido é o <strong>canal de entrada de itens</strong>; a conta é o <strong>agrupador operacional</strong> desses pedidos para fins de pagamento, fechamento e integração fiscal.</p>
+<hr />
+<h2 id="os-dois-lados-da-integracao">Os dois lados da integração<a class="headerlink" href="#os-dois-lados-da-integracao" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Papel</th>
+<th>Responsabilidade</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Software Service</strong></td>
+<td>Sistema de gestão do restaurante. <strong>Hospeda e implementa</strong> todos os endpoints desta spec e <strong>emite</strong> os eventos do ciclo de vida da conta.</td>
+</tr>
+<tr>
+<td><strong>Ordering Application</strong></td>
+<td>Aplicação de pedido (totem, tablet do garçom, app do cliente, frente de caixa). <strong>Consome</strong> os endpoints e <strong>recebe</strong> os eventos via webhook para manter-se sincronizada.</td>
+</tr>
+</tbody>
+</table>
+<p>Em todas as operações desta capability o Software Service é o servidor e a Ordering Application é o cliente.</p>
+<hr />
+<h2 id="conceitos-chave">Conceitos-chave<a class="headerlink" href="#conceitos-chave" title="Permanent link">&para;</a></h2>
+<h3 id="a-conta-account">A conta (Account)<a class="headerlink" href="#a-conta-account" title="Permanent link">&para;</a></h3>
+<p>A <strong>conta</strong> é o agrupador de todos os pedidos, itens, pagamentos e documentos fiscais de uma sessão de consumo. Cada conta é localizada por uma <strong>chave operacional</strong> — a combinação <code>operationMode</code> + <code>identifier</code>:</p>
+<table>
+<thead>
+<tr>
+<th><code>operationMode</code></th>
+<th>Significado</th>
+<th>Exemplo de <code>identifier</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>TABLE</code></td>
+<td>Atendimento por mesa</td>
+<td><code>"5"</code> (mesa 5)</td>
+</tr>
+<tr>
+<td><code>TAB</code></td>
+<td>Atendimento por comanda</td>
+<td><code>"A-102"</code></td>
+</tr>
+<tr>
+<td><code>COUNTER</code></td>
+<td>Consumo no balcão</td>
+<td><code>"3"</code> (posição 3)</td>
+</tr>
+</tbody>
+</table>
+<p>Além da chave operacional, a conta pode ter um <code>accountId</code> interno do PDV. A consulta primária é feita pela chave operacional (<code>GET /accounts?operationMode=TABLE&amp;identifier=5</code>); quando o <code>accountId</code> já é conhecido, há também <code>GET /accounts/{accountId}</code>. A conta sempre traz um campo <code>lastEvent</code> com o <strong>tipo</strong> do último evento emitido (ex.: <code>ACCOUNT_ITEM_ADDED</code>) — útil para sincronização e depuração quando a entrega do webhook é incerta (ex.: após reconexão).</p>
+<h3 id="canais-de-origem-originchannel">Canais de origem (originChannel)<a class="headerlink" href="#canais-de-origem-originchannel" title="Permanent link">&para;</a></h3>
+<p>O <code>operationMode</code> define como a conta é <strong>agrupada</strong> — mas não diz por onde o pedido <strong>entrou</strong>. Essa informação é do <code>originChannel</code>, presente em cada pedido, e é aqui que fica explícito que o Indoor não pressupõe atendimento mediado por garçom:</p>
+<table>
+<thead>
+<tr>
+<th><code>originChannel.type</code></th>
+<th>Descrição</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>TOTEM</code></td>
+<td>Autoatendimento em totem físico no estabelecimento.</td>
+</tr>
+<tr>
+<td><code>QR_CODE</code></td>
+<td>Cliente escaneia um QR Code na mesa/comanda e pede pelo próprio celular.</td>
+</tr>
+<tr>
+<td><code>CUSTOMER_TABLET</code></td>
+<td>Tablet entregue ao cliente para pedir diretamente, sem intermediário.</td>
+</tr>
+<tr>
+<td><code>WAITER_TABLET</code></td>
+<td>Tablet usado pelo garçom/atendente para lançar o pedido.</td>
+</tr>
+<tr>
+<td><code>FRONT_DESK</code></td>
+<td>Pedido lançado na frente de caixa.</td>
+</tr>
+<tr>
+<td><code>POS</code></td>
+<td>Pedido originado diretamente no sistema de ponto de venda.</td>
+</tr>
+<tr>
+<td><code>APP</code></td>
+<td>App de pedido do estabelecimento ou de terceiros.</td>
+</tr>
+<tr>
+<td><code>WHATSAPP</code></td>
+<td>Pedido recebido via WhatsApp.</td>
+</tr>
+<tr>
+<td><code>OTHER</code></td>
+<td>Qualquer outro canal não listado.</td>
+</tr>
+</tbody>
+</table>
+<p><code>operationMode</code> e <code>originChannel</code> são independentes: uma mesma conta pode acumular pedidos de <strong>canais diferentes</strong> ao longo da sessão. Por exemplo, o cliente abre a conta pelo QR Code (<code>originChannel: QR_CODE</code>) e, depois, o garçom lança um item adicional pelo tablet (<code>originChannel: WAITER_TABLET</code>) — ambos os pedidos caem na mesma conta porque compartilham a chave operacional (<code>operationMode</code> + <code>identifier</code>). O canal é só um metadado do pedido, não afeta a identidade da conta.</p>
+<h3 id="como-a-conta-nasce">Como a conta nasce<a class="headerlink" href="#como-a-conta-nasce" title="Permanent link">&para;</a></h3>
+<p>A conta <strong>não é criada por nenhum endpoint desta spec</strong>. Ela nasce automaticamente no Software Service quando o protocolo de Orders processa um pedido com <code>orderType: INDOOR</code> para uma chave operacional que ainda não tem conta aberta — seja esse pedido originado por um garçom, um totem ou um QR Code. A partir daí, novos pedidos INDOOR para a mesma chave <strong>acumulam itens</strong> na conta existente, independente do canal de origem de cada um.</p>
+<h3 id="status-da-conta">Status da conta<a class="headerlink" href="#status-da-conta" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>stateDiagram-v2
+    direction LR
+    [*] --&gt; IN_USE : 1º pedido INDOOR
+    IN_USE --&gt; IN_PAYMENT : pré-fechamento
+    IN_PAYMENT --&gt; IN_USE : desbloqueio
+    IN_PAYMENT --&gt; CLOSED : fechamento
+    CLOSED --&gt; [*]</code></pre>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Significado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>IN_USE</code></td>
+<td>Conta aberta, aceitando novos itens. Pagamentos também podem ser registrados aqui.</td>
+</tr>
+<tr>
+<td><code>IN_PAYMENT</code></td>
+<td>Conta pré-fechada/bloqueada — não aceita novos itens, mas continua aceitando pagamentos, aguardando o fechamento.</td>
+</tr>
+<tr>
+<td><code>CLOSED</code></td>
+<td>Conta fechada definitivamente. Nenhuma operação adicional é aceita.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pagamentos-e-fechamento">Pagamentos e fechamento<a class="headerlink" href="#pagamentos-e-fechamento" title="Permanent link">&para;</a></h3>
+<p>Este é o ponto que mais gera confusão em integrações Indoor, então vale destacar com cuidado:</p>
+<p><strong>Pagamento não depende de pré-fechamento.</strong> <code>POST /accounts/payments</code> pode ser chamado a qualquer momento — com a conta <code>IN_USE</code> ou já <code>IN_PAYMENT</code>. Não é preciso esperar o pré-fechamento para registrar um pagamento parcial: muitos estabelecimentos recebem pagamentos ao longo da sessão (ex.: o cliente paga uma rodada de bebidas no meio do consumo).</p>
+<p><strong>Pré-fechamento é um lock, não um gatilho de pagamento.</strong> <code>POST /accounts/pre-close</code> bloqueia novos itens, sinalizando que a conta está pronta para o checkout final. É o momento em que se espera o <strong>último pagamento</strong> — o saldo restante, se já houve pagamentos anteriores, ou o valor total, se nenhum pagamento foi feito até então.</p>
+<p><strong>Fechamento é definitivo.</strong> <code>POST /accounts/close</code> só deve ser chamado quando o total pago cobrir o valor da conta. Após o fechamento, <strong>nenhuma operação adicional é aceita</strong> — incluindo novos pagamentos.</p>
+<table>
+<thead>
+<tr>
+<th>Operação</th>
+<th><code>IN_USE</code></th>
+<th><code>IN_PAYMENT</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Adicionar itens (via Orders)</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Cancelar item</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Transferir itens</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><strong>Registrar pagamento</strong> (<code>POST /accounts/payments</code>)</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Pré-fechar (<code>pre-close</code>)</td>
+<td>✅</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Desbloquear (<code>unlock</code>)</td>
+<td>—</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Fechar (<code>close</code>)</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<p>Pagamento é, propositalmente, a única operação válida nos dois estados — é o que permite cobrar o cliente sem travar o resto da operação da conta.</p>
+<h3 id="eventos">Eventos<a class="headerlink" href="#eventos" title="Permanent link">&para;</a></h3>
+<p>A cada transição relevante, o Software Service <strong>DEVE</strong> notificar a Ordering Application via webhook. Não há polling para eventos Indoor: a entrega é <strong>exclusivamente via webhook</strong>, e a Ordering Application deve implementar um endpoint compatível com o contrato <code>accountEvent</code> da spec para recebê-los.</p>
+<h4 id="matriz-de-eventos-da-conta">Matriz de eventos da conta<a class="headerlink" href="#matriz-de-eventos-da-conta" title="Permanent link">&para;</a></h4>
+<div class="od-matrix__legend">
+  <span><span class="od-badge od-badge--must">MUST</span> emitir no fluxo core</span>
+  <span><span class="od-badge od-badge--may">MAY</span> conforme cenário</span>
+  <span>Status da conta após o evento (quando aplicável)</span>
+</div>
+
+<div class="od-matrix">
+<div class="od-matrix__scroll">
+<table>
+<thead>
+<tr>
+<th>Evento</th>
+<th>Gatilho</th>
+<th>Obrigatoriedade</th>
+<th>Status da conta</th>
+<th>Observações</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ACCOUNT_OPENED</code></td>
+<td>Conta criada (pedido INDOOR)</td>
+<td><span class="od-badge od-badge--must">MUST</span></td>
+<td><code>IN_USE</code></td>
+<td>Abertura da sessão de salão</td>
+</tr>
+<tr>
+<td><code>ACCOUNT_ITEM_ADDED</code></td>
+<td>Novo pedido INDOOR adiciona itens</td>
+<td><span class="od-badge od-badge--must">MUST</span></td>
+<td><code>IN_USE</code></td>
+<td>Pedido é canal de itens</td>
+</tr>
+<tr>
+<td><code>ACCOUNT_ITEM_REMOVED</code></td>
+<td>Itens transferidos para outra conta</td>
+<td><span class="od-badge od-badge--may">MAY</span></td>
+<td><code>IN_USE</code></td>
+<td>Transferência entre mesas/comandas</td>
+</tr>
+<tr>
+<td><code>ACCOUNT_ITEM_CANCELLED</code></td>
+<td>Item cancelado</td>
+<td><span class="od-badge od-badge--must">MUST</span></td>
+<td><code>IN_USE</code></td>
+<td>Cancelamento de item, não da conta</td>
+</tr>
+<tr>
+<td><code>PAYMENT_CREATED</code></td>
+<td>Pagamento lançado</td>
+<td><span class="od-badge od-badge--must">MUST</span></td>
+<td>—</td>
+<td>Válido em <code>IN_USE</code> e <code>IN_PAYMENT</code></td>
+</tr>
+<tr>
+<td><code>ACCOUNT_PRE_CLOSED</code></td>
+<td>Conta bloqueada para pagamento</td>
+<td><span class="od-badge od-badge--must">MUST</span></td>
+<td><code>IN_PAYMENT</code></td>
+<td>Lock — sem novos itens</td>
+</tr>
+<tr>
+<td><code>ACCOUNT_UNLOCKED</code></td>
+<td>Bloqueio revertido</td>
+<td><span class="od-badge od-badge--may">MAY</span></td>
+<td><code>IN_USE</code></td>
+<td>Reabre para novos itens</td>
+</tr>
+<tr>
+<td><code>FISCAL_ISSUED</code></td>
+<td>Documento fiscal emitido</td>
+<td><span class="od-badge od-badge--must">MUST</span></td>
+<td>—</td>
+<td>Assíncrono; GET como fallback</td>
+</tr>
+<tr>
+<td><code>FISCAL_ERROR</code></td>
+<td>Falha na emissão fiscal</td>
+<td><span class="od-badge od-badge--must">MUST</span></td>
+<td>—</td>
+<td>Assíncrono; conta pode fechar mesmo assim</td>
+</tr>
+<tr>
+<td><code>ACCOUNT_CLOSED</code></td>
+<td>Conta fechada definitivamente</td>
+<td><span class="od-badge od-badge--must">MUST</span></td>
+<td><code>CLOSED</code></td>
+<td>Irreversível</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Pedidos Indoor vs conta</p>
+<p>O ciclo de vida do <strong>pedido</strong> INDOOR (CREATED → CONFIRMED → …) está na <a href="../orders/#perfil-indoor">matriz Orders — perfil INDOOR</a>. A matriz acima é só da <strong>conta</strong> (Account).</p>
+</div>
+<hr />
+<h2 id="fluxos">Fluxos<a class="headerlink" href="#fluxos" title="Permanent link">&para;</a></h2>
+<p>Os fluxos abaixo mostram a sequência de chamadas entre a Ordering Application e o Software Service, e os eventos emitidos em cada passo.</p>
+<h3 id="fluxo-normal">Fluxo normal<a class="headerlink" href="#fluxo-normal" title="Permanent link">&para;</a></h3>
+<p>Ciclo completo de uma sessão de salão: abertura via pedido INDOOR, adição de itens, pré-fechamento, pagamento, emissão fiscal e fechamento.</p>
+<pre class="mermaid"><code>sequenceDiagram
+    participant OA as Ordering Application
+    participant SS as Software Service
+
+    Note over OA,SS: Abertura
+    OA-&gt;&gt;SS: POST /orders (orderType: INDOOR)
+    SS--&gt;&gt;OA: 201 Created
+    SS-)OA: event: ACCOUNT_OPENED — status: IN_USE
+
+    Note over OA,SS: Adição de itens
+    OA-&gt;&gt;SS: POST /orders (novo pedido INDOOR)
+    SS--&gt;&gt;OA: 201 Created
+    SS-)OA: event: ACCOUNT_ITEM_ADDED
+
+    opt Pagamento antecipado (opcional, a qualquer momento em IN_USE)
+        OA-&gt;&gt;SS: POST /accounts/{id}/payments
+        SS--&gt;&gt;OA: 200 OK
+        SS-)OA: event: PAYMENT_CREATED
+    end
+
+    Note over OA,SS: Pré-fechamento — lock para checkout
+    OA-&gt;&gt;SS: POST /accounts/{id}/pre-close
+    SS--&gt;&gt;OA: 202 Accepted
+    SS-)OA: event: ACCOUNT_PRE_CLOSED — status: IN_PAYMENT
+
+    Note over OA,SS: Quitação final
+    OA-&gt;&gt;SS: POST /accounts/{id}/payments
+    SS--&gt;&gt;OA: 200 OK
+    SS-)OA: event: PAYMENT_CREATED
+
+    Note over OA,SS: Emissão fiscal
+    OA-&gt;&gt;SS: POST /accounts/{id}/fiscal
+    SS--&gt;&gt;OA: 202 Accepted
+    SS-)OA: event: FISCAL_ISSUED (assíncrono)
+
+    Note over OA,SS: Fechamento
+    OA-&gt;&gt;SS: POST /accounts/{id}/close
+    SS--&gt;&gt;OA: 202 Accepted
+    SS-)OA: event: ACCOUNT_CLOSED — status: CLOSED</code></pre>
+<h3 id="desbloqueio-unlock">Desbloqueio (unlock)<a class="headerlink" href="#desbloqueio-unlock" title="Permanent link">&para;</a></h3>
+<p>A Ordering Application pode reverter um pré-fechamento, devolvendo a conta ao estado <code>IN_USE</code> para continuar adicionando itens.</p>
+<pre class="mermaid"><code>sequenceDiagram
+    participant OA as Ordering Application
+    participant SS as Software Service
+
+    OA-&gt;&gt;SS: POST /accounts/{id}/pre-close
+    SS--&gt;&gt;OA: 202 Accepted
+    SS-)OA: event: ACCOUNT_PRE_CLOSED — status: IN_PAYMENT
+
+    Note over OA,SS: Operador decide adicionar mais itens
+    OA-&gt;&gt;SS: POST /accounts/{id}/unlock
+    SS--&gt;&gt;OA: 202 Accepted
+    SS-)OA: event: ACCOUNT_UNLOCKED — status: IN_USE
+
+    OA-&gt;&gt;SS: POST /orders (novo pedido INDOOR)
+    SS--&gt;&gt;OA: 201 Created
+    SS-)OA: event: ACCOUNT_ITEM_ADDED</code></pre>
+<h3 id="pagamentos-parciais">Pagamentos parciais<a class="headerlink" href="#pagamentos-parciais" title="Permanent link">&para;</a></h3>
+<p>Uma conta pode receber múltiplos pagamentos ao longo de toda a sua vida útil, não apenas após o pré-fechamento — inclusive intercalados com a inclusão de novos itens, já que pagamento e itens não competem pelo mesmo lock. O exemplo abaixo mostra um pagamento parcial registrado ainda em <code>IN_USE</code> (ex.: o cliente paga uma rodada de bebidas no meio do consumo), seguido da inclusão de mais itens, e só então o pré-fechamento e a quitação final.</p>
+<pre class="mermaid"><code>sequenceDiagram
+    participant OA as Ordering Application
+    participant SS as Software Service
+
+    Note over OA,SS: Pagamento parcial — ex.: cartão de crédito, conta ainda em uso
+    OA-&gt;&gt;SS: POST /accounts/{id}/payments
+    SS--&gt;&gt;OA: 200 OK
+    SS-)OA: event: PAYMENT_CREATED (valor parcial)
+
+    Note over OA,SS: Conta continua aberta — novos itens são adicionados normalmente
+    OA-&gt;&gt;SS: POST /orders (novo pedido INDOOR)
+    SS--&gt;&gt;OA: 201 Created
+    SS-)OA: event: ACCOUNT_ITEM_ADDED
+
+    OA-&gt;&gt;SS: POST /accounts/{id}/pre-close
+    SS--&gt;&gt;OA: 202 Accepted
+    SS-)OA: event: ACCOUNT_PRE_CLOSED — status: IN_PAYMENT
+
+    Note over OA,SS: Quitação final — ex.: dinheiro (saldo restante)
+    OA-&gt;&gt;SS: POST /accounts/{id}/payments
+    SS--&gt;&gt;OA: 200 OK
+    SS-)OA: event: PAYMENT_CREATED (saldo quitado)
+
+    OA-&gt;&gt;SS: POST /accounts/{id}/close
+    SS--&gt;&gt;OA: 202 Accepted
+    SS-)OA: event: ACCOUNT_CLOSED — status: CLOSED</code></pre>
+<h3 id="emissao-fiscal">Emissão fiscal<a class="headerlink" href="#emissao-fiscal" title="Permanent link">&para;</a></h3>
+<p>A emissão é <strong>assíncrona</strong> — o Software Service retorna <code>202 Accepted</code> e emite o evento quando o documento fica disponível. A conta pode ser fechada mesmo sem emissão bem-sucedida.</p>
+<pre class="mermaid"><code>sequenceDiagram
+    participant OA as Ordering Application
+    participant SS as Software Service
+
+    OA-&gt;&gt;SS: POST /accounts/{id}/fiscal
+    SS--&gt;&gt;OA: 202 Accepted
+
+    alt Emissão bem-sucedida
+        SS-)OA: event: FISCAL_ISSUED
+        OA-&gt;&gt;SS: GET /accounts/{id}/fiscal
+        SS--&gt;&gt;OA: 200 OK (documento disponível)
+    else Falha na emissão
+        SS-)OA: event: FISCAL_ERROR
+        Note over OA: Operador registra falha
+    end
+
+    Note over OA,SS: Conta pode ser fechada independente do resultado fiscal
+    OA-&gt;&gt;SS: POST /accounts/{id}/close
+    SS--&gt;&gt;OA: 202 Accepted
+    SS-)OA: event: ACCOUNT_CLOSED — status: CLOSED</code></pre>
+<h3 id="cancelamento-de-item">Cancelamento de item<a class="headerlink" href="#cancelamento-de-item" title="Permanent link">&para;</a></h3>
+<p>Cancela um item específico dentro de uma conta <code>IN_USE</code>. A conta permanece aberta e os demais itens não são afetados.</p>
+<pre class="mermaid"><code>sequenceDiagram
+    participant OA as Ordering Application
+    participant SS as Software Service
+
+    Note over OA,SS: Item já adicionado à conta via pedido INDOOR
+    OA-&gt;&gt;SS: POST /accounts/items/{itemId}/cancel
+    SS--&gt;&gt;OA: 200 OK
+    SS-)OA: event: ACCOUNT_ITEM_CANCELLED
+
+    Note over OA,SS: Conta permanece IN_USE — demais itens inalterados</code></pre>
+<h3 id="transferencia-entre-contas">Transferência entre contas<a class="headerlink" href="#transferencia-entre-contas" title="Permanent link">&para;</a></h3>
+<p>Move itens de uma conta para outra — ex.: mesa muda de lugar, grupos se separam, ou um pedido de balcão é remanejado para uma comanda. Ambas as contas devem estar <code>IN_USE</code>.</p>
+<pre class="mermaid"><code>sequenceDiagram
+    participant OA as Ordering Application
+    participant SS as Software Service
+
+    Note over OA,SS: Conta A (origem) e Conta B (destino) estão IN_USE
+
+    OA-&gt;&gt;SS: POST /accounts/transfers
+    Note over OA,SS: body: targetAccountId + lista de itens
+    SS--&gt;&gt;OA: 200 OK
+    SS-)OA: event: ACCOUNT_ITEM_REMOVED — Conta A (origem)
+    SS-)OA: event: ACCOUNT_ITEM_ADDED — Conta B (destino)
+
+    Note over OA,SS: Ambas as contas permanecem IN_USE</code></pre>
+<hr />
+<h2 id="implementando-o-software-service">Implementando o Software Service<a class="headerlink" href="#implementando-o-software-service" title="Permanent link">&para;</a></h2>
+<p>Se você hospeda os endpoints e gerencia as contas, atente para:</p>
+<p><strong>Abra a conta na recepção do primeiro pedido INDOOR.</strong> Quando o protocolo de Orders processar um pedido <code>orderType: INDOOR</code> para uma chave operacional sem conta ativa, crie a conta e emita <code>ACCOUNT_OPENED</code>. Pedidos seguintes para a mesma chave acumulam itens (<code>ACCOUNT_ITEM_ADDED</code>) em vez de abrir uma conta nova.</p>
+<p><strong>Emita um evento para cada transição.</strong> Toda mudança de estado relevante precisa gerar o evento correspondente, notificado via webhook (<code>accountEvent</code>). A Ordering Application depende exclusivamente desses eventos para se sincronizar — uma transição sem evento é uma transição invisível. Não há fallback de polling: se o webhook falhar, use o campo <code>lastEvent</code> da conta para reconciliar o estado.</p>
+<p><strong>Trate o pré-fechamento como um bloqueio real — mas só para itens.</strong> Uma conta <code>IN_PAYMENT</code> não deve aceitar novos itens. Se o operador precisar adicionar algo, exija o <code>unlock</code> explícito (<code>ACCOUNT_UNLOCKED</code>, volta a <code>IN_USE</code>). <strong>Pagamento não entra nesse bloqueio</strong>: <code>POST /accounts/{id}/payments</code> deve continuar sendo aceito tanto em <code>IN_USE</code> quanto em <code>IN_PAYMENT</code>, a qualquer momento — não exija pré-fechamento como condição para registrar um pagamento.</p>
+<p><strong>Valide o pagamento antes de fechar, não antes de pagar.</strong> Acumule os <code>PAYMENT_CREATED</code> ao longo de toda a vida da conta e só aceite <code>POST /accounts/{id}/close</code> quando o total quitado cobrir o valor da conta — salvo regras de negócio próprias (cortesia, desconto). Após o fechamento, rejeite qualquer operação adicional, incluindo novos pagamentos: <code>close</code> é o único marco realmente irreversível do ciclo de vida.</p>
+<p><strong>Faça a emissão fiscal assíncrona.</strong> Responda <code>202 Accepted</code> imediatamente e emita <code>FISCAL_ISSUED</code> ou <code>FISCAL_ERROR</code> quando o resultado estiver disponível. Não bloqueie o fechamento da conta esperando a SEFAZ.</p>
+<p><strong>Mantenha os totais consistentes.</strong> Cancelamentos, transferências e novos pedidos precisam refletir imediatamente em <code>totals</code>, já que a Ordering Application exibe esse valor ao cliente.</p>
+<hr />
+<h2 id="implementando-a-ordering-application">Implementando a Ordering Application<a class="headerlink" href="#implementando-a-ordering-application" title="Permanent link">&para;</a></h2>
+<p>Se você consome os endpoints e exibe a conta ao operador ou cliente, atente para:</p>
+<p><strong>Localize a conta pela chave operacional.</strong> Use <code>GET /accounts?operationMode=...&amp;identifier=...</code> como forma primária de acesso. Só use <code>GET /accounts/{accountId}</code> quando já tiver o <code>accountId</code> retornado anteriormente.</p>
+<p><strong>Receba eventos via webhook.</strong> O Indoor não tem polling: implemente o endpoint de webhook (conforme o contrato <code>accountEvent</code> da spec) para receber <code>ACCOUNT_ITEM_ADDED</code>, <code>PAYMENT_CREATED</code>, <code>FISCAL_ISSUED</code> etc. em tempo real e atualizar a tela. Use o <code>lastEvent</code> da conta para reconciliar o estado caso suspeite de entrega perdida.</p>
+<p><strong>Não espere o pré-fechamento para lançar um pagamento.</strong> <code>POST /accounts/{id}/payments</code> funciona com a conta <code>IN_USE</code> ou <code>IN_PAYMENT</code> — use-o sempre que o cliente quiser pagar, mesmo no meio do consumo. Reserve o <code>pre-close</code> para o momento em que a conta deve parar de aceitar novos itens.</p>
+<p><strong>Não assuma fechamento imediato após o pagamento.</strong> Pagamento e fechamento são passos distintos. Lance os pagamentos com <code>POST /accounts/{id}/payments</code> e só então chame <code>POST /accounts/{id}/close</code> — tipicamente após o <code>pre-close</code>, quando o saldo restante (ou total, se nenhum pagamento anterior existiu) é quitado.</p>
+<p><strong>Trate a emissão fiscal como assíncrona.</strong> Após <code>202 Accepted</code>, aguarde o evento <code>FISCAL_ISSUED</code> (ou <code>FISCAL_ERROR</code>) — não espere o documento na resposta da requisição. Consulte <code>GET /accounts/{id}/fiscal</code> quando o evento chegar.</p>
+<p><strong>Reflita cancelamentos e transferências na hora.</strong> Ao receber <code>ACCOUNT_ITEM_CANCELLED</code> ou <code>ACCOUNT_ITEM_REMOVED</code>/<code>ACCOUNT_ITEM_ADDED</code>, atualize a conta exibida — o cliente não pode ver itens que já saíram da conta.</p>
+<hr />
+<div class="admonition tip">
+<p class="admonition-title">Checklist — Software Service</p>
+<ul>
+<li>Conta criada e <code>ACCOUNT_OPENED</code> emitido na recepção do 1º pedido INDOOR.</li>
+<li>Todas as transições de estado emitem o evento correspondente.</li>
+<li>Conta <code>IN_PAYMENT</code> rejeita novos itens até o <code>unlock</code>.</li>
+<li>Pagamento (<code>POST /accounts/payments</code>) é aceito em <code>IN_USE</code> <strong>e</strong> <code>IN_PAYMENT</code>, sem depender de pré-fechamento.</li>
+<li>Total quitado é validado antes de aceitar o fechamento.</li>
+<li>Após <code>close</code>, toda operação adicional é rejeitada — incluindo novos pagamentos.</li>
+<li>Emissão fiscal responde <code>202</code> e emite <code>FISCAL_ISSUED</code> / <code>FISCAL_ERROR</code> depois.</li>
+<li><code>totals</code> refletem cancelamentos e transferências imediatamente.</li>
+</ul>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Checklist — Ordering Application</p>
+<ul>
+<li>Conta localizada pela chave operacional (<code>operationMode</code> + <code>identifier</code>).</li>
+<li>Endpoint de webhook implementado e registrado para receber eventos (sem polling).</li>
+<li>Pagamentos podem ser lançados a qualquer momento (<code>IN_USE</code> ou <code>IN_PAYMENT</code>), não só após o pré-fechamento.</li>
+<li>Pagamento e fechamento tratados como passos separados.</li>
+<li>Emissão fiscal tratada como assíncrona (aguarda o evento).</li>
+<li>Cancelamentos e transferências refletidos na interface em tempo real.</li>
+</ul>
+</div>
+<hr />
+<p><strong>Referência completa de campos e regras normativas:</strong> <a href="../../reference/indoor/">API Indoor →</a></p>
+<hr />
+<div class="od-next-step">
+  <div class="od-next-step__label">Próximo passo</div>
+  <div class="od-next-step__links">
+    <a href="../reference/indoor/">Abrir referência OpenAPI</a>
+    <a href="orders/">Protocolo Orders</a>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../orders/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Overview">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Overview
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../logistics/" class="md-footer__link md-footer__link--next" aria-label="Next: Logistics">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Logistics
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  <div class="md-copyright__highlight od-footer-links">
+    <span class="od-footer-brand">Open Delivery Protocol</span>
+    <span class="od-footer-sep" aria-hidden="true">·</span>
+    <a href="../../../guide/changelog/">Changelog</a>
+    <span class="od-footer-sep" aria-hidden="true">·</span>
+    <a href="../../../documentation/roadmap/">Roadmap</a>
+    <span class="od-footer-sep" aria-hidden="true">·</span>
+    <a href="../../../guide/migration-v1-v2/">Migração V1→V2</a>
+    <span class="od-footer-sep" aria-hidden="true">·</span>
+    <a href="https://github.com/Abrasel-Nacional/opendelivery-v2/issues" target="_blank" rel="noopener">Reportar issue</a>
+  </div>
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/Abrasel-Nacional/opendelivery-v2" target="_blank" rel="noopener" title="GitHub" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "navigation.indexes", "navigation.footer", "content.code.copy", "content.tooltips", "content.tabs.link", "content.action.edit", "toc.follow", "search.suggest", "search.highlight", "search.share"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+      
+    
+
+<!-- Filtro SVG: converte o logo branco para o verde escuro da marca (#004621) -->
+<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"
+     style="position:absolute;width:0;height:0;overflow:hidden">
+  <defs>
+    <filter id="od-logo-color" color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix"
+        values="0 0 0 0 0
+                0 0 0 0 0.2745
+                0 0 0 0 0.1294
+                0 0 0 1 0"/>
+    </filter>
+  </defs>
+</svg><script>
+(function () {
+  /* Move as tabs para dentro da linha do header */
+  (function () {
+    var tabs     = document.querySelector('.md-tabs');
+    var tabsList = tabs && tabs.querySelector('.md-tabs__list');
+    var inner    = document.querySelector('.md-header__inner');
+    var title    = inner && inner.querySelector('.md-header__title');
+    if (!tabsList || !inner) return;
+
+    var nav = document.createElement('nav');
+    nav.className = 'od-header-nav';
+    nav.setAttribute('aria-label', 'Seções da documentação');
+    nav.appendChild(tabsList);
+
+    var insertBefore = title ? title.nextElementSibling : inner.firstElementChild;
+    if (insertBefore) {
+      inner.insertBefore(nav, insertBefore);
+    } else {
+      inner.appendChild(nav);
+    }
+    if (title) title.remove();
+    if (tabs)  tabs.remove();
+  })();
+
+  var NAV = [
+    
+    {
+      title: "Guide",
+      children: [{
+      title: "Home",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/",
+      active: false
+    },{
+      title: "Getting started",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/guide/getting-started/",
+      active: false
+    },{
+      title: "Paths by role",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/guide/by-role/",
+      active: false
+    },{
+      title: "Concepts",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/documentation/core-concepts/",
+      active: false
+    },{
+      title: "Protocol overview",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/overview/",
+      active: false
+    },{
+      title: "Protocol vs binding",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/PROTOCOL_VS_BINDING/",
+      active: false
+    },{
+      title: "Roles and responsibilities",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/roles-and-responsibilities/",
+      active: false
+    },{
+      title: "Migration and history",
+      children: [{
+      title: "Changelog",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/guide/changelog/",
+      active: false
+    },{
+      title: "Migration V1\u2192V2",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/guide/migration-v1-v2/",
+      active: false
+    },{
+      title: "Roadmap",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/documentation/roadmap/",
+      active: false
+    }]
+    }]
+    },
+    
+    {
+      title: "Protocol",
+      children: [{
+      title: "Fundamentals",
+      children: [{
+      title: "Principles",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/principles/",
+      active: false
+    },{
+      title: "General rules",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/guidelines/",
+      active: false
+    },{
+      title: "Error handling",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/error-handling/",
+      active: false
+    },{
+      title: "Flows",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/flows/",
+      active: false
+    },{
+      title: "Evolution",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/evolution/",
+      active: false
+    }]
+    },{
+      title: "Infrastructure",
+      children: [{
+      title: "Discovery",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/discovery/",
+      active: false
+    },{
+      title: "Authentication",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/authentication/",
+      active: false
+    }]
+    },{
+      title: "Capabilities",
+      children: [{
+      title: "Merchant",
+      children: [{
+      title: "Overview",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/merchant/",
+      active: false
+    },{
+      title: "Store data",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/merchant-store/",
+      active: false
+    },{
+      title: "Menus",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/menu/",
+      active: false
+    }]
+    },{
+      title: "Orders",
+      children: [{
+      title: "Overview",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/orders/",
+      active: false
+    },{
+      title: "Indoor",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/indoor/",
+      active: true
+    }]
+    },{
+      title: "Logistics",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/logistics/",
+      active: false
+    },{
+      title: "Customer / CRM",
+      children: [{
+      title: "Overview",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/customer/",
+      active: false
+    },{
+      title: "Reviews",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/extensions/reviews/",
+      active: false
+    },{
+      title: "Loyalty",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/extensions/loyalty/",
+      active: false
+    }]
+    }]
+    }]
+    },
+    
+    {
+      title: "API reference",
+      children: [{
+      title: "Vis\u00e3o Geral",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/reference/",
+      active: false
+    },{
+      title: "Infrastructure",
+      children: [{
+      title: "Discovery",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/reference/discovery/",
+      active: false
+    },{
+      title: "Authentication",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/reference/authentication/",
+      active: false
+    }]
+    },{
+      title: "Capabilities",
+      children: [{
+      title: "Merchant",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/reference/merchant/",
+      active: false
+    },{
+      title: "Orders",
+      children: [{
+      title: "Overview",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/reference/orders/",
+      active: false
+    },{
+      title: "Indoor",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/reference/indoor/",
+      active: false
+    }]
+    },{
+      title: "Logistics",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/reference/logistics/",
+      active: false
+    },{
+      title: "Customer \u0026 Loyalty",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/reference/customer/",
+      active: false
+    }]
+    }]
+    }
+    
+  ];
+
+  var portal = document.createElement('div');
+  portal.className = 'od-dropdown';
+  portal.setAttribute('role', 'menu');
+  portal.setAttribute('aria-label', 'Submenu');
+  portal.id = 'od-header-dropdown';
+  document.body.appendChild(portal);
+
+  var hideTimer = null;
+  var hideEndTimer = null;
+  var currentTab = null;
+  var currentLink = null;
+  var openMode = null; /* 'hover' | 'keyboard' | 'click' */
+
+  function menuLinks() {
+    return Array.prototype.slice.call(portal.querySelectorAll('a[href]'));
+  }
+
+  /** Primeira URL folha na árvore (ex.: "Visão geral" sob Merchant). */
+  function firstUrl(node) {
+    if (!node) return null;
+    if (node.url) return { url: node.url, active: !!node.active };
+    if (!node.children) return null;
+    for (var i = 0; i < node.children.length; i++) {
+      var hit = firstUrl(node.children[i]);
+      if (hit) return hit;
+    }
+    return null;
+  }
+
+  function anyActive(node) {
+    if (!node) return false;
+    if (node.active) return true;
+    if (!node.children) return false;
+    return node.children.some(anyActive);
+  }
+
+  /** Mega-menu se ≥2 grupos de 1º nível com filhos. */
+  function shouldUseMega(children) {
+    if (!children || children.length < 2) return false;
+    var groups = children.filter(function (c) { return c.children && c.children.length; });
+    return groups.length >= 2;
+  }
+
+  /**
+   * Itens de uma coluna:
+   * - folha → link direto
+   * - grupo com filhos (capability) → link da capability (visão geral)
+   *   + sublinks (módulos/extensões: Menus, Indoor, Reviews…)
+   */
+  function columnEntries(groupChildren) {
+    return (groupChildren || []).map(function (item) {
+      if (item.url) {
+        return {
+          title: item.title,
+          url: item.url,
+          active: !!item.active,
+          subs: []
+        };
+      }
+      if (item.children && item.children.length) {
+        var leaf = firstUrl(item);
+        if (!leaf) return null;
+        var subs = item.children
+          .filter(function (c) { return c.url && c.url !== leaf.url; })
+          .map(function (c) {
+            return {
+              title: c.title,
+              url: c.url,
+              active: !!c.active
+            };
+          });
+        return {
+          title: item.title,
+          url: leaf.url,
+          active: anyActive(item),
+          subs: subs
+        };
+      }
+      return null;
+    }).filter(Boolean);
+  }
+
+  function makeLink(entry, isSub) {
+    var a = document.createElement('a');
+    a.href = entry.url;
+    a.setAttribute('role', 'menuitem');
+    a.tabIndex = -1;
+    a.textContent = entry.title;
+    if (isSub) a.classList.add('od-mega__sub');
+    if (entry.active) a.classList.add('od-active');
+    return a;
+  }
+
+  function fillMega(children) {
+    portal.classList.add('od-dropdown--mega');
+    portal.innerHTML = '';
+
+    var mega = document.createElement('ul');
+    mega.className = 'od-mega';
+    mega.setAttribute('role', 'none');
+
+    var cols = children.filter(function (c) {
+      return (c.children && c.children.length) || c.url;
+    });
+    mega.style.setProperty('--od-mega-cols', String(Math.min(cols.length, 4)));
+
+    cols.forEach(function (col) {
+      var li = document.createElement('li');
+      li.className = 'od-mega__col';
+      li.setAttribute('role', 'none');
+
+      var title = document.createElement('span');
+      title.className = 'od-mega__title';
+      title.textContent = col.title;
+      li.appendChild(title);
+
+      var list = document.createElement('ul');
+      list.className = 'od-mega__list';
+      list.setAttribute('role', 'none');
+
+      var entries;
+      if (col.children && col.children.length) {
+        entries = columnEntries(col.children);
+      } else if (col.url) {
+        entries = [{ title: col.title, url: col.url, active: !!col.active }];
+      } else {
+        entries = [];
+      }
+
+      entries.forEach(function (entry) {
+        var item = document.createElement('li');
+        item.setAttribute('role', 'none');
+        item.appendChild(makeLink(entry, false));
+        list.appendChild(item);
+
+        (entry.subs || []).forEach(function (sub) {
+          var subItem = document.createElement('li');
+          subItem.setAttribute('role', 'none');
+          subItem.appendChild(makeLink(sub, true));
+          list.appendChild(subItem);
+        });
+      });
+
+      li.appendChild(list);
+      mega.appendChild(li);
+    });
+
+    portal.appendChild(mega);
+  }
+
+  function appendFlatItems(children, nested) {
+    children.forEach(function (child) {
+      if (child.children) {
+        var label = document.createElement('div');
+        label.className = 'od-group-label';
+        label.setAttribute('role', 'presentation');
+        label.textContent = child.title;
+        portal.appendChild(label);
+        appendFlatItems(child.children, true);
+        return;
+      }
+      if (!child.url) return;
+      var a = document.createElement('a');
+      a.href = child.url;
+      a.textContent = child.title;
+      a.setAttribute('role', 'menuitem');
+      a.tabIndex = -1;
+      if (nested) a.classList.add('od-nested');
+      if (child.active) a.classList.add('od-active');
+      portal.appendChild(a);
+    });
+  }
+
+  function fillFlat(children) {
+    portal.classList.remove('od-dropdown--mega');
+    portal.innerHTML = '';
+    appendFlatItems(children, false);
+  }
+
+  function fillPortal(children) {
+    if (shouldUseMega(children)) fillMega(children);
+    else fillFlat(children);
+  }
+
+  function setExpanded(link, expanded) {
+    if (link) link.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+  }
+
+  function positionPortal(tab) {
+    var r = tab.getBoundingClientRect();
+    var hdr = document.querySelector('.md-header');
+    var top = hdr ? hdr.getBoundingClientRect().bottom : r.bottom;
+    portal.style.display = 'block';
+    portal.style.top = top + 'px';
+
+    requestAnimationFrame(function () {
+      var w = portal.offsetWidth || 280;
+      var left = r.left;
+      /* mega: alinha sob a tab, mas centraliza se couber melhor */
+      if (portal.classList.contains('od-dropdown--mega')) {
+        left = Math.min(r.left, Math.max(12, (window.innerWidth - w) / 2));
+        /* prefere alinhar ao início da tab se houver espaço */
+        if (r.left + w <= window.innerWidth - 12) left = r.left;
+      }
+      var maxLeft = Math.max(12, window.innerWidth - w - 12);
+      portal.style.left = Math.min(left, maxLeft) + 'px';
+    });
+  }
+
+  function showPortal(tab, children, mode, focusFirst) {
+    clearTimeout(hideTimer);
+    clearTimeout(hideEndTimer);
+    if (currentTab && currentTab !== tab) {
+      currentTab.classList.remove('od-tab-open');
+      setExpanded(currentLink, false);
+    }
+    currentTab = tab;
+    currentLink = tab.querySelector('.md-tabs__link');
+    openMode = mode || 'hover';
+    tab.classList.add('od-tab-open');
+    setExpanded(currentLink, true);
+    fillPortal(children);
+    positionPortal(tab);
+    requestAnimationFrame(function () {
+      portal.classList.add('od-dropdown--visible');
+      if (focusFirst) {
+        var first = menuLinks()[0];
+        if (first) first.focus();
+      }
+    });
+  }
+
+  function hidePortal(immediate) {
+    clearTimeout(hideTimer);
+    clearTimeout(hideEndTimer);
+    var run = function () {
+      portal.classList.remove('od-dropdown--visible');
+      hideEndTimer = setTimeout(function () {
+        portal.style.display = 'none';
+        portal.classList.remove('od-dropdown--mega');
+        if (currentTab) {
+          currentTab.classList.remove('od-tab-open');
+          setExpanded(currentLink, false);
+          currentTab = null;
+          currentLink = null;
+          openMode = null;
+        }
+      }, immediate ? 0 : 160);
+    };
+    if (immediate) run();
+    else hideTimer = setTimeout(run, 80);
+  }
+
+  function scheduleHide() {
+    if (openMode === 'keyboard' || openMode === 'click') return;
+    hidePortal(false);
+  }
+
+  portal.addEventListener('mouseenter', function () {
+    clearTimeout(hideTimer);
+    clearTimeout(hideEndTimer);
+  });
+  portal.addEventListener('mouseleave', scheduleHide);
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && currentTab) {
+      var link = currentLink;
+      hidePortal(true);
+      if (link) link.focus();
+      e.preventDefault();
+    }
+  });
+
+  document.addEventListener('click', function (e) {
+    if (!currentTab) return;
+    if (currentTab.contains(e.target) || portal.contains(e.target)) return;
+    hidePortal(true);
+  });
+
+  document.querySelectorAll('.md-tabs__item').forEach(function (tab, i) {
+    var section = NAV[i];
+    if (!section || !section.children || section.children.length === 0) return;
+
+    tab.classList.add('od-tab-has-dropdown');
+    var link = tab.querySelector('.md-tabs__link');
+    if (!link) return;
+
+    link.setAttribute('aria-haspopup', 'menu');
+    link.setAttribute('aria-expanded', 'false');
+    link.setAttribute('aria-controls', 'od-header-dropdown');
+
+    if (!link.querySelector('.od-chevron')) {
+      var chevron = document.createElement('span');
+      chevron.className = 'od-chevron';
+      chevron.setAttribute('aria-hidden', 'true');
+      link.appendChild(chevron);
+    }
+
+    tab.addEventListener('mouseenter', function () {
+      showPortal(tab, section.children, 'hover', false);
+    });
+    tab.addEventListener('mouseleave', scheduleHide);
+
+    link.addEventListener('click', function (e) {
+      if (currentTab === tab && portal.classList.contains('od-dropdown--visible')) {
+        hidePortal(true);
+        e.preventDefault();
+        return;
+      }
+      showPortal(tab, section.children, 'click', false);
+      e.preventDefault();
+    });
+
+    link.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        showPortal(tab, section.children, 'keyboard', true);
+      } else if (e.key === 'Escape') {
+        hidePortal(true);
+      }
+    });
+  });
+
+  portal.addEventListener('keydown', function (e) {
+    var links = menuLinks();
+    if (!links.length) return;
+    var idx = links.indexOf(document.activeElement);
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      links[(idx + 1) % links.length].focus();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      links[(idx - 1 + links.length) % links.length].focus();
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      links[0].focus();
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      links[links.length - 1].focus();
+    } else if (e.key === 'Tab') {
+      hidePortal(true);
+    }
+  });
+})();
+</script>
+
+  </body>
+</html>

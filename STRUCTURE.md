@@ -28,7 +28,6 @@ Open Delivery Protocol v2
 │   │   └── Customer / CRM
 │   │       ├── Reviews (extensão)
 │   │       └── Loyalty / Fidelidade (extensão)
-│   └── Bindings REST (documentação de transporte complementar)
 │
 └── 3. REFERÊNCIA DA API (OpenAPI + ReDoc)
     ├── Infraestrutura (Discovery, Autenticação)
@@ -37,7 +36,31 @@ Open Delivery Protocol v2
 
 ## Notes
 
-- **Protocol-first:** regras e papéis vivem em Protocolo; HTTP/OpenAPI em Referência.
+- **Protocol-first:** regras e papéis vivem em Protocolo; contrato HTTP em **Referência** (ReDoc).
+- **Header:** mega-menu em colunas no Protocolo (Fundamentos · Infra · Capabilities); subpáginas (Menus, Indoor…) só na **sidebar**.
 - **Extensões** dependem da capability pai e são declaradas no Discovery.
-- **ReDoc** é o renderer da referência OpenAPI (Scalar não é usado no site).
-- Atas de comitê em `docs/reference/v2/comites/` ficam no repositório mas **não** entram no site (`exclude_docs`).
+- **Bindings REST** (`docs/transport-bindings/`) são legado pré-ReDoc e **não** entram no site (`exclude_docs`).
+- Atas de comitê em `docs/reference/v2/comites/` ficam no repositório mas **não** entram no site.
+
+## i18n (PT + EN)
+
+Plugin: **mkdocs-static-i18n** (`docs_structure: suffix`).
+
+| Locale | Arquivos | URL |
+|--------|----------|-----|
+| **pt** (default) | `page.md` | `/…` |
+| **en** | `page.en.md` | `/en/…` |
+
+- `fallback_to_default: true` — se faltar `.en.md`, o EN reutiliza o PT (temporário).
+- **OpenAPI / ReDoc:** sempre **inglês**; YAML compartilhado em `docs/reference/v2/`.
+- **Não traduzir** nomes de schemas, campos, enums, eventos, paths nem exemplos JSON (iguais à spec).
+- Nav EN via `nav_translations` no `mkdocs.yml`.
+- `navigation.instant` desativado (incompatível com language switcher).
+
+### Como adicionar uma página bilingue
+
+1. Criar/editar `docs/path/page.md` (PT).
+2. Criar `docs/path/page.en.md` (EN) com a mesma estrutura de âncoras/links relativos.
+3. Manter identificadores técnicos em inglês nos dois arquivos.
+4. Incluir na `nav` (título PT); traduzir título em `nav_translations` se necessário.
+5. `python -m mkdocs build --strict`.

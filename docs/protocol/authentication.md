@@ -6,7 +6,7 @@
 </p>
 
 <div class="od-api-callout">
-  <p>Modelos OAuth e regras nesta página. Contrato HTTP na referência OpenAPI.</p>
+  <p>Modelos OAuth e regras nesta página. Contrato OpenAPI <strong>somente em inglês</strong>.</p>
   <a href="../reference/authentication/">Abrir referência OpenAPI →</a>
 </div>
 

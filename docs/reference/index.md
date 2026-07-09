@@ -7,6 +7,9 @@ title: Referência da API
 Esta seção contém as especificações **OpenAPI** normativas para cada capability do Open Delivery V2.
 Cada página renderiza o contrato REST completo com **ReDoc** — endpoints, schemas, exemplos de requisição/resposta e códigos de erro.
 
+!!! note "Idioma do contrato"
+    As specs OpenAPI estão **somente em inglês**. Regras conceituais e fluxos ficam na seção **Protocolo** (PT e EN).
+
 Para explicações conceituais, fluxos e orientações de implementação, consulte a seção **Protocolo**.
 
 <div class="od-api-callout">

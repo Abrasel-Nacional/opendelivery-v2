@@ -428,6 +428,79 @@
   top: -1px;
 }
 
+/* ── What's new strip (landing) ───────────────────────────────── */
+.wn-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: 0 0 48px;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.landing-page a.wn-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 99px;
+  border: 1px solid var(--od-border);
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.landing-page a.wn-pill:hover {
+  text-decoration: none;
+  border-color: var(--od-green-soft);
+}
+
+.landing-page a.wn-pill--break {
+  background: rgba(180, 35, 24, 0.06);
+  color: #912018;
+  border-color: rgba(180, 35, 24, 0.22);
+}
+
+.landing-page a.wn-pill--break:hover {
+  background: rgba(180, 35, 24, 0.1);
+  color: #b42318;
+}
+
+.landing-page a.wn-pill--new {
+  background: rgba(139, 197, 63, 0.14);
+  color: #4a6b00;
+  border-color: rgba(139, 197, 63, 0.4);
+}
+
+.landing-page a.wn-pill--new:hover {
+  background: rgba(139, 197, 63, 0.22);
+  color: #3d5a00;
+}
+
+.landing-page a.wn-pill--improve {
+  background: var(--od-bg-soft);
+  color: var(--od-green);
+  border-color: var(--od-border);
+}
+
+.landing-page a.wn-pill--improve:hover {
+  background: #fff;
+  color: var(--od-green-dark);
+  border-color: var(--od-green-soft);
+}
+
+.landing-page a.wn-pill--more {
+  background: #fff;
+  color: var(--od-green-dark);
+  border-color: var(--od-green-soft);
+}
+
+.landing-page a.wn-pill--more:hover {
+  background: var(--od-bg-soft);
+}
+
 /* ── Ecosystem links ──────────────────────────────────────────── */
 .eco-strip {
   display: flex;

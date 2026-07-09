@@ -12,6 +12,7 @@ site_dir: site
 exclude_docs: |
   reference/v2/comites/**
   reference/v2/scalar.html
+  transport-bindings/**
 
 nav:
   - Guia:
@@ -49,12 +50,6 @@ nav:
         - Visão geral: protocol/customer.md
         - Reviews: extensions/reviews.md
         - Fidelidade: extensions/loyalty.md
-    - Bindings REST:
-      - Visão Geral: transport-bindings/rest-http.md
-      - Discovery: transport-bindings/rest-http-discovery.md
-      - Orders: transport-bindings/rest-http-orders.md
-      - Customer: transport-bindings/rest-http-customer.md
-      - Indoor: transport-bindings/rest-http-indoor.md
   - Referência da API:
     - Visão Geral: reference/index.md
     - Infraestrutura:
@@ -70,10 +65,64 @@ nav:
 
 plugins:
   - search
+  - i18n:
+      docs_structure: suffix
+      fallback_to_default: true
+      reconfigure_material: true
+      reconfigure_search: true
+      languages:
+        - locale: pt
+          default: true
+          name: PT
+          build: true
+          site_name: Open Delivery Protocol
+        - locale: en
+          name: EN
+          build: true
+          site_name: Open Delivery Protocol
+          site_description: Open standard for ordering, fulfillment, and delivery interoperability
+          nav_translations:
+            Guia: Guide
+            Início: Home
+            Primeiros Passos: Getting started
+            Trilhas por papel: Paths by role
+            Conceitos: Concepts
+            Visão Geral do Protocolo: Protocol overview
+            Protocolo vs Binding: Protocol vs binding
+            Papéis e Responsabilidades: Roles and responsibilities
+            Migração e Histórico: Migration and history
+            Changelog: Changelog
+            Migração V1→V2: Migration V1→V2
+            Roadmap: Roadmap
+            Protocolo: Protocol
+            Fundamentos: Fundamentals
+            Princípios: Principles
+            Regras Gerais: General rules
+            Tratamento de Erros: Error handling
+            Fluxos: Flows
+            Evolução: Evolution
+            Infraestrutura: Infrastructure
+            Discovery: Discovery
+            Autenticação: Authentication
+            Capabilities: Capabilities
+            Merchant: Merchant
+            Visão geral: Overview
+            Dados da Loja: Store data
+            Menus: Menus
+            Orders / Pedidos: Orders
+            Indoor / Salão: Indoor
+            Logística: Logistics
+            Customer / CRM: Customer / CRM
+            Reviews: Reviews
+            Fidelidade: Loyalty
+            Referência da API: API reference
+            Pedidos: Orders
+            Customer & Fidelidade: Customer & Loyalty
 
 theme:
   name: material
   custom_dir: overrides
+  language: pt
   logo: assets/images/opendelivery-logo-header.png
   favicon: assets/images/opendelivery-logo.png
   font:
@@ -90,6 +139,7 @@ theme:
     - navigation.tracking
     - navigation.indexes
     - navigation.footer
+    # navigation.instant desativado: incompatível com o language switcher do mkdocs-static-i18n
     - content.code.copy
     - content.tooltips
     - content.tabs.link
@@ -102,10 +152,15 @@ theme:
 edit_uri: edit/main/docs/
 
 extra:
+  generator: false
   # Token do Cloudflare Web Analytics (cole aqui depois de criar o site em
   # https://dash.cloudflare.com -> Analytics & Logs -> Web Analytics).
   # Deixe vazio para desativar.
   cloudflare_analytics_token: "87d4a20a53ec410e91d508e91545ebdc"
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/Abrasel-Nacional/opendelivery-v2
+      name: GitHub
 
 markdown_extensions:
   - admonition
