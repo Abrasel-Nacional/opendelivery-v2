@@ -1,5 +1,10 @@
 # Protocol Overview
 
+<div class="od-api-callout">
+  <p>Visão conceitual do protocolo. Continue a jornada ou abra o contrato técnico.</p>
+  <a href="guide/getting-started/">Primeiros Passos →</a>
+</div>
+
 This section provides a high‑level overview of the Open Delivery Protocol v2, describing its actors, responsibilities, interaction model, and capability architecture.
 
 The goal of this overview is to establish a shared mental model for implementers before introducing capability-specific specifications.

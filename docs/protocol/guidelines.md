@@ -1,5 +1,10 @@
 # Regras Gerais
 
+<div class="od-api-callout">
+  <p>Regras gerais do protocolo. Continue a jornada ou abra o contrato técnico.</p>
+  <a href="../guide/getting-started/">Primeiros Passos →</a>
+</div>
+
 Esta seção define as regras transversais do protocolo, aplicáveis a todas as capabilities.
 
 ## Palavras-chave Normativas

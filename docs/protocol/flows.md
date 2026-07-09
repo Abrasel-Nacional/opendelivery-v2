@@ -1,5 +1,10 @@
 # Fluxos de Interação
 
+<div class="od-api-callout">
+  <p>Fluxos de interação. Continue a jornada ou abra o contrato técnico.</p>
+  <a href="../guide/by-role/">Trilhas por papel →</a>
+</div>
+
 Esta seção define sequências de fluxo conceituais independentes de transporte.
 
 ## Fluxo de Publicação de Merchant

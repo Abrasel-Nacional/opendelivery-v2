@@ -1,5 +1,10 @@
 # Migração V1 → V2
 
+<div class="od-api-callout">
+  <p>Migração V1→V2. Continue a jornada ou abra o contrato técnico.</p>
+  <a href="../protocol/discovery/">Discovery V2 →</a>
+</div>
+
 Este guia descreve as mudanças entre o Open Delivery Protocol V1 e V2, focando nos breaking changes
 que exigem adaptação de código. Consulte o [Changelog](changelog.md) para a lista completa de novidades.
 

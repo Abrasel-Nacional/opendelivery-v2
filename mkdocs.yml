@@ -17,6 +17,7 @@ nav:
   - Guia:
     - Início: index.md
     - Primeiros Passos: guide/getting-started.md
+    - Trilhas por papel: guide/by-role.md
     - Conceitos: documentation/core-concepts.md
     - Visão Geral do Protocolo: overview.md
     - Protocolo vs Binding: PROTOCOL_VS_BINDING.md
@@ -103,6 +104,7 @@ extra:
 markdown_extensions:
   - admonition
   - attr_list
+  - md_in_html
   - toc:
       permalink: true
   - pymdownx.details

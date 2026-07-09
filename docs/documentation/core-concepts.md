@@ -1,5 +1,10 @@
 # Conceitos Fundamentais
 
+<div class="od-api-callout">
+  <p>Conceitos fundamentais. Continue a jornada ou abra o contrato técnico.</p>
+  <a href="../guide/by-role/">Trilhas por papel →</a>
+</div>
+
 O Open Delivery Protocol (ODP) é um padrão aberto projetado para melhorar a comunicação e a interoperabilidade em ecossistemas de delivery de alimentos e varejo.
 
 Sistemas diferentes geralmente operam com modelos, payloads e regras operacionais desconexos. O ODP fornece uma linguagem compartilhada para que esses sistemas coordenem dados de estabelecimentos, ciclos de vida de pedidos, relacionamentos com clientes e rastreamento de entregas — sem integrações bilaterais customizadas para cada parceiro.

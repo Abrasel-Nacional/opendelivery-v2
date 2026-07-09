@@ -384,6 +384,83 @@
 
 .eco-link svg { width: 14px; height: 14px; flex-shrink: 0; }
 
+/* ── Role paths ───────────────────────────────────────────────── */
+.role-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin: 0 0 12px;
+}
+
+.role-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px 18px;
+  border: 1px solid var(--od-border);
+  border-radius: var(--od-radius-lg);
+  background: var(--od-bg-soft);
+  text-decoration: none;
+  transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.role-card:hover {
+  background: #fff;
+  border-color: var(--od-green-soft);
+  box-shadow: var(--od-shadow-md);
+  transform: translateY(-2px);
+  text-decoration: none;
+}
+
+.role-card__label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--od-green);
+}
+
+.role-card h3 {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: var(--od-green-dark);
+  line-height: 1.3;
+}
+
+.role-card p {
+  margin: 0;
+  flex: 1;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--od-text-soft);
+}
+
+.role-card__caps {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--od-text-soft);
+  padding-top: 8px;
+  border-top: 1px solid var(--od-border);
+  font-family: "JetBrains Mono", "Roboto Mono", monospace;
+}
+
+.role-grid-more {
+  text-align: center;
+  margin: 0 0 48px !important;
+  max-width: none !important;
+}
+
+.role-grid-more a {
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.role-grid-more a:hover {
+  text-decoration: underline;
+}
+
 /* ── Divider ──────────────────────────────────────────────────── */
 .od-divider {
   border: none;
@@ -395,8 +472,10 @@
 @media (max-width: 900px) {
   .path-grid,
   .layers-grid { grid-template-columns: 1fr; }
+  .role-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 768px) {
   .hero-wrapper { padding: 20px 0 28px; }
+  .role-grid { grid-template-columns: 1fr; }
 }

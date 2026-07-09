@@ -7,6 +7,7 @@ Open Delivery Protocol v2
 ├── 1. GUIA
 │   ├── Início (landing)
 │   ├── Primeiros Passos
+│   ├── Trilhas por papel
 │   ├── Conceitos
 │   ├── Visão Geral do Protocolo
 │   ├── Protocolo vs Binding

@@ -1,5 +1,10 @@
 # REST/HTTP Binding
 
+<div class="od-api-callout">
+  <p>Binding REST/HTTP. Continue a jornada ou abra o contrato técnico.</p>
+  <a href="../reference/">Referência OpenAPI →</a>
+</div>
+
 This section defines how ODP protocol concepts are implemented over REST/HTTP.
 
 Normative source for protocol behavior remains in Specification pages.

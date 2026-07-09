@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/merchant/">
+        <link rel="canonical" href="https://abrasel-nacional.github.io/opendelivery-v2/guide/by-role/">
       
       
-        <link rel="prev" href="../authentication/">
+        <link rel="prev" href="../getting-started/">
       
       
-        <link rel="next" href="../orders/">
+        <link rel="next" href="../../documentation/core-concepts/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>Merchant / Cardápio - Open Delivery Protocol</title>
+        <title>Trilhas por papel - Open Delivery Protocol</title>
       
     
     
@@ -216,7 +216,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#merchant-cardapio" class="md-skip">
+        <a href="#trilhas-por-papel" class="md-skip">
           Skip to content
         </a>
       
@@ -251,7 +251,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Merchant / Cardápio
+              Trilhas por papel
             
           </span>
         </div>
@@ -347,10 +347,12 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
+      <li class="md-tabs__item md-tabs__item--active">
         <a href="../.." class="md-tabs__link">
           
   
@@ -369,8 +371,6 @@
   
   
   
-    
-  
   
     
     
@@ -378,13 +378,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../principles/" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../protocol/principles/" class="md-tabs__link">
           
   
   
@@ -477,6 +475,8 @@
       
   
   
+    
+  
   
   
     
@@ -504,14 +504,17 @@
     
     
       
+        
+        
+      
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" checked>
         
           
           <div class="md-nav__link md-nav__container">
@@ -533,13 +536,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_1" id="__nav_1_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_1" id="__nav_1_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_1">
             <span class="md-nav__icon md-icon"></span>
             
@@ -559,7 +562,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guide/getting-started/" class="md-nav__link">
+      <a href="../getting-started/" class="md-nav__link">
         
   
   
@@ -584,10 +587,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../guide/by-role/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trilhas por papel
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -603,6 +633,215 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#mapa-rapido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mapa rápido
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#originador" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Originador
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Originador">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#o-que-implementar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O que implementar
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#leituras" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Leituras
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pdv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Software Service (PDV)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Software Service (PDV)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#o-que-implementar_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O que implementar
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#leituras_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Leituras
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#logistica" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logística
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Logística">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#o-que-implementar_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O que implementar
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#leituras_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Leituras
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#crm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CRM / Loyalty / Reviews
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CRM / Loyalty / Reviews">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#o-que-implementar_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O que implementar
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#leituras_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Leituras
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#indoor-quando-o-salao-e-o-produto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Indoor (quando o salão é o produto)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checklist-comum-a-todos-os-papeis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checklist comum a todos os papéis
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -699,7 +938,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../roles-and-responsibilities/" class="md-nav__link">
+      <a href="../../protocol/roles-and-responsibilities/" class="md-nav__link">
         
   
   
@@ -785,7 +1024,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guide/changelog/" class="md-nav__link">
+      <a href="../changelog/" class="md-nav__link">
         
   
   
@@ -813,7 +1052,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guide/migration-v1-v2/" class="md-nav__link">
+      <a href="../migration-v1-v2/" class="md-nav__link">
         
   
   
@@ -881,10 +1120,8 @@
       
   
   
-    
   
   
-  
     
     
       
@@ -900,20 +1137,17 @@
     
     
       
-        
-        
-      
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
         
           
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
             
   
   
@@ -931,7 +1165,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1011,7 +1245,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../principles/" class="md-nav__link">
+      <a href="../../protocol/principles/" class="md-nav__link">
         
   
   
@@ -1039,7 +1273,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../guidelines/" class="md-nav__link">
+      <a href="../../protocol/guidelines/" class="md-nav__link">
         
   
   
@@ -1067,7 +1301,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../error-handling/" class="md-nav__link">
+      <a href="../../protocol/error-handling/" class="md-nav__link">
         
   
   
@@ -1095,7 +1329,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../flows/" class="md-nav__link">
+      <a href="../../protocol/flows/" class="md-nav__link">
         
   
   
@@ -1123,7 +1357,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../evolution/" class="md-nav__link">
+      <a href="../../protocol/evolution/" class="md-nav__link">
         
   
   
@@ -1215,7 +1449,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../discovery/" class="md-nav__link">
+      <a href="../../protocol/discovery/" class="md-nav__link">
         
   
   
@@ -1243,7 +1477,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../authentication/" class="md-nav__link">
+      <a href="../../protocol/authentication/" class="md-nav__link">
         
   
   
@@ -1276,10 +1510,8 @@
                 
   
   
-    
   
   
-  
     
     
       
@@ -1304,11 +1536,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
         
           
           <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
@@ -1329,7 +1561,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1344,37 +1576,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Merchant / Cardápio
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../protocol/merchant/" class="md-nav__link">
         
   
   
@@ -1390,192 +1595,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#visao-geral" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Visão Geral
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#papeis" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Papéis
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#merchant-id-gerado-pelo-originador" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Merchant ID — gerado pelo originador
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#entidades-do-catalogo" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Entidades do catálogo
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Entidades do catálogo">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#servico-service" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Serviço (Service)
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Serviço (Service)">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#pausa-de-servico" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Pausa de serviço
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#menu-e-categoria" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Menu e Categoria
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#itemoffer" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ItemOffer
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#optiongroup-recursivo" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        OptionGroup (recursivo)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#option" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#snapshot-do-cardapio" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Snapshot do cardápio
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#discovery" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Discovery
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#autorizacao" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Autorização
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#regras-normativas" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Regras normativas
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1588,7 +1607,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../orders/" class="md-nav__link">
+      <a href="../../protocol/orders/" class="md-nav__link">
         
   
   
@@ -1616,7 +1635,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../logistics/" class="md-nav__link">
+      <a href="../../protocol/logistics/" class="md-nav__link">
         
   
   
@@ -1644,7 +1663,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../customer/" class="md-nav__link">
+      <a href="../../protocol/customer/" class="md-nav__link">
         
   
   
@@ -1728,7 +1747,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../indoor/" class="md-nav__link">
+      <a href="../../protocol/indoor/" class="md-nav__link">
         
   
   
@@ -2407,10 +2426,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#visao-geral" class="md-nav__link">
+  <a href="#mapa-rapido" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Visão Geral
+        Mapa rápido
       
     </span>
   </a>
@@ -2418,72 +2437,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#papeis" class="md-nav__link">
+  <a href="#originador" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Papéis
+        Originador
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#merchant-id-gerado-pelo-originador" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Merchant ID — gerado pelo originador
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#entidades-do-catalogo" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Entidades do catálogo
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Entidades do catálogo">
+    <nav class="md-nav" aria-label="Originador">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#servico-service" class="md-nav__link">
+  <a href="#o-que-implementar" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Serviço (Service)
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Serviço (Service)">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#pausa-de-servico" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Pausa de serviço
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#menu-e-categoria" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Menu e Categoria
+        O que implementar
       
     </span>
   </a>
@@ -2491,32 +2460,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#itemoffer" class="md-nav__link">
+  <a href="#leituras" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ItemOffer
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#optiongroup-recursivo" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        OptionGroup (recursivo)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#option" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option
+        Leituras
       
     </span>
   </a>
@@ -2529,10 +2476,127 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#snapshot-do-cardapio" class="md-nav__link">
+  <a href="#pdv" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Snapshot do cardápio
+        Software Service (PDV)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Software Service (PDV)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#o-que-implementar_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O que implementar
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#leituras_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Leituras
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#logistica" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logística
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Logística">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#o-que-implementar_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O que implementar
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#leituras_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Leituras
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#crm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CRM / Loyalty / Reviews
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CRM / Loyalty / Reviews">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#o-que-implementar_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O que implementar
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#leituras_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Leituras
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#indoor-quando-o-salao-e-o-produto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Indoor (quando o salão é o produto)
       
     </span>
   </a>
@@ -2540,32 +2604,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#discovery" class="md-nav__link">
+  <a href="#checklist-comum-a-todos-os-papeis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Discovery
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#autorizacao" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Autorização
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#regras-normativas" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Regras normativas
+        Checklist comum a todos os papéis
       
     </span>
   </a>
@@ -2589,7 +2631,7 @@
 
 
   
-    <a href="https://github.com/Abrasel-Nacional/opendelivery-v2/edit/main/docs/protocol/merchant.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/Abrasel-Nacional/opendelivery-v2/edit/main/docs/guide/by-role.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -2597,345 +2639,242 @@
   
 
 
-<h1 id="merchant-cardapio">Merchant / Cardápio<a class="headerlink" href="#merchant-cardapio" title="Permanent link">&para;</a></h1>
-<p class="od-meta">
-  <span class="od-badge od-badge--core">Capability</span>
-  <span class="od-badge od-badge--code">merchant</span>
-</p>
-
-<div class="od-api-callout">
-  <p>Regras e fluxos nesta página. Contrato HTTP na referência OpenAPI.</p>
-  <a href="../reference/merchant/">Abrir referência OpenAPI →</a>
-</div>
-
-<h2 id="visao-geral">Visão Geral<a class="headerlink" href="#visao-geral" title="Permanent link">&para;</a></h2>
-<p>A capability <strong>Merchant</strong> define a identidade do estabelecimento, os contextos de serviço (delivery, retirada, salão) e as entidades de catálogo publicadas no ecossistema. É a fonte de verdade para todos os dados estáticos e operacionais relativos ao estabelecimento e ao que ele oferece.</p>
-<p>Esta capability cobre:</p>
-<ul>
-<li>Identidade e informações descritivas do estabelecimento</li>
-<li>Serviços operacionais (delivery, takeout, indoor) e seus horários</li>
-<li>Composição do catálogo: menus, categorias, item-offers, option-groups e opções</li>
-<li>Disponibilidade operacional dos itens</li>
-<li>Pausa e retomada de serviços</li>
-</ul>
-<p>Esta capability <strong>não</strong> cobre:</p>
-<ul>
-<li>Ciclo de vida de pedidos (capability Orders)</li>
-<li>Coordenação de entrega (capability Logistics)</li>
-<li>Relacionamento com clientes e fidelidade (capability Customer)</li>
-</ul>
+<h1 id="trilhas-por-papel">Trilhas por papel<a class="headerlink" href="#trilhas-por-papel" title="Permanent link">&para;</a></h1>
+<p>O Open Delivery não exige que você implemente tudo. Cada sistema assume um (ou mais) <strong>papéis</strong> no ecossistema e declara no <a href="../../protocol/discovery/">Discovery</a> o que suporta.</p>
+<p>Use esta página para montar um caminho de leitura e implementação alinhado ao seu produto.</p>
 <hr />
-<h2 id="papeis">Papéis<a class="headerlink" href="#papeis" title="Permanent link">&para;</a></h2>
+<h2 id="mapa-rapido">Mapa rápido<a class="headerlink" href="#mapa-rapido" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
 <th>Papel</th>
+<th>Quem é</th>
+<th>Capabilities típicas</th>
+<th>Comece por</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Originador</strong></td>
+<td>App de pedidos, marketplace, totem</td>
+<td>Orders, Merchant (consumo), Auth, Discovery</td>
+<td><a href="#originador">Trilha Originador</a></td>
+</tr>
+<tr>
+<td><strong>Software Service (PDV)</strong></td>
+<td>Gestão do restaurante / POS</td>
+<td>Merchant, Orders, Indoor, Auth, Discovery</td>
+<td><a href="#pdv">Trilha PDV</a></td>
+</tr>
+<tr>
+<td><strong>Logística</strong></td>
+<td>Operador de entrega, frota</td>
+<td>Logistics (+ Orders contexto), Auth, Discovery</td>
+<td><a href="#logistica">Trilha Logística</a></td>
+</tr>
+<tr>
+<td><strong>CRM / Loyalty</strong></td>
+<td>CRM, fidelidade, reviews</td>
+<td>Customer, Reviews, Loyalty, Auth, Discovery</td>
+<td><a href="#crm">Trilha CRM</a></td>
+</tr>
+</tbody>
+</table>
+<p>Um mesmo produto pode combinar papéis (ex.: marketplace com frota própria = Originador + Logística).</p>
+<hr />
+<h2 id="originador">Originador<a class="headerlink" href="#originador" title="Permanent link">&para;</a></h2>
+<p>Você <strong>cria pedidos</strong> e, em muitos fluxos, é dono do <strong>Merchant ID</strong> e do cardápio exibido ao consumidor.</p>
+<h3 id="o-que-implementar">O que implementar<a class="headerlink" href="#o-que-implementar" title="Permanent link">&para;</a></h3>
+<ol>
+<li><a href="../../protocol/discovery/">Discovery</a> — manifesto well-known</li>
+<li><a href="../../protocol/authentication/">Autenticação</a> — OAuth por aplicação</li>
+<li><a href="../../protocol/merchant/">Merchant</a> — consumir / sincronizar catálogo conforme dono do cardápio</li>
+<li><a href="../../protocol/orders/">Orders</a> — criar pedidos, cancelar, consumir eventos/status</li>
+<li>Opcional: <a href="../../protocol/logistics/">Logistics</a>, <a href="../../protocol/customer/">Customer</a> (push de clientes), <a href="../../protocol/indoor/">Indoor</a> (totem/QR)</li>
+</ol>
+<h3 id="leituras">Leituras<a class="headerlink" href="#leituras" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Tipo</th>
+<th>Link</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Guia</td>
+<td><a href="../getting-started/">Primeiros Passos</a></td>
+</tr>
+<tr>
+<td>Protocolo</td>
+<td><a href="../../protocol/orders/">Orders</a> · <a href="../../protocol/merchant/">Merchant</a></td>
+</tr>
+<tr>
+<td>API</td>
+<td><a href="../../reference/orders/">Referência Orders</a> · <a href="../../reference/merchant/">Merchant</a></td>
+</tr>
+<tr>
+<td>Migração</td>
+<td><a href="../migration-v1-v2/">V1→V2</a></td>
+</tr>
+</tbody>
+</table>
+<div class="od-next-step">
+  <div class="od-next-step__label">Próximo passo — Originador</div>
+  <div class="od-next-step__links">
+    <a href="../protocol/discovery/">Publicar Discovery</a>
+    <a href="../reference/orders/">OpenAPI Orders</a>
+  </div>
+</div>
+
+<hr />
+<h2 id="pdv">Software Service (PDV)<a class="headerlink" href="#pdv" title="Permanent link">&para;</a></h2>
+<p>Você é a <strong>fonte operacional</strong> da loja: confirma pedidos, envia cardápio, é autoridade da <strong>conta Indoor</strong> e, em muitos casos, da emissão fiscal.</p>
+<h3 id="o-que-implementar_1">O que implementar<a class="headerlink" href="#o-que-implementar_1" title="Permanent link">&para;</a></h3>
+<ol>
+<li><a href="../../protocol/discovery/">Discovery</a> + <a href="../../protocol/authentication/">Auth</a></li>
+<li><a href="../../protocol/merchant/">Merchant</a> — CRUD/snapshot de catálogo, services, pause</li>
+<li><a href="../../protocol/orders/">Orders</a> — confirmação, preparo, eventos, cancelamento V2</li>
+<li><a href="../../protocol/indoor/">Indoor</a> — se houver salão (Account, pagamentos, fiscal)</li>
+<li>Webhooks de eventos (e/ou polling onde o manifesto declarar)</li>
+</ol>
+<h3 id="leituras_1">Leituras<a class="headerlink" href="#leituras_1" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Tipo</th>
+<th>Link</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Protocolo</td>
+<td><a href="../../protocol/merchant/">Merchant</a> · <a href="../../protocol/orders/">Orders</a> · <a href="../../protocol/indoor/">Indoor</a></td>
+</tr>
+<tr>
+<td>API</td>
+<td><a href="../../reference/merchant/">Merchant</a> · <a href="../../reference/orders/">Orders</a> · <a href="../../reference/indoor/">Indoor</a></td>
+</tr>
+<tr>
+<td>Matrizes</td>
+<td><a href="../../protocol/orders/#matrizes-de-eventos-por-perfil">Eventos por perfil (Orders)</a></td>
+</tr>
+</tbody>
+</table>
+<div class="od-next-step">
+  <div class="od-next-step__label">Próximo passo — PDV</div>
+  <div class="od-next-step__links">
+    <a href="../protocol/merchant/">Protocolo Merchant</a>
+    <a href="../reference/merchant/">OpenAPI Merchant</a>
+  </div>
+</div>
+
+<hr />
+<h2 id="logistica">Logística<a class="headerlink" href="#logistica" title="Permanent link">&para;</a></h2>
+<p>Você executa ou orquestra a <strong>entrega</strong> e emite eventos de tracking informativos (sem confundir com o status do pedido).</p>
+<h3 id="o-que-implementar_2">O que implementar<a class="headerlink" href="#o-que-implementar_2" title="Permanent link">&para;</a></h3>
+<ol>
+<li><a href="../../protocol/discovery/">Discovery</a> + <a href="../../protocol/authentication/">Auth</a></li>
+<li><a href="../../protocol/logistics/">Logistics</a> — cotação, despacho, tracking, problemas</li>
+<li>Integração com contexto de <a href="../../protocol/orders/">Orders</a> (eventos logísticos vs status)</li>
+</ol>
+<h3 id="leituras_2">Leituras<a class="headerlink" href="#leituras_2" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Tipo</th>
+<th>Link</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Protocolo</td>
+<td><a href="../../protocol/logistics/">Logistics</a> · <a href="../../protocol/orders/#ciclo-de-vida-status">Orders — status × eventos</a></td>
+</tr>
+<tr>
+<td>API</td>
+<td><a href="../../reference/logistics/">Logistics</a></td>
+</tr>
+</tbody>
+</table>
+<div class="od-next-step">
+  <div class="od-next-step__label">Próximo passo — Logística</div>
+  <div class="od-next-step__links">
+    <a href="../protocol/logistics/">Protocolo Logistics</a>
+    <a href="../reference/logistics/">OpenAPI Logistics</a>
+  </div>
+</div>
+
+<hr />
+<h2 id="crm">CRM / Loyalty / Reviews<a class="headerlink" href="#crm" title="Permanent link">&para;</a></h2>
+<p>Você cuida do <strong>relacionamento</strong>: cliente, leads, avaliações e programas de fidelidade. Não altera o ciclo operacional do pedido na cozinha.</p>
+<h3 id="o-que-implementar_3">O que implementar<a class="headerlink" href="#o-que-implementar_3" title="Permanent link">&para;</a></h3>
+<ol>
+<li><a href="../../protocol/discovery/">Discovery</a> + <a href="../../protocol/authentication/">Auth</a> (escopo <code>od.crm</code>)</li>
+<li><a href="../../protocol/customer/">Customer</a> — capability base (obrigatória para as extensões)</li>
+<li>Extensões opcionais:</li>
+<li><a href="../../extensions/reviews/">Reviews</a></li>
+<li><a href="../../extensions/loyalty/">Loyalty</a></li>
+</ol>
+<h3 id="leituras_3">Leituras<a class="headerlink" href="#leituras_3" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Tipo</th>
+<th>Link</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Protocolo</td>
+<td><a href="../../protocol/customer/">Customer</a> · <a href="../../extensions/reviews/">Reviews</a> · <a href="../../extensions/loyalty/">Loyalty</a></td>
+</tr>
+<tr>
+<td>API</td>
+<td><a href="../../reference/customer/">Customer &amp; Fidelidade</a></td>
+</tr>
+</tbody>
+</table>
+<div class="od-next-step">
+  <div class="od-next-step__label">Próximo passo — CRM</div>
+  <div class="od-next-step__links">
+    <a href="../protocol/customer/">Protocolo Customer</a>
+    <a href="../reference/customer/">OpenAPI Customer</a>
+  </div>
+</div>
+
+<hr />
+<h2 id="indoor-quando-o-salao-e-o-produto">Indoor (quando o salão é o produto)<a class="headerlink" href="#indoor-quando-o-salao-e-o-produto" title="Permanent link">&para;</a></h2>
+<p>Se o seu produto é <strong>totem, QR de mesa, tablet de garçom ou PDV de salão</strong>, trate Indoor como trilha principal — mas lembre: é <strong>extensão de Orders</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Papel no Indoor</th>
 <th>Responsabilidade</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><strong>Software Service</strong></td>
-<td>Fonte de verdade do estabelecimento e do catálogo. Expõe as interfaces de leitura e escrita do Merchant.</td>
+<td>Hospeda Account, pagamentos, fiscal, eventos</td>
 </tr>
 <tr>
 <td><strong>Ordering Application</strong></td>
-<td>Consome dados de estabelecimento e catálogo para construir interfaces de pedido.</td>
-</tr>
-<tr>
-<td><strong>Delivery Platform</strong> (opcional)</td>
-<td>Consome contexto de serviço e disponibilidade do estabelecimento para decisões logísticas.</td>
+<td>Envia pedidos INDOOR, consome webhooks, UI de conta</td>
 </tr>
 </tbody>
 </table>
+<p>→ <a href="../../protocol/indoor/">Protocolo Indoor</a> · <a href="../../reference/indoor/">OpenAPI Indoor</a> · <a href="../../protocol/indoor/#matriz-de-eventos-da-conta">Matriz de eventos de conta</a></p>
 <hr />
-<h2 id="merchant-id-gerado-pelo-originador">Merchant ID — gerado pelo originador<a class="headerlink" href="#merchant-id-gerado-pelo-originador" title="Permanent link">&para;</a></h2>
-<div class="admonition important">
-<p class="admonition-title">Quebra de comportamento em relação à V1</p>
-<p>Na V1, o <code>merchantId</code> era gerado pelo Software Service (POS). Na V2, o <code>merchantId</code> é <strong>gerado pela Ordering Application</strong> no momento do cadastro do estabelecimento.</p>
-<p>Isso inverte quem tem a chave de referência: a plataforma de pedidos escolhe o ID e o POS o registra. Os dois lados DEVEM usar exatamente o mesmo identificador em todas as operações subsequentes.</p>
-</div>
-<p>Essa decisão foi tomada para:</p>
-<ul>
-<li>Eliminar a dependência de um round-trip de cadastro antes de enviar pedidos</li>
-<li>Permitir que a Ordering Application referencie o merchant de forma determinista desde a criação</li>
-<li>Simplificar reconciliações em cenários multi-plataforma</li>
-</ul>
-<p>O <code>merchantId</code> DEVE ser único por Ordering Application. O formato DEVE ser uma string opaca (UUID v4 recomendado).</p>
-<hr />
-<h2 id="entidades-do-catalogo">Entidades do catálogo<a class="headerlink" href="#entidades-do-catalogo" title="Permanent link">&para;</a></h2>
-<p>O catálogo é composto por entidades independentes com relacionamentos explícitos. Cada entidade é gerenciada por CRUD granular — não há mais uma operação monolítica de publicação do cardápio.</p>
-<div class="highlight"><pre><span></span><code>Merchant
-└── Service (por tipo: delivery / takeout / indoor)
-└── Menu
-    └── Category
-        └── ItemOffer
-            └── OptionGroup (recursivo)
-                └── Option
-</code></pre></div>
-<h3 id="servico-service">Serviço (<code>Service</code>)<a class="headerlink" href="#servico-service" title="Permanent link">&para;</a></h3>
-<p>Cada estabelecimento pode ter múltiplos serviços. Um serviço é identificado pelo seu <strong>tipo</strong> — não há Service ID separado.</p>
-<table>
-<thead>
-<tr>
-<th>Campo</th>
-<th>Tipo</th>
-<th>Obrigatório</th>
-<th>Descrição</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>type</code></td>
-<td>string (enum)</td>
-<td>SIM</td>
-<td><code>DELIVERY</code>, <code>TAKEOUT</code> ou <code>INDOOR</code></td>
-</tr>
-<tr>
-<td><code>status</code></td>
-<td>string (enum)</td>
-<td>SIM</td>
-<td><code>OPEN</code>, <code>CLOSED</code> ou <code>PAUSED</code></td>
-</tr>
-<tr>
-<td><code>operatingHours</code></td>
-<td>array[object]</td>
-<td>SIM</td>
-<td>Horários de funcionamento por dia da semana</td>
-</tr>
-<tr>
-<td><code>deliveryArea</code></td>
-<td>object</td>
-<td>NÃO</td>
-<td>Raio ou polígono de cobertura (somente <code>DELIVERY</code>)</td>
-</tr>
-<tr>
-<td><code>menuId</code></td>
-<td>string</td>
-<td>NÃO</td>
-<td>Referência ao menu ativo para este serviço</td>
-</tr>
-</tbody>
-</table>
-<h4 id="pausa-de-servico">Pausa de serviço<a class="headerlink" href="#pausa-de-servico" title="Permanent link">&para;</a></h4>
-<p>Para pausas operacionais (ex.: cozinha sobrecarregada, falta de entregadores), use:</p>
-<div class="highlight"><pre><span></span><code>POST /merchants/{merchantId}/services/{serviceType}/pause
-</code></pre></div>
-<p>A pausa é uma transição de estado que produz resposta <code>202 Accepted</code>. O serviço permanece em <code>PAUSED</code> até ser reativado via <code>PATCH /merchants/{merchantId}/services/{serviceType}</code> com <code>status: OPEN</code>.</p>
-<h3 id="menu-e-categoria">Menu e Categoria<a class="headerlink" href="#menu-e-categoria" title="Permanent link">&para;</a></h3>
-<p>Um Menu agrupa Categorias. Uma Categoria agrupa ItemOffers. Um estabelecimento pode ter múltiplos Menus (ex.: cardápio do almoço, cardápio da janta, cardápio de bebidas).</p>
-<h3 id="itemoffer">ItemOffer<a class="headerlink" href="#itemoffer" title="Permanent link">&para;</a></h3>
-<p>Um <strong>ItemOffer</strong> é a oferta de um produto com preço e disponibilidade.</p>
-<table>
-<thead>
-<tr>
-<th>Campo</th>
-<th>Tipo</th>
-<th>Obrigatório</th>
-<th>Descrição</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>id</code></td>
-<td>string</td>
-<td>SIM</td>
-<td>Identificador único (UUID)</td>
-</tr>
-<tr>
-<td><code>name</code></td>
-<td>string</td>
-<td>SIM</td>
-<td>Nome exibido ao consumidor</td>
-</tr>
-<tr>
-<td><code>description</code></td>
-<td>string</td>
-<td>NÃO</td>
-<td>Texto descritivo</td>
-</tr>
-<tr>
-<td><code>unity_price</code></td>
-<td>object</td>
-<td>SIM</td>
-<td>Preço unitário com valor e moeda</td>
-</tr>
-<tr>
-<td><code>quantity_available</code></td>
-<td>integer</td>
-<td>NÃO</td>
-<td>Quantidade disponível no momento (operacional, não estoque)</td>
-</tr>
-<tr>
-<td><code>optionGroupIds</code></td>
-<td>array[string]</td>
-<td>NÃO</td>
-<td>Grupos de opções associados</td>
-</tr>
-</tbody>
-</table>
-<div class="admonition info">
-<p class="admonition-title"><code>quantity_available</code> é operacional</p>
-<p>Este campo representa a quantidade disponível <strong>agora</strong> (por exemplo, um prato do dia com 10 porções restantes). Não é um controle de estoque — o sistema de gestão de estoque não é responsabilidade do protocolo. Quando não informado, considera-se disponibilidade ilimitada.</p>
-</div>
-<h3 id="optiongroup-recursivo">OptionGroup (recursivo)<a class="headerlink" href="#optiongroup-recursivo" title="Permanent link">&para;</a></h3>
-<p>Um grupo de opções contém opções selecionáveis pelo cliente (ex.: "Ponto da carne", "Complementos"). OptionGroups são <strong>recursivos</strong> — uma opção pode conter um sub-grupo de opções.</p>
-<table>
-<thead>
-<tr>
-<th>Campo</th>
-<th>Tipo</th>
-<th>Obrigatório</th>
-<th>Descrição</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>id</code></td>
-<td>string</td>
-<td>SIM</td>
-<td>Identificador único</td>
-</tr>
-<tr>
-<td><code>name</code></td>
-<td>string</td>
-<td>SIM</td>
-<td>Nome do grupo</td>
-</tr>
-<tr>
-<td><code>min</code></td>
-<td>integer</td>
-<td>SIM</td>
-<td>Mínimo de seleções (0 = opcional)</td>
-</tr>
-<tr>
-<td><code>max</code></td>
-<td>integer</td>
-<td>SIM</td>
-<td>Máximo de seleções</td>
-</tr>
-<tr>
-<td><code>options</code></td>
-<td>array[Option]</td>
-<td>SIM</td>
-<td>Lista de opções</td>
-</tr>
-</tbody>
-</table>
-<h3 id="option">Option<a class="headerlink" href="#option" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Campo</th>
-<th>Tipo</th>
-<th>Obrigatório</th>
-<th>Descrição</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>id</code></td>
-<td>string</td>
-<td>SIM</td>
-<td>Identificador único</td>
-</tr>
-<tr>
-<td><code>name</code></td>
-<td>string</td>
-<td>SIM</td>
-<td>Nome da opção</td>
-</tr>
-<tr>
-<td><code>option_price</code></td>
-<td>object</td>
-<td>SIM</td>
-<td>Preço incremental da opção</td>
-</tr>
-<tr>
-<td><code>optionGroupIds</code></td>
-<td>array[string]</td>
-<td>NÃO</td>
-<td>Sub-grupos (recursividade)</td>
-</tr>
-</tbody>
-</table>
-<div class="admonition important">
-<p class="admonition-title"><code>option_price</code> é obrigatório na V2</p>
-<p>Na V1, o preço da opção era opcional. Na V2, <strong>todo <code>Option</code> DEVE ter <code>option_price</code></strong>. Se a opção não tem custo adicional, declare <code>{ "value": 0, "currency": "BRL" }</code>. O campo <code>subtotal</code> foi removido — o total de um pedido com opções é calculado a partir de <code>unity_price</code> + soma dos <code>option_price</code>.</p>
-</div>
-<hr />
-<h2 id="snapshot-do-cardapio">Snapshot do cardápio<a class="headerlink" href="#snapshot-do-cardapio" title="Permanent link">&para;</a></h2>
-<p>Para obter o cardápio completo de um estabelecimento em uma única chamada (bootstrap inicial ou sincronização completa), use:</p>
-<div class="highlight"><pre><span></span><code>GET /merchants/{merchantId}/menus/{menuId}/snapshot
-</code></pre></div>
-<p>O snapshot retorna menu, categorias, item-offers, option-groups e options em uma estrutura hierárquica única. Esta é a operação recomendada para onboarding e reconciliação.</p>
-<p>Para atualizações incrementais, use os endpoints granulares de cada entidade.</p>
-<hr />
-<h2 id="discovery">Discovery<a class="headerlink" href="#discovery" title="Permanent link">&para;</a></h2>
-<p>Participantes que expõem a capability Merchant DEVEM declarar <code>merchant</code> no documento well-known.</p>
-<div class="highlight"><pre><span></span><code><span class="nt">&quot;capabilities&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;merchant&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;baseUrl&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://api.example.com&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;operations&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;read&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;write&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;snapshot&quot;</span><span class="p">]</span>
-<span class="w">  </span><span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div>
-<hr />
-<h2 id="autorizacao">Autorização<a class="headerlink" href="#autorizacao" title="Permanent link">&para;</a></h2>
-<p>Todas as operações da capability Merchant exigem autenticação Bearer (OAuth 2.0).</p>
-<p>Escopos mínimos recomendados:</p>
-<table>
-<thead>
-<tr>
-<th>Escopo</th>
-<th>Operações</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>merchant.read</code></td>
-<td>Leitura de dados do estabelecimento e catálogo</td>
-</tr>
-<tr>
-<td><code>merchant.write</code></td>
-<td>Criação e atualização de entidades do catálogo</td>
-</tr>
-<tr>
-<td><code>merchant.events.write</code></td>
-<td>Emissão de eventos de mudança</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2 id="regras-normativas">Regras normativas<a class="headerlink" href="#regras-normativas" title="Permanent link">&para;</a></h2>
-<p><strong>O Software Service DEVE:</strong></p>
-<ul>
-<li>Expor <code>merchantId</code> como identificador único e estável gerado pela Ordering Application</li>
-<li>Preservar integridade referencial entre menu, categorias, item-offers, option-groups e opções em todas as operações de atualização</li>
-<li>Retornar <code>202 Accepted</code> para todas as mutações (PATCH, PUT, DELETE com efeito assíncrono)</li>
-<li>Declarar <code>quantity_available</code> apenas quando há limitação operacional real</li>
-</ul>
-<p><strong>A Ordering Application DEVE:</strong></p>
-<ul>
-<li>Gerar o <code>merchantId</code> antes do cadastro e mantê-lo estável</li>
-<li>Tratar <code>quantity_available</code> como uma dica operacional, não como garantia de estoque</li>
-<li>Consultar o snapshot para bootstrap e usar endpoints granulares para deltas</li>
-</ul>
-<p><strong>Ambos DEVEM:</strong></p>
-<ul>
-<li>Declarar a capability <code>merchant</code> no discovery antes de iniciar operações</li>
-<li>Usar <code>option_price: { value: 0, currency: "..." }</code> explicitamente para opções sem custo adicional</li>
-</ul>
-<hr />
-<p><strong>Referência completa de campos e contratos REST:</strong> <a href="../../reference/merchant/">Referência da API — Merchant →</a></p>
-<hr />
-<div class="od-next-step">
-  <div class="od-next-step__label">Próximo passo</div>
-  <div class="od-next-step__links">
-    <a href="../reference/merchant/">Abrir referência OpenAPI</a>
-    <a href="discovery/">Configurar Discovery</a>
-  </div>
-</div>
+<h2 id="checklist-comum-a-todos-os-papeis">Checklist comum a todos os papéis<a class="headerlink" href="#checklist-comum-a-todos-os-papeis" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Publicar <code>GET /.well-known/opendelivery</code></li>
+<li>Obter token OAuth (preferência: por aplicação)</li>
+<li>Listar merchants autorizados (<code>GET /merchants</code> quando aplicável)</li>
+<li>Implementar só as capabilities declaradas no manifesto</li>
+<li>Separar <strong>status</strong> (verdade no GET) de <strong>eventos</strong> (notificações)</li>
+</ol>
+<p>Para o fluxo mínimo genérico, veja <a href="../getting-started/">Primeiros Passos</a>.</p>
 
 
 
@@ -2973,7 +2912,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../authentication/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Autenticação">
+          <a href="../getting-started/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Primeiros Passos">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -2983,20 +2922,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Autenticação
+                Primeiros Passos
               </div>
             </div>
           </a>
         
         
           
-          <a href="../orders/" class="md-footer__link md-footer__link--next" aria-label="Next: Orders / Pedidos">
+          <a href="../../documentation/core-concepts/" class="md-footer__link md-footer__link--next" aria-label="Next: Conceitos">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Orders / Pedidos
+                Conceitos
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -3095,7 +3034,7 @@
     },{
       title: "Trilhas por papel",
       url: "https://abrasel-nacional.github.io/opendelivery-v2/guide/by-role/",
-      active: false
+      active: true
     },{
       title: "Conceitos",
       url: "https://abrasel-nacional.github.io/opendelivery-v2/documentation/core-concepts/",
@@ -3171,7 +3110,7 @@
       children: [{
       title: "Merchant / Card\u00e1pio",
       url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/merchant/",
-      active: true
+      active: false
     },{
       title: "Orders / Pedidos",
       url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/orders/",

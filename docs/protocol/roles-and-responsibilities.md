@@ -1,5 +1,10 @@
 # Papéis e Responsabilidades
 
+<div class="od-api-callout">
+  <p>Papéis no ecossistema. Continue a jornada ou abra o contrato técnico.</p>
+  <a href="../guide/by-role/">Trilhas por papel →</a>
+</div>
+
 ## Papéis de Interação Entre Capabilities
 
 Para padronizar a documentação de capabilities, cada operação usa estes papéis transversais:

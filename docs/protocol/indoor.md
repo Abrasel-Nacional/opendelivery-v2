@@ -128,18 +128,36 @@ Pagamento é, propositalmente, a única operação válida nos dois estados — 
 
 A cada transição relevante, o Software Service **DEVE** notificar a Ordering Application via webhook. Não há polling para eventos Indoor: a entrega é **exclusivamente via webhook**, e a Ordering Application deve implementar um endpoint compatível com o contrato `accountEvent` da spec para recebê-los.
 
-| Evento | Gatilho | Status após |
-|---|---|---|
-| `ACCOUNT_OPENED` | Conta criada (pedido INDOOR) | `IN_USE` |
-| `ACCOUNT_ITEM_ADDED` | Novo pedido INDOOR adiciona itens | `IN_USE` |
-| `ACCOUNT_ITEM_REMOVED` | Itens transferidos para outra conta | `IN_USE` |
-| `ACCOUNT_ITEM_CANCELLED` | Item cancelado | `IN_USE` |
-| `ACCOUNT_PRE_CLOSED` | Conta bloqueada para pagamento | `IN_PAYMENT` |
-| `ACCOUNT_UNLOCKED` | Bloqueio revertido | `IN_USE` |
-| `ACCOUNT_CLOSED` | Conta fechada definitivamente | `CLOSED` |
-| `PAYMENT_CREATED` | Pagamento lançado | — |
-| `FISCAL_ISSUED` | Documento fiscal emitido com sucesso | — |
-| `FISCAL_ERROR` | Falha na emissão do documento fiscal | — |
+#### Matriz de eventos da conta {#matriz-de-eventos-da-conta}
+
+<div class="od-matrix__legend">
+  <span><span class="od-badge od-badge--must">MUST</span> emitir no fluxo core</span>
+  <span><span class="od-badge od-badge--may">MAY</span> conforme cenário</span>
+  <span>Status da conta após o evento (quando aplicável)</span>
+</div>
+
+<div class="od-matrix" markdown>
+
+<div class="od-matrix__scroll" markdown>
+
+| Evento | Gatilho | Obrigatoriedade | Status da conta | Observações |
+|---|---|---|---|---|
+| `ACCOUNT_OPENED` | Conta criada (pedido INDOOR) | <span class="od-badge od-badge--must">MUST</span> | `IN_USE` | Abertura da sessão de salão |
+| `ACCOUNT_ITEM_ADDED` | Novo pedido INDOOR adiciona itens | <span class="od-badge od-badge--must">MUST</span> | `IN_USE` | Pedido é canal de itens |
+| `ACCOUNT_ITEM_REMOVED` | Itens transferidos para outra conta | <span class="od-badge od-badge--may">MAY</span> | `IN_USE` | Transferência entre mesas/comandas |
+| `ACCOUNT_ITEM_CANCELLED` | Item cancelado | <span class="od-badge od-badge--must">MUST</span> | `IN_USE` | Cancelamento de item, não da conta |
+| `PAYMENT_CREATED` | Pagamento lançado | <span class="od-badge od-badge--must">MUST</span> | — | Válido em `IN_USE` e `IN_PAYMENT` |
+| `ACCOUNT_PRE_CLOSED` | Conta bloqueada para pagamento | <span class="od-badge od-badge--must">MUST</span> | `IN_PAYMENT` | Lock — sem novos itens |
+| `ACCOUNT_UNLOCKED` | Bloqueio revertido | <span class="od-badge od-badge--may">MAY</span> | `IN_USE` | Reabre para novos itens |
+| `FISCAL_ISSUED` | Documento fiscal emitido | <span class="od-badge od-badge--must">MUST</span> | — | Assíncrono; GET como fallback |
+| `FISCAL_ERROR` | Falha na emissão fiscal | <span class="od-badge od-badge--must">MUST</span> | — | Assíncrono; conta pode fechar mesmo assim |
+| `ACCOUNT_CLOSED` | Conta fechada definitivamente | <span class="od-badge od-badge--must">MUST</span> | `CLOSED` | Irreversível |
+
+</div>
+</div>
+
+!!! tip "Pedidos Indoor vs conta"
+    O ciclo de vida do **pedido** INDOOR (CREATED → CONFIRMED → …) está na [matriz Orders — perfil INDOOR](orders.md#perfil-indoor). A matriz acima é só da **conta** (Account).
 
 ---
 

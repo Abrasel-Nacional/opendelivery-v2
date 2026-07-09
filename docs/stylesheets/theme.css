@@ -436,6 +436,97 @@ html,
   padding: 0.12rem 0.45rem;
 }
 
+/* Matrizes de eventos — wrapper com scroll e header sticky */
+.md-typeset .od-matrix {
+  margin: 1rem 0 1.75rem;
+  max-width: none;
+}
+
+.md-typeset .od-matrix__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
+  color: var(--od-text-soft);
+  max-width: none;
+}
+
+.md-typeset .od-matrix__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.md-typeset .od-matrix__scroll {
+  overflow-x: auto;
+  border: 1px solid var(--od-border);
+  border-radius: var(--od-radius-md);
+  background: #fff;
+  -webkit-overflow-scrolling: touch;
+}
+
+.md-typeset .od-matrix__scroll table {
+  margin: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  display: table;
+  width: 100%;
+  min-width: 640px;
+}
+
+.md-typeset .od-matrix__scroll table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: var(--od-bg-soft) !important;
+  box-shadow: inset 0 -1px 0 var(--od-border);
+  white-space: nowrap;
+}
+
+.md-typeset .od-matrix__scroll table td:nth-child(1),
+.md-typeset .od-matrix__scroll table th:nth-child(1) {
+  font-family: "JetBrains Mono", "Roboto Mono", monospace;
+  font-size: 0.78em;
+  white-space: nowrap;
+}
+
+/* Linhas MUST NOT com ênfase sutil */
+.md-typeset .od-matrix__scroll tr.od-row-forbidden td {
+  color: var(--od-text-soft);
+  background: rgba(180, 35, 24, 0.03);
+}
+
+.od-badge--mustnot {
+  background: rgba(180, 35, 24, 0.06);
+  border-color: rgba(180, 35, 24, 0.25);
+  color: #912018;
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+/* Dropdown a11y */
+.od-dropdown:focus {
+  outline: none;
+}
+
+.od-dropdown a:focus-visible {
+  outline: 2px solid var(--od-green-soft);
+  outline-offset: -2px;
+  background: var(--od-bg-soft);
+}
+
+.od-header-nav .md-tabs__link[aria-expanded="true"] {
+  color: var(--od-green-dark);
+  font-weight: 600;
+  box-shadow: inset 0 -3px 0 var(--od-green-dark);
+}
+
+.od-header-nav .md-tabs__link:focus-visible {
+  outline: 2px solid var(--od-green-soft);
+  outline-offset: -2px;
+}
+
 /* Focus ring da marca */
 .md-typeset a:focus-visible,
 .md-header__button:focus-visible,

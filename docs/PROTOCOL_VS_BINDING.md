@@ -1,5 +1,10 @@
 # Protocol vs. Transport Binding: Understanding the Separation
 
+<div class="od-api-callout">
+  <p>Protocolo vs transporte. Continue a jornada ou abra o contrato técnico.</p>
+  <a href="reference/">Referência OpenAPI →</a>
+</div>
+
 This document clarifies the distinction between the **Open Delivery Protocol** and **Transport Bindings**, and how they work together.
 
 ---

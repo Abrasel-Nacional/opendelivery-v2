@@ -102,12 +102,14 @@
   }
 
   .od-tab-has-dropdown:hover .od-chevron,
-  .od-tab-has-dropdown.od-tab-open .od-chevron {
+  .od-tab-has-dropdown.od-tab-open .od-chevron,
+  .od-tab-has-dropdown .md-tabs__link[aria-expanded="true"] .od-chevron {
     background: rgba(0, 101, 46, 0.2);
   }
 
   .od-tab-has-dropdown:hover .od-chevron::after,
-  .od-tab-has-dropdown.od-tab-open .od-chevron::after {
+  .od-tab-has-dropdown.od-tab-open .od-chevron::after,
+  .od-tab-has-dropdown .md-tabs__link[aria-expanded="true"] .od-chevron::after {
     transform: rotate(180deg);
     opacity: 1;
   }
@@ -151,7 +153,8 @@
     transition: background 0.12s, color 0.12s;
   }
 
-  .od-dropdown a:hover {
+  .od-dropdown a:hover,
+  .od-dropdown a:focus {
     background: var(--od-bg-soft, #f4f9f5);
     color: var(--od-green, #00652e);
     text-decoration: none;
@@ -166,7 +169,7 @@
   .od-dropdown .od-group-label {
     padding: 0.6rem 1.2rem 0.25rem;
     margin-top: 0.2rem;
-    font-size: 0.58rem;
+    font-size: 0.62rem;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -182,6 +185,11 @@
 
   .od-dropdown a.od-nested {
     padding-left: 1.8rem;
+  }
+
+  /* Mobile: header nav some; drawer Material permanece disponível */
+  @media screen and (max-width: 59.9375em) {
+    .od-dropdown { display: none !important; }
   }
 </style>
 
@@ -490,6 +498,8 @@
       
         
       
+        
+      
     
     
     
@@ -557,6 +567,34 @@
     
   
     Primeiros Passos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/by-role/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trilhas por papel
   
 
     
@@ -708,10 +746,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_7" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_8" >
         
           
-          <label class="md-nav__link" for="__nav_1_7" id="__nav_1_7_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_1_8" id="__nav_1_8_label" tabindex="0">
             
   
   
@@ -729,8 +767,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_1_7">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_8">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1469,7 +1507,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#ciclo-de-vida-status-possiveis" class="md-nav__link">
+  <a href="#ciclo-de-vida-status" class="md-nav__link">
     <span class="md-ellipsis">
       
         Ciclo de vida — status possíveis
@@ -2463,7 +2501,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#ciclo-de-vida-status-possiveis" class="md-nav__link">
+  <a href="#ciclo-de-vida-status" class="md-nav__link">
     <span class="md-ellipsis">
       
         Ciclo de vida — status possíveis
@@ -2831,7 +2869,7 @@
 <p>O total do pedido é calculado a partir de <code>unity_price</code> + soma dos <code>option_price</code> de todas as opções selecionadas, multiplicado pela quantidade. O campo <code>subtotal</code> foi removido na V2.</p>
 </div>
 <hr />
-<h2 id="ciclo-de-vida-status-possiveis">Ciclo de vida — status possíveis<a class="headerlink" href="#ciclo-de-vida-status-possiveis" title="Permanent link">&para;</a></h2>
+<h2 id="ciclo-de-vida-status">Ciclo de vida — status possíveis<a class="headerlink" href="#ciclo-de-vida-status" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>stateDiagram-v2
     direction LR
     [*] --&gt; CREATED : pedido criado
@@ -2957,8 +2995,16 @@
 <p>O payload de cancelamento DEVE incluir o motivo (<code>reason</code>) e o código de cancelamento (<code>cancellationCode</code>). Ambas as partes (OA e Software Service) podem iniciar o cancelamento.</p>
 <hr />
 <h2 id="matrizes-de-eventos-por-perfil">Matrizes de eventos por perfil<a class="headerlink" href="#matrizes-de-eventos-por-perfil" title="Permanent link">&para;</a></h2>
-<p>As matrizes abaixo definem quais eventos são obrigatórios (<code>MUST</code>), opcionais (<code>MAY</code>) ou proibidos (<code>MUST NOT</code>) para cada perfil de pedido.</p>
+<p>As matrizes abaixo definem quais eventos são obrigatórios, opcionais ou proibidos para cada perfil de pedido. <strong>Status</strong> é a verdade consultável no GET; <strong>eventos</strong> são notificações (podem ser informativos sem mudar status).</p>
+<div class="od-matrix__legend">
+  <span><span class="od-badge od-badge--must">MUST</span> obrigatório</span>
+  <span><span class="od-badge od-badge--may">MAY</span> opcional</span>
+  <span><span class="od-badge od-badge--mustnot">MUST NOT</span> proibido — rejeitar com 422</span>
+</div>
+
 <h3 id="perfil-delivery">Perfil DELIVERY<a class="headerlink" href="#perfil-delivery" title="Permanent link">&para;</a></h3>
+<div class="od-matrix">
+<div class="od-matrix__scroll">
 <table>
 <thead>
 <tr>
@@ -2966,7 +3012,7 @@
 <th>Origem</th>
 <th>Endpoint</th>
 <th>Obrigatoriedade</th>
-<th>Status resultante</th>
+<th>Status</th>
 <th>Observações</th>
 </tr>
 </thead>
@@ -2975,7 +3021,7 @@
 <td><code>CREATED</code></td>
 <td>ORIGINATOR</td>
 <td>—</td>
-<td>MUST</td>
+<td><span class="od-badge od-badge--must">MUST</span></td>
 <td><code>CREATED</code></td>
 <td>Pedido criado pelo cliente</td>
 </tr>
@@ -2983,7 +3029,7 @@
 <td><code>CONFIRMED</code></td>
 <td>POS</td>
 <td><code>/confirm</code></td>
-<td>MUST</td>
+<td><span class="od-badge od-badge--must">MUST</span></td>
 <td><code>CONFIRMED</code></td>
 <td>Estabelecimento aceita</td>
 </tr>
@@ -2991,7 +3037,7 @@
 <td><code>PREPARATION_REQUESTED</code></td>
 <td>ORIGINATOR</td>
 <td>—</td>
-<td>MAY</td>
+<td><span class="od-badge od-badge--may">MAY</span></td>
 <td>(inalterado)</td>
 <td>Autoriza início do preparo</td>
 </tr>
@@ -2999,7 +3045,7 @@
 <td><code>PREPARING</code></td>
 <td>POS</td>
 <td><code>/preparing</code></td>
-<td>MAY</td>
+<td><span class="od-badge od-badge--may">MAY</span></td>
 <td><code>PREPARING</code></td>
 <td>Preparo iniciado</td>
 </tr>
@@ -3007,7 +3053,7 @@
 <td><code>READY_FOR_PICKUP</code></td>
 <td>POS</td>
 <td><code>/ready-for-pickup</code></td>
-<td>MAY</td>
+<td><span class="od-badge od-badge--may">MAY</span></td>
 <td><code>READY</code></td>
 <td>Pedido pronto</td>
 </tr>
@@ -3015,7 +3061,7 @@
 <td><code>PICKUP_ONGOING</code></td>
 <td>ORIGINATOR</td>
 <td>—</td>
-<td>MAY</td>
+<td><span class="od-badge od-badge--may">MAY</span></td>
 <td><code>READY</code></td>
 <td>Entregador designado</td>
 </tr>
@@ -3023,15 +3069,15 @@
 <td><code>RIDER_ARRIVED_AT_STORE</code></td>
 <td>ORIGINATOR</td>
 <td>—</td>
-<td>MAY</td>
+<td><span class="od-badge od-badge--may">MAY</span></td>
 <td><code>READY</code></td>
-<td>Entregador chegou ao local</td>
+<td>Entregador no local</td>
 </tr>
 <tr>
 <td><code>DISPATCHED</code></td>
 <td>POS</td>
 <td><code>/dispatch</code></td>
-<td>MAY</td>
+<td><span class="od-badge od-badge--may">MAY</span></td>
 <td><code>IN_DELIVERY</code></td>
 <td>Pedido saiu</td>
 </tr>
@@ -3039,15 +3085,15 @@
 <td><code>ORDER_COLLECTED</code></td>
 <td>ORIGINATOR</td>
 <td>—</td>
-<td>MAY</td>
+<td><span class="od-badge od-badge--may">MAY</span></td>
 <td><code>IN_DELIVERY</code></td>
-<td>Pedido saiu da custódia do POS</td>
+<td>Saiu da custódia do POS</td>
 </tr>
 <tr>
 <td><code>DELIVERY_ONGOING</code></td>
 <td>ORIGINATOR</td>
 <td>—</td>
-<td>MAY</td>
+<td><span class="od-badge od-badge--may">MAY</span></td>
 <td><code>IN_DELIVERY</code></td>
 <td>Em trânsito</td>
 </tr>
@@ -3055,7 +3101,7 @@
 <td><code>ARRIVED_AT_CUSTOMER</code></td>
 <td>ORIGINATOR</td>
 <td>—</td>
-<td>MAY</td>
+<td><span class="od-badge od-badge--may">MAY</span></td>
 <td><code>IN_DELIVERY</code></td>
 <td>Chegou ao endereço</td>
 </tr>
@@ -3063,7 +3109,7 @@
 <td><code>DELIVERED</code></td>
 <td>POS ou ORIGINATOR</td>
 <td><code>/delivered</code></td>
-<td>MUST</td>
+<td><span class="od-badge od-badge--must">MUST</span></td>
 <td><code>DELIVERED</code></td>
 <td>Cliente recebeu</td>
 </tr>
@@ -3071,7 +3117,7 @@
 <td><code>CANCELLED</code></td>
 <td>ORIGINATOR</td>
 <td><code>/cancel</code></td>
-<td>MUST</td>
+<td><span class="od-badge od-badge--must">MUST</span></td>
 <td><code>CANCELLED</code></td>
 <td>Cancelamento final</td>
 </tr>
@@ -3079,13 +3125,17 @@
 <td><code>CONCLUDED</code></td>
 <td>ORIGINATOR</td>
 <td><code>/conclude</code></td>
-<td>MUST</td>
+<td><span class="od-badge od-badge--must">MUST</span></td>
 <td><code>CONCLUDED</code></td>
 <td>Encerramento</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 <h3 id="perfil-takeout">Perfil TAKEOUT<a class="headerlink" href="#perfil-takeout" title="Permanent link">&para;</a></h3>
+<div class="od-matrix">
+<div class="od-matrix__scroll">
 <table>
 <thead>
 <tr>
@@ -3093,7 +3143,7 @@
 <th>Origem</th>
 <th>Endpoint</th>
 <th>Obrigatoriedade</th>
-<th>Status resultante</th>
+<th>Status</th>
 <th>Observações</th>
 </tr>
 </thead>
@@ -3102,7 +3152,7 @@
 <td><code>CREATED</code></td>
 <td>ORIGINATOR</td>
 <td>—</td>
-<td>MUST</td>
+<td><span class="od-badge od-badge--must">MUST</span></td>
 <td><code>CREATED</code></td>
 <td>Pedido criado</td>
 </tr>
@@ -3110,7 +3160,7 @@
 <td><code>CONFIRMED</code></td>
 <td>POS</td>
 <td><code>/confirm</code></td>
-<td>MUST</td>
+<td><span class="od-badge od-badge--must">MUST</span></td>
 <td><code>CONFIRMED</code></td>
 <td>Estabelecimento aceita</td>
 </tr>
@@ -3118,7 +3168,7 @@
 <td><code>PREPARATION_REQUESTED</code></td>
 <td>ORIGINATOR</td>
 <td>—</td>
-<td>MAY</td>
+<td><span class="od-badge od-badge--may">MAY</span></td>
 <td>(inalterado)</td>
 <td>Autoriza preparo</td>
 </tr>
@@ -3126,7 +3176,7 @@
 <td><code>PREPARING</code></td>
 <td>POS</td>
 <td><code>/preparing</code></td>
-<td>MAY</td>
+<td><span class="od-badge od-badge--may">MAY</span></td>
 <td><code>PREPARING</code></td>
 <td>Opcional</td>
 </tr>
@@ -3134,63 +3184,63 @@
 <td><code>READY_FOR_PICKUP</code></td>
 <td>POS</td>
 <td><code>/ready-for-pickup</code></td>
-<td>MUST</td>
+<td><span class="od-badge od-badge--must">MUST</span></td>
 <td><code>READY</code></td>
-<td>Aguardando retirada no balcão</td>
+<td>Aguardando retirada</td>
 </tr>
 <tr>
 <td><code>PICKUP_ONGOING</code></td>
 <td>—</td>
 <td>—</td>
-<td>MUST NOT</td>
+<td><span class="od-badge od-badge--mustnot">MUST NOT</span></td>
 <td>—</td>
-<td>Não existe entregador neste perfil</td>
+<td>Sem entregador</td>
 </tr>
 <tr>
 <td><code>RIDER_ARRIVED_AT_STORE</code></td>
 <td>—</td>
 <td>—</td>
-<td>MUST NOT</td>
+<td><span class="od-badge od-badge--mustnot">MUST NOT</span></td>
 <td>—</td>
-<td>Não existe entregador neste perfil</td>
+<td>Sem entregador</td>
 </tr>
 <tr>
 <td><code>ORDER_COLLECTED</code></td>
 <td>—</td>
 <td>—</td>
-<td>MUST NOT</td>
+<td><span class="od-badge od-badge--mustnot">MUST NOT</span></td>
 <td>—</td>
-<td>Não existe coleta logística</td>
+<td>Sem coleta logística</td>
 </tr>
 <tr>
 <td><code>DELIVERED</code></td>
 <td>POS</td>
 <td><code>/delivered</code></td>
-<td>MUST</td>
+<td><span class="od-badge od-badge--must">MUST</span></td>
 <td><code>DELIVERED</code></td>
-<td>Cliente retirou no balcão</td>
+<td>Cliente retirou</td>
 </tr>
 <tr>
 <td><code>DELIVERY_ONGOING</code></td>
 <td>—</td>
 <td>—</td>
-<td>MUST NOT</td>
+<td><span class="od-badge od-badge--mustnot">MUST NOT</span></td>
 <td>—</td>
-<td>Não existe etapa de entrega</td>
+<td>Sem etapa de entrega</td>
 </tr>
 <tr>
 <td><code>ARRIVED_AT_CUSTOMER</code></td>
 <td>—</td>
 <td>—</td>
-<td>MUST NOT</td>
+<td><span class="od-badge od-badge--mustnot">MUST NOT</span></td>
 <td>—</td>
-<td>Não existe etapa de entrega</td>
+<td>Sem etapa de entrega</td>
 </tr>
 <tr>
 <td><code>CANCELLED</code></td>
 <td>ORIGINATOR</td>
 <td><code>/cancel</code></td>
-<td>MUST</td>
+<td><span class="od-badge od-badge--must">MUST</span></td>
 <td><code>CANCELLED</code></td>
 <td>Cancelamento</td>
 </tr>
@@ -3198,13 +3248,17 @@
 <td><code>CONCLUDED</code></td>
 <td>ORIGINATOR</td>
 <td><code>/conclude</code></td>
-<td>MUST</td>
+<td><span class="od-badge od-badge--must">MUST</span></td>
 <td><code>CONCLUDED</code></td>
 <td>Encerramento</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 <h3 id="perfil-indoor">Perfil INDOOR<a class="headerlink" href="#perfil-indoor" title="Permanent link">&para;</a></h3>
+<div class="od-matrix">
+<div class="od-matrix__scroll">
 <table>
 <thead>
 <tr>
@@ -3212,7 +3266,7 @@
 <th>Origem</th>
 <th>Endpoint</th>
 <th>Obrigatoriedade</th>
-<th>Status resultante</th>
+<th>Status</th>
 <th>Observações</th>
 </tr>
 </thead>
@@ -3221,15 +3275,15 @@
 <td><code>CREATED</code></td>
 <td>ORIGINATOR</td>
 <td>—</td>
-<td>MUST</td>
+<td><span class="od-badge od-badge--must">MUST</span></td>
 <td><code>CREATED</code></td>
-<td>Pedido criado (ex.: via totem ou garçom)</td>
+<td>Totem, garçom, QR</td>
 </tr>
 <tr>
 <td><code>CONFIRMED</code></td>
 <td>POS</td>
 <td><code>/confirm</code></td>
-<td>MUST</td>
+<td><span class="od-badge od-badge--must">MUST</span></td>
 <td><code>CONFIRMED</code></td>
 <td>Estabelecimento aceita</td>
 </tr>
@@ -3237,7 +3291,7 @@
 <td><code>PREPARATION_REQUESTED</code></td>
 <td>ORIGINATOR</td>
 <td>—</td>
-<td>MAY</td>
+<td><span class="od-badge od-badge--may">MAY</span></td>
 <td>(inalterado)</td>
 <td>Fluxo sob demanda</td>
 </tr>
@@ -3245,7 +3299,7 @@
 <td><code>PREPARING</code></td>
 <td>POS</td>
 <td><code>/preparing</code></td>
-<td>MAY</td>
+<td><span class="od-badge od-badge--may">MAY</span></td>
 <td><code>PREPARING</code></td>
 <td>Opcional</td>
 </tr>
@@ -3253,7 +3307,7 @@
 <td><code>READY_FOR_PICKUP</code></td>
 <td>POS</td>
 <td><code>/ready-for-pickup</code></td>
-<td>MAY</td>
+<td><span class="od-badge od-badge--may">MAY</span></td>
 <td><code>READY</code></td>
 <td>Pronto para servir</td>
 </tr>
@@ -3261,55 +3315,55 @@
 <td><code>PICKUP_ONGOING</code></td>
 <td>—</td>
 <td>—</td>
-<td>MUST NOT</td>
+<td><span class="od-badge od-badge--mustnot">MUST NOT</span></td>
 <td>—</td>
-<td>Não existe logística externa</td>
+<td>Sem logística externa</td>
 </tr>
 <tr>
 <td><code>RIDER_ARRIVED_AT_STORE</code></td>
 <td>—</td>
 <td>—</td>
-<td>MUST NOT</td>
+<td><span class="od-badge od-badge--mustnot">MUST NOT</span></td>
 <td>—</td>
-<td>Não existe logística externa</td>
+<td>Sem logística externa</td>
 </tr>
 <tr>
 <td><code>ORDER_COLLECTED</code></td>
 <td>—</td>
 <td>—</td>
-<td>MUST NOT</td>
+<td><span class="od-badge od-badge--mustnot">MUST NOT</span></td>
 <td>—</td>
-<td>Não existe coleta</td>
+<td>Sem coleta</td>
 </tr>
 <tr>
 <td><code>DELIVERED</code></td>
 <td>POS</td>
 <td><code>/delivered</code></td>
-<td>MAY</td>
+<td><span class="od-badge od-badge--may">MAY</span></td>
 <td><code>DELIVERED</code></td>
-<td>Pedido servido na mesa</td>
+<td>Servido na mesa</td>
 </tr>
 <tr>
 <td><code>DELIVERY_ONGOING</code></td>
 <td>—</td>
 <td>—</td>
-<td>MUST NOT</td>
+<td><span class="od-badge od-badge--mustnot">MUST NOT</span></td>
 <td>—</td>
-<td>Não existe etapa de entrega</td>
+<td>Sem etapa de entrega</td>
 </tr>
 <tr>
 <td><code>ARRIVED_AT_CUSTOMER</code></td>
 <td>—</td>
 <td>—</td>
-<td>MUST NOT</td>
+<td><span class="od-badge od-badge--mustnot">MUST NOT</span></td>
 <td>—</td>
-<td>Não existe etapa de entrega</td>
+<td>Sem etapa de entrega</td>
 </tr>
 <tr>
 <td><code>CANCELLED</code></td>
 <td>ORIGINATOR</td>
 <td><code>/cancel</code></td>
-<td>MUST</td>
+<td><span class="od-badge od-badge--must">MUST</span></td>
 <td><code>CANCELLED</code></td>
 <td>Cancelamento</td>
 </tr>
@@ -3317,13 +3371,18 @@
 <td><code>CONCLUDED</code></td>
 <td>ORIGINATOR</td>
 <td><code>/conclude</code></td>
-<td>MUST</td>
+<td><span class="od-badge od-badge--must">MUST</span></td>
 <td><code>CONCLUDED</code></td>
 <td>Encerramento lógico</td>
 </tr>
 </tbody>
 </table>
-<p>Linhas marcadas como <code>MUST NOT</code> indicam eventos ou operações proibidos para aquele perfil. Implementações que receberem esses eventos DEVEM rejeitá-los com <code>422 Unprocessable Entity</code>.</p>
+</div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">MUST NOT e manifesto</p>
+<p>Eventos <code>MUST NOT</code> para o perfil <strong>DEVEM</strong> ser rejeitados com <code>422 Unprocessable Entity</code>. Obrigatoriedade fina de eventos intermediários também pode ser refinada no <a href="../discovery/">Discovery</a> (must / may / must not por implementação).</p>
+</div>
 <hr />
 <h2 id="discovery">Discovery<a class="headerlink" href="#discovery" title="Permanent link">&para;</a></h2>
 <p>Implementações que expõem a capability Orders DEVEM declarar <code>orders</code> no documento well-known.</p>
@@ -3513,26 +3572,27 @@
   </defs>
 </svg><script>
 (function () {
-
   /* Move as tabs para dentro da linha do header */
   (function () {
     var tabs     = document.querySelector('.md-tabs');
     var tabsList = tabs && tabs.querySelector('.md-tabs__list');
     var inner    = document.querySelector('.md-header__inner');
     var title    = inner && inner.querySelector('.md-header__title');
-    var source   = inner && inner.querySelector('.md-header__source');
     if (!tabsList || !inner) return;
 
     var nav = document.createElement('nav');
     nav.className = 'od-header-nav';
+    nav.setAttribute('aria-label', 'Seções da documentação');
     nav.appendChild(tabsList);
 
-    // Posiciona: logo - menu - search - git
-    // Insere o menu depois do logo (title)
-    var insertBefore = title ? title.nextElementSibling : firstButton;
-    inner.insertBefore(nav, insertBefore);
-    if (title)  title.remove();
-    if (tabs)   tabs.remove();
+    var insertBefore = title ? title.nextElementSibling : inner.firstElementChild;
+    if (insertBefore) {
+      inner.insertBefore(nav, insertBefore);
+    } else {
+      inner.appendChild(nav);
+    }
+    if (title) title.remove();
+    if (tabs)  tabs.remove();
   })();
 
   var NAV = [
@@ -3546,6 +3606,10 @@
     },{
       title: "Primeiros Passos",
       url: "https://abrasel-nacional.github.io/opendelivery-v2/guide/getting-started/",
+      active: false
+    },{
+      title: "Trilhas por papel",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/guide/by-role/",
       active: false
     },{
       title: "Conceitos",
@@ -3719,91 +3783,208 @@
     
   ];
 
-  var portal = document.createElement("ul");
-  portal.className = "od-dropdown";
+  var portal = document.createElement('ul');
+  portal.className = 'od-dropdown';
+  portal.setAttribute('role', 'menu');
+  portal.setAttribute('aria-label', 'Submenu');
+  portal.id = 'od-header-dropdown';
   document.body.appendChild(portal);
 
   var hideTimer = null;
   var hideEndTimer = null;
   var currentTab = null;
+  var currentLink = null;
+  var openMode = null; /* 'hover' | 'keyboard' | 'click' */
+
+  function menuLinks() {
+    return Array.prototype.slice.call(portal.querySelectorAll('a[href]'));
+  }
 
   function appendItems(children, nested) {
     children.forEach(function (child) {
       if (child.children) {
-        var label = document.createElement("li");
-        label.className = "od-group-label";
+        var label = document.createElement('li');
+        label.className = 'od-group-label';
+        label.setAttribute('role', 'presentation');
         label.textContent = child.title;
         portal.appendChild(label);
         appendItems(child.children, true);
         return;
       }
       if (!child.url) return;
-      var li = document.createElement("li");
-      var a  = document.createElement("a");
+      var li = document.createElement('li');
+      li.setAttribute('role', 'none');
+      var a = document.createElement('a');
       a.href = child.url;
       a.textContent = child.title;
-      if (nested) a.classList.add("od-nested");
-      if (child.active) a.classList.add("od-active");
+      a.setAttribute('role', 'menuitem');
+      a.tabIndex = -1;
+      if (nested) a.classList.add('od-nested');
+      if (child.active) a.classList.add('od-active');
       li.appendChild(a);
       portal.appendChild(li);
     });
   }
 
   function fillPortal(children) {
-    portal.innerHTML = "";
+    portal.innerHTML = '';
     appendItems(children, false);
   }
 
-  function showPortal(tab, children) {
-    clearTimeout(hideTimer);
-    clearTimeout(hideEndTimer);
-    if (currentTab && currentTab !== tab) currentTab.classList.remove('od-tab-open');
-    currentTab = tab;
-    tab.classList.add('od-tab-open');
-    fillPortal(children);
-    var r   = tab.getBoundingClientRect();
+  function setExpanded(link, expanded) {
+    if (link) link.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+  }
+
+  function positionPortal(tab) {
+    var r = tab.getBoundingClientRect();
     var hdr = document.querySelector('.md-header');
     var top = hdr ? hdr.getBoundingClientRect().bottom : r.bottom;
-    portal.style.left = r.left + "px";
-    portal.style.top  = top + "px";
-    portal.style.display = "block";
+    var left = r.left;
+    portal.style.display = 'block';
+    /* evita cortar à direita em telas estreitas desktop */
     requestAnimationFrame(function () {
-      portal.classList.add("od-dropdown--visible");
+      var w = portal.offsetWidth || 240;
+      var maxLeft = Math.max(8, window.innerWidth - w - 8);
+      portal.style.left = Math.min(left, maxLeft) + 'px';
+      portal.style.top = top + 'px';
     });
   }
 
-  function scheduleHide() {
-    hideTimer = setTimeout(function () {
-      portal.classList.remove("od-dropdown--visible");
-      hideEndTimer = setTimeout(function () {
-        portal.style.display = "none";
-        if (currentTab) {
-          currentTab.classList.remove('od-tab-open');
-          currentTab = null;
-        }
-      }, 160);
-    }, 80);
+  function showPortal(tab, children, mode, focusFirst) {
+    clearTimeout(hideTimer);
+    clearTimeout(hideEndTimer);
+    if (currentTab && currentTab !== tab) {
+      currentTab.classList.remove('od-tab-open');
+      setExpanded(currentLink, false);
+    }
+    currentTab = tab;
+    currentLink = tab.querySelector('.md-tabs__link');
+    openMode = mode || 'hover';
+    tab.classList.add('od-tab-open');
+    setExpanded(currentLink, true);
+    fillPortal(children);
+    positionPortal(tab);
+    requestAnimationFrame(function () {
+      portal.classList.add('od-dropdown--visible');
+      if (focusFirst) {
+        var first = menuLinks()[0];
+        if (first) first.focus();
+      }
+    });
   }
 
-  portal.addEventListener("mouseenter", function () {
+  function hidePortal(immediate) {
+    clearTimeout(hideTimer);
+    clearTimeout(hideEndTimer);
+    var run = function () {
+      portal.classList.remove('od-dropdown--visible');
+      hideEndTimer = setTimeout(function () {
+        portal.style.display = 'none';
+        if (currentTab) {
+          currentTab.classList.remove('od-tab-open');
+          setExpanded(currentLink, false);
+          currentTab = null;
+          currentLink = null;
+          openMode = null;
+        }
+      }, immediate ? 0 : 160);
+    };
+    if (immediate) run();
+    else hideTimer = setTimeout(run, 80);
+  }
+
+  function scheduleHide() {
+    /* não fecha no hover-out se abriu por teclado/click até blur externo */
+    if (openMode === 'keyboard' || openMode === 'click') return;
+    hidePortal(false);
+  }
+
+  portal.addEventListener('mouseenter', function () {
     clearTimeout(hideTimer);
     clearTimeout(hideEndTimer);
   });
-  portal.addEventListener("mouseleave", scheduleHide);
+  portal.addEventListener('mouseleave', scheduleHide);
 
-  document.querySelectorAll(".md-tabs__item").forEach(function (tab, i) {
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && currentTab) {
+      var link = currentLink;
+      hidePortal(true);
+      if (link) link.focus();
+      e.preventDefault();
+    }
+  });
+
+  document.addEventListener('click', function (e) {
+    if (!currentTab) return;
+    if (currentTab.contains(e.target) || portal.contains(e.target)) return;
+    hidePortal(true);
+  });
+
+  document.querySelectorAll('.md-tabs__item').forEach(function (tab, i) {
     var section = NAV[i];
     if (!section || !section.children || section.children.length === 0) return;
-    tab.classList.add("od-tab-has-dropdown");
+
+    tab.classList.add('od-tab-has-dropdown');
     var link = tab.querySelector('.md-tabs__link');
-    if (link && !link.querySelector('.od-chevron')) {
+    if (!link) return;
+
+    link.setAttribute('aria-haspopup', 'menu');
+    link.setAttribute('aria-expanded', 'false');
+    link.setAttribute('aria-controls', 'od-header-dropdown');
+
+    if (!link.querySelector('.od-chevron')) {
       var chevron = document.createElement('span');
       chevron.className = 'od-chevron';
       chevron.setAttribute('aria-hidden', 'true');
       link.appendChild(chevron);
     }
-    tab.addEventListener("mouseenter", function () { showPortal(tab, section.children); });
-    tab.addEventListener("mouseleave", scheduleHide);
+
+    tab.addEventListener('mouseenter', function () {
+      showPortal(tab, section.children, 'hover', false);
+    });
+    tab.addEventListener('mouseleave', scheduleHide);
+
+    link.addEventListener('click', function (e) {
+      /* toggle por click (touch / preferência) */
+      if (currentTab === tab && portal.classList.contains('od-dropdown--visible')) {
+        hidePortal(true);
+        e.preventDefault();
+        return;
+      }
+      showPortal(tab, section.children, 'click', false);
+      e.preventDefault();
+    });
+
+    link.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        showPortal(tab, section.children, 'keyboard', true);
+      } else if (e.key === 'Escape') {
+        hidePortal(true);
+      }
+    });
+  });
+
+  portal.addEventListener('keydown', function (e) {
+    var links = menuLinks();
+    if (!links.length) return;
+    var idx = links.indexOf(document.activeElement);
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      links[(idx + 1) % links.length].focus();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      links[(idx - 1 + links.length) % links.length].focus();
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      links[0].focus();
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      links[links.length - 1].focus();
+    } else if (e.key === 'Tab') {
+      hidePortal(true);
+    }
   });
 })();
 </script>

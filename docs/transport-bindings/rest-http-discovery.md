@@ -1,5 +1,10 @@
 # Discovery Endpoint
 
+<div class="od-api-callout">
+  <p>Binding REST Discovery. Continue a jornada ou abra o contrato técnico.</p>
+  <a href="../reference/discovery/">OpenAPI Discovery →</a>
+</div>
+
 Normative source: [Discovery and Well-Known](../protocol/discovery.md).
 
 This page defines the REST/HTTP transport contract for the ODP discovery endpoint.

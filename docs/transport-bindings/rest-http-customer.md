@@ -1,5 +1,10 @@
 # Customer Endpoints
 
+<div class="od-api-callout">
+  <p>Binding REST Customer. Continue a jornada ou abra o contrato técnico.</p>
+  <a href="../reference/customer/">OpenAPI Customer →</a>
+</div>
+
 Normative source: [Customer Capability](../protocol/customer.md).
 
 This page defines the REST/HTTP transport contract for Customer Capability operations.

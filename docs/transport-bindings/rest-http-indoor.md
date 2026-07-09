@@ -1,5 +1,10 @@
 # Indoor Endpoints (REST/HTTP Binding)
 
+<div class="od-api-callout">
+  <p>Binding REST Indoor. Continue a jornada ou abra o contrato técnico.</p>
+  <a href="../reference/indoor/">OpenAPI Indoor →</a>
+</div>
+
 > Protocol specification: [Indoor Extension](../protocol/indoor.md)
 > This document defines the REST/HTTP transport contract for Indoor operations. It does not redefine protocol semantics.
 

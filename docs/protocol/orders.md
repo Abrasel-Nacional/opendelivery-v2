@@ -78,7 +78,7 @@ Conceitos fundamentais:
 
 ---
 
-## Ciclo de vida — status possíveis
+## Ciclo de vida — status possíveis {#ciclo-de-vida-status}
 
 ```mermaid
 stateDiagram-v2
@@ -141,66 +141,94 @@ O payload de cancelamento DEVE incluir o motivo (`reason`) e o código de cancel
 
 ---
 
-## Matrizes de eventos por perfil
+## Matrizes de eventos por perfil {#matrizes-de-eventos-por-perfil}
 
-As matrizes abaixo definem quais eventos são obrigatórios (`MUST`), opcionais (`MAY`) ou proibidos (`MUST NOT`) para cada perfil de pedido.
+As matrizes abaixo definem quais eventos são obrigatórios, opcionais ou proibidos para cada perfil de pedido. **Status** é a verdade consultável no GET; **eventos** são notificações (podem ser informativos sem mudar status).
 
-### Perfil DELIVERY
+<div class="od-matrix__legend">
+  <span><span class="od-badge od-badge--must">MUST</span> obrigatório</span>
+  <span><span class="od-badge od-badge--may">MAY</span> opcional</span>
+  <span><span class="od-badge od-badge--mustnot">MUST NOT</span> proibido — rejeitar com 422</span>
+</div>
 
-| Evento | Origem | Endpoint | Obrigatoriedade | Status resultante | Observações |
+### Perfil DELIVERY {#perfil-delivery}
+
+<div class="od-matrix" markdown>
+
+<div class="od-matrix__scroll" markdown>
+
+| Evento | Origem | Endpoint | Obrigatoriedade | Status | Observações |
 |---|---|---|---|---|---|
-| `CREATED` | ORIGINATOR | — | MUST | `CREATED` | Pedido criado pelo cliente |
-| `CONFIRMED` | POS | `/confirm` | MUST | `CONFIRMED` | Estabelecimento aceita |
-| `PREPARATION_REQUESTED` | ORIGINATOR | — | MAY | (inalterado) | Autoriza início do preparo |
-| `PREPARING` | POS | `/preparing` | MAY | `PREPARING` | Preparo iniciado |
-| `READY_FOR_PICKUP` | POS | `/ready-for-pickup` | MAY | `READY` | Pedido pronto |
-| `PICKUP_ONGOING` | ORIGINATOR | — | MAY | `READY` | Entregador designado |
-| `RIDER_ARRIVED_AT_STORE` | ORIGINATOR | — | MAY | `READY` | Entregador chegou ao local |
-| `DISPATCHED` | POS | `/dispatch` | MAY | `IN_DELIVERY` | Pedido saiu |
-| `ORDER_COLLECTED` | ORIGINATOR | — | MAY | `IN_DELIVERY` | Pedido saiu da custódia do POS |
-| `DELIVERY_ONGOING` | ORIGINATOR | — | MAY | `IN_DELIVERY` | Em trânsito |
-| `ARRIVED_AT_CUSTOMER` | ORIGINATOR | — | MAY | `IN_DELIVERY` | Chegou ao endereço |
-| `DELIVERED` | POS ou ORIGINATOR | `/delivered` | MUST | `DELIVERED` | Cliente recebeu |
-| `CANCELLED` | ORIGINATOR | `/cancel` | MUST | `CANCELLED` | Cancelamento final |
-| `CONCLUDED` | ORIGINATOR | `/conclude` | MUST | `CONCLUDED` | Encerramento |
+| `CREATED` | ORIGINATOR | — | <span class="od-badge od-badge--must">MUST</span> | `CREATED` | Pedido criado pelo cliente |
+| `CONFIRMED` | POS | `/confirm` | <span class="od-badge od-badge--must">MUST</span> | `CONFIRMED` | Estabelecimento aceita |
+| `PREPARATION_REQUESTED` | ORIGINATOR | — | <span class="od-badge od-badge--may">MAY</span> | (inalterado) | Autoriza início do preparo |
+| `PREPARING` | POS | `/preparing` | <span class="od-badge od-badge--may">MAY</span> | `PREPARING` | Preparo iniciado |
+| `READY_FOR_PICKUP` | POS | `/ready-for-pickup` | <span class="od-badge od-badge--may">MAY</span> | `READY` | Pedido pronto |
+| `PICKUP_ONGOING` | ORIGINATOR | — | <span class="od-badge od-badge--may">MAY</span> | `READY` | Entregador designado |
+| `RIDER_ARRIVED_AT_STORE` | ORIGINATOR | — | <span class="od-badge od-badge--may">MAY</span> | `READY` | Entregador no local |
+| `DISPATCHED` | POS | `/dispatch` | <span class="od-badge od-badge--may">MAY</span> | `IN_DELIVERY` | Pedido saiu |
+| `ORDER_COLLECTED` | ORIGINATOR | — | <span class="od-badge od-badge--may">MAY</span> | `IN_DELIVERY` | Saiu da custódia do POS |
+| `DELIVERY_ONGOING` | ORIGINATOR | — | <span class="od-badge od-badge--may">MAY</span> | `IN_DELIVERY` | Em trânsito |
+| `ARRIVED_AT_CUSTOMER` | ORIGINATOR | — | <span class="od-badge od-badge--may">MAY</span> | `IN_DELIVERY` | Chegou ao endereço |
+| `DELIVERED` | POS ou ORIGINATOR | `/delivered` | <span class="od-badge od-badge--must">MUST</span> | `DELIVERED` | Cliente recebeu |
+| `CANCELLED` | ORIGINATOR | `/cancel` | <span class="od-badge od-badge--must">MUST</span> | `CANCELLED` | Cancelamento final |
+| `CONCLUDED` | ORIGINATOR | `/conclude` | <span class="od-badge od-badge--must">MUST</span> | `CONCLUDED` | Encerramento |
 
-### Perfil TAKEOUT
+</div>
+</div>
 
-| Evento | Origem | Endpoint | Obrigatoriedade | Status resultante | Observações |
+### Perfil TAKEOUT {#perfil-takeout}
+
+<div class="od-matrix" markdown>
+
+<div class="od-matrix__scroll" markdown>
+
+| Evento | Origem | Endpoint | Obrigatoriedade | Status | Observações |
 |---|---|---|---|---|---|
-| `CREATED` | ORIGINATOR | — | MUST | `CREATED` | Pedido criado |
-| `CONFIRMED` | POS | `/confirm` | MUST | `CONFIRMED` | Estabelecimento aceita |
-| `PREPARATION_REQUESTED` | ORIGINATOR | — | MAY | (inalterado) | Autoriza preparo |
-| `PREPARING` | POS | `/preparing` | MAY | `PREPARING` | Opcional |
-| `READY_FOR_PICKUP` | POS | `/ready-for-pickup` | MUST | `READY` | Aguardando retirada no balcão |
-| `PICKUP_ONGOING` | — | — | MUST NOT | — | Não existe entregador neste perfil |
-| `RIDER_ARRIVED_AT_STORE` | — | — | MUST NOT | — | Não existe entregador neste perfil |
-| `ORDER_COLLECTED` | — | — | MUST NOT | — | Não existe coleta logística |
-| `DELIVERED` | POS | `/delivered` | MUST | `DELIVERED` | Cliente retirou no balcão |
-| `DELIVERY_ONGOING` | — | — | MUST NOT | — | Não existe etapa de entrega |
-| `ARRIVED_AT_CUSTOMER` | — | — | MUST NOT | — | Não existe etapa de entrega |
-| `CANCELLED` | ORIGINATOR | `/cancel` | MUST | `CANCELLED` | Cancelamento |
-| `CONCLUDED` | ORIGINATOR | `/conclude` | MUST | `CONCLUDED` | Encerramento |
+| `CREATED` | ORIGINATOR | — | <span class="od-badge od-badge--must">MUST</span> | `CREATED` | Pedido criado |
+| `CONFIRMED` | POS | `/confirm` | <span class="od-badge od-badge--must">MUST</span> | `CONFIRMED` | Estabelecimento aceita |
+| `PREPARATION_REQUESTED` | ORIGINATOR | — | <span class="od-badge od-badge--may">MAY</span> | (inalterado) | Autoriza preparo |
+| `PREPARING` | POS | `/preparing` | <span class="od-badge od-badge--may">MAY</span> | `PREPARING` | Opcional |
+| `READY_FOR_PICKUP` | POS | `/ready-for-pickup` | <span class="od-badge od-badge--must">MUST</span> | `READY` | Aguardando retirada |
+| `PICKUP_ONGOING` | — | — | <span class="od-badge od-badge--mustnot">MUST NOT</span> | — | Sem entregador |
+| `RIDER_ARRIVED_AT_STORE` | — | — | <span class="od-badge od-badge--mustnot">MUST NOT</span> | — | Sem entregador |
+| `ORDER_COLLECTED` | — | — | <span class="od-badge od-badge--mustnot">MUST NOT</span> | — | Sem coleta logística |
+| `DELIVERED` | POS | `/delivered` | <span class="od-badge od-badge--must">MUST</span> | `DELIVERED` | Cliente retirou |
+| `DELIVERY_ONGOING` | — | — | <span class="od-badge od-badge--mustnot">MUST NOT</span> | — | Sem etapa de entrega |
+| `ARRIVED_AT_CUSTOMER` | — | — | <span class="od-badge od-badge--mustnot">MUST NOT</span> | — | Sem etapa de entrega |
+| `CANCELLED` | ORIGINATOR | `/cancel` | <span class="od-badge od-badge--must">MUST</span> | `CANCELLED` | Cancelamento |
+| `CONCLUDED` | ORIGINATOR | `/conclude` | <span class="od-badge od-badge--must">MUST</span> | `CONCLUDED` | Encerramento |
 
-### Perfil INDOOR
+</div>
+</div>
 
-| Evento | Origem | Endpoint | Obrigatoriedade | Status resultante | Observações |
+### Perfil INDOOR {#perfil-indoor}
+
+<div class="od-matrix" markdown>
+
+<div class="od-matrix__scroll" markdown>
+
+| Evento | Origem | Endpoint | Obrigatoriedade | Status | Observações |
 |---|---|---|---|---|---|
-| `CREATED` | ORIGINATOR | — | MUST | `CREATED` | Pedido criado (ex.: via totem ou garçom) |
-| `CONFIRMED` | POS | `/confirm` | MUST | `CONFIRMED` | Estabelecimento aceita |
-| `PREPARATION_REQUESTED` | ORIGINATOR | — | MAY | (inalterado) | Fluxo sob demanda |
-| `PREPARING` | POS | `/preparing` | MAY | `PREPARING` | Opcional |
-| `READY_FOR_PICKUP` | POS | `/ready-for-pickup` | MAY | `READY` | Pronto para servir |
-| `PICKUP_ONGOING` | — | — | MUST NOT | — | Não existe logística externa |
-| `RIDER_ARRIVED_AT_STORE` | — | — | MUST NOT | — | Não existe logística externa |
-| `ORDER_COLLECTED` | — | — | MUST NOT | — | Não existe coleta |
-| `DELIVERED` | POS | `/delivered` | MAY | `DELIVERED` | Pedido servido na mesa |
-| `DELIVERY_ONGOING` | — | — | MUST NOT | — | Não existe etapa de entrega |
-| `ARRIVED_AT_CUSTOMER` | — | — | MUST NOT | — | Não existe etapa de entrega |
-| `CANCELLED` | ORIGINATOR | `/cancel` | MUST | `CANCELLED` | Cancelamento |
-| `CONCLUDED` | ORIGINATOR | `/conclude` | MUST | `CONCLUDED` | Encerramento lógico |
+| `CREATED` | ORIGINATOR | — | <span class="od-badge od-badge--must">MUST</span> | `CREATED` | Totem, garçom, QR |
+| `CONFIRMED` | POS | `/confirm` | <span class="od-badge od-badge--must">MUST</span> | `CONFIRMED` | Estabelecimento aceita |
+| `PREPARATION_REQUESTED` | ORIGINATOR | — | <span class="od-badge od-badge--may">MAY</span> | (inalterado) | Fluxo sob demanda |
+| `PREPARING` | POS | `/preparing` | <span class="od-badge od-badge--may">MAY</span> | `PREPARING` | Opcional |
+| `READY_FOR_PICKUP` | POS | `/ready-for-pickup` | <span class="od-badge od-badge--may">MAY</span> | `READY` | Pronto para servir |
+| `PICKUP_ONGOING` | — | — | <span class="od-badge od-badge--mustnot">MUST NOT</span> | — | Sem logística externa |
+| `RIDER_ARRIVED_AT_STORE` | — | — | <span class="od-badge od-badge--mustnot">MUST NOT</span> | — | Sem logística externa |
+| `ORDER_COLLECTED` | — | — | <span class="od-badge od-badge--mustnot">MUST NOT</span> | — | Sem coleta |
+| `DELIVERED` | POS | `/delivered` | <span class="od-badge od-badge--may">MAY</span> | `DELIVERED` | Servido na mesa |
+| `DELIVERY_ONGOING` | — | — | <span class="od-badge od-badge--mustnot">MUST NOT</span> | — | Sem etapa de entrega |
+| `ARRIVED_AT_CUSTOMER` | — | — | <span class="od-badge od-badge--mustnot">MUST NOT</span> | — | Sem etapa de entrega |
+| `CANCELLED` | ORIGINATOR | `/cancel` | <span class="od-badge od-badge--must">MUST</span> | `CANCELLED` | Cancelamento |
+| `CONCLUDED` | ORIGINATOR | `/conclude` | <span class="od-badge od-badge--must">MUST</span> | `CONCLUDED` | Encerramento lógico |
 
-Linhas marcadas como `MUST NOT` indicam eventos ou operações proibidos para aquele perfil. Implementações que receberem esses eventos DEVEM rejeitá-los com `422 Unprocessable Entity`.
+</div>
+</div>
+
+!!! note "MUST NOT e manifesto"
+    Eventos `MUST NOT` para o perfil **DEVEM** ser rejeitados com `422 Unprocessable Entity`. Obrigatoriedade fina de eventos intermediários também pode ser refinada no [Discovery](discovery.md) (must / may / must not por implementação).
 
 ---
 

@@ -1,5 +1,10 @@
 # Changelog
 
+<div class="od-api-callout">
+  <p>Histórico de versões. Continue a jornada ou abra o contrato técnico.</p>
+  <a href="migration-v1-v2/">Guia de migração →</a>
+</div>
+
 Histórico de versões do Open Delivery Protocol.
 
 ---

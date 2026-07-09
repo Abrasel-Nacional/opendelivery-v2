@@ -1,5 +1,10 @@
 # Princípios de Design
 
+<div class="od-api-callout">
+  <p>Fundamentos do protocolo. Continue a jornada ou abra o contrato técnico.</p>
+  <a href="../guide/getting-started/">Primeiros Passos →</a>
+</div>
+
 Esta seção define os princípios fundamentais que orientam o design, a governança e a evolução do Open Delivery Protocol v2.
 
 Estes princípios são **normativos**.  

@@ -1,5 +1,10 @@
 # Orders Capability - REST Binding
 
+<div class="od-api-callout">
+  <p>Binding REST Orders. Continue a jornada ou abra o contrato técnico.</p>
+  <a href="../reference/orders/">OpenAPI Orders →</a>
+</div>
+
 This document specifies the REST/HTTP binding for [Orders Capability](../protocol/orders.md).
 It defines transport behavior and does not redefine capability semantics.
 

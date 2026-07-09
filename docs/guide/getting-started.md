@@ -4,6 +4,11 @@ O Open Delivery é um **protocolo aberto**, não um produto. Ele define como sis
 
 Este guia cobre o mínimo necessário para começar uma integração.
 
+<div class="od-api-callout">
+  <p>Prefere um caminho por tipo de produto? Use as trilhas por papel.</p>
+  <a href="by-role/">Abrir trilhas por papel →</a>
+</div>
+
 ---
 
 ## 1. Entenda seu papel no ecossistema
@@ -18,6 +23,8 @@ O protocolo define quatro papéis. Um sistema pode desempenhar mais de um.
 | **CRM** | Plataforma de fidelidade, dados de cliente | Consome dados de pedidos e clientes; gerencia programas de fidelidade |
 
 Antes de qualquer coisa, identifique qual papel — ou quais papéis — seu sistema desempenha. Isso define quais capabilities você precisa implementar.
+
+Guia detalhado: **[Trilhas por papel](by-role.md)**.
 
 ---
 

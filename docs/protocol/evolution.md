@@ -1,5 +1,10 @@
 # Evolução do Protocolo
 
+<div class="od-api-callout">
+  <p>Evolução e versionamento. Continue a jornada ou abra o contrato técnico.</p>
+  <a href="../guide/changelog/">Changelog →</a>
+</div>
+
 Esta seção descreve como o Open Delivery Protocol evolui ao longo do tempo e as regras que governam a introdução de mudanças.
 
 ## Ciclo de Vida de Versões

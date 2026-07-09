@@ -105,6 +105,43 @@ description: A linguagem de interoperabilidade do delivery de alimentos no Brasi
 
   <hr class="od-divider">
 
+  <!-- ── POR PAPEL ─────────────────────────────────────────────── -->
+  <div class="section-intro">
+    <h2>Quem é você no ecossistema?</h2>
+    <p>Trilhas de implementação por papel — o Open Delivery não exige todas as capabilities de uma vez.</p>
+  </div>
+
+  <div class="role-grid">
+    <a href="guide/by-role/#originador" class="role-card">
+      <span class="role-card__label">Originador</span>
+      <h3>App, marketplace, totem</h3>
+      <p>Cria pedidos, consome cardápio e acompanha o ciclo de vida.</p>
+      <span class="role-card__caps">Orders · Merchant · Discovery</span>
+    </a>
+    <a href="guide/by-role/#pdv" class="role-card">
+      <span class="role-card__label">PDV / Software</span>
+      <h3>Gestão do restaurante</h3>
+      <p>Confirma pedidos, publica catálogo e é autoridade da conta em salão.</p>
+      <span class="role-card__caps">Merchant · Orders · Indoor</span>
+    </a>
+    <a href="guide/by-role/#logistica" class="role-card">
+      <span class="role-card__label">Logística</span>
+      <h3>Entrega e tracking</h3>
+      <p>Cotação, despacho e eventos de entrega sem redefinir o status do pedido.</p>
+      <span class="role-card__caps">Logistics · Orders</span>
+    </a>
+    <a href="guide/by-role/#crm" class="role-card">
+      <span class="role-card__label">CRM</span>
+      <h3>Cliente, reviews, fidelidade</h3>
+      <p>Relacionamento e inteligência — sem alterar o fluxo operacional da cozinha.</p>
+      <span class="role-card__caps">Customer · Reviews · Loyalty</span>
+    </a>
+  </div>
+
+  <p class="role-grid-more"><a href="guide/by-role/">Ver trilhas completas por papel →</a></p>
+
+  <hr class="od-divider">
+
   <!-- ── CAPABILITIES ──────────────────────────────────────────── -->
   <div class="section-intro">
     <h2>Capabilities do protocolo</h2>

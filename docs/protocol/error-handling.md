@@ -1,5 +1,10 @@
 # Tratamento de Erros
 
+<div class="od-api-callout">
+  <p>Modelo de erros. Continue a jornada ou abra o contrato técnico.</p>
+  <a href="../reference/">Referência da API →</a>
+</div>
+
 Esta seção define a semântica de erro independente de transporte do protocolo.
 
 ## Regras de Erro
