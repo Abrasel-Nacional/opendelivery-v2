@@ -13,7 +13,7 @@
         <link rel="canonical" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/menu/">
       
       
-        <link rel="prev" href="../merchant/">
+        <link rel="prev" href="../merchant-store/">
       
       
         <link rel="next" href="../orders/">
@@ -27,7 +27,7 @@
     
     
       
-        <title>Menu / Cardápio - Open Delivery Protocol</title>
+        <title>Menus - Open Delivery Protocol</title>
       
     
     
@@ -216,7 +216,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#menu-cardapio" class="md-skip">
+        <a href="#menus" class="md-skip">
           Skip to content
         </a>
       
@@ -251,7 +251,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Menu / Cardápio
+              Menus
             
           </span>
         </div>
@@ -1349,6 +1349,8 @@
       
         
       
+        
+      
     
     
     
@@ -1424,6 +1426,34 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../merchant-store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dados da Loja
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -1443,7 +1473,7 @@
   <span class="md-ellipsis">
     
   
-    Menu / Cardápio
+    Menus
   
 
     
@@ -1461,7 +1491,7 @@
   <span class="md-ellipsis">
     
   
-    Menu / Cardápio
+    Menus
   
 
     
@@ -2733,23 +2763,22 @@
   
 
 
-<h1 id="menu-cardapio">Menu / Cardápio<a class="headerlink" href="#menu-cardapio" title="Permanent link">&para;</a></h1>
+<h1 id="menus">Menus<a class="headerlink" href="#menus" title="Permanent link">&para;</a></h1>
 <p class="od-meta">
-  <span class="od-badge od-badge--core">Módulo</span>
-  <span class="od-badge od-badge--code">menu</span>
-  <span class="od-badge">capability: merchant</span>
+  <span class="od-badge od-badge--code">merchant</span>
+  <span class="od-badge">Merchant · catálogo</span>
 </p>
 
 <div class="od-api-callout">
-  <p>O cardápio é um <strong>módulo da capability Merchant</strong> — não uma extensão opcional. Mesmo contrato OpenAPI.</p>
+  <p>Catálogo (menus, itens, opcionais). Identidade e services em <strong>Dados da Loja</strong> — mesmo OpenAPI Merchant.</p>
   <a href="../reference/merchant/">Abrir referência OpenAPI →</a>
 </div>
 
 <div class="admonition note">
-<p class="admonition-title">Não é extensão formal</p>
-<p>Diferente de <a href="../indoor/">Indoor</a> ou <a href="../../extensions/loyalty/">Loyalty</a>, o Menu <strong>não</strong> se declara como <code>extension</code> no Discovery. Ele faz parte da capability <code>merchant</code>. A separação nesta documentação é só para <strong>navegação e clareza</strong>: identidade/serviços vs catálogo.</p>
+<p class="admonition-title">Parte da capability Merchant</p>
+<p><strong>Menus</strong> e <strong><a href="../merchant-store/">Dados da Loja</a></strong> compõem a capability <code>merchant</code> (ver <a href="../merchant/">Visão geral</a>). Não são extensões do Discovery.</p>
 </div>
-<p>Esta página cobre a composição e o sincronismo do <strong>catálogo</strong>: menus, categorias, item-offers, option-groups e opções. Para Merchant ID, services e pause, veja a <a href="../merchant/">visão geral de Merchant</a>.</p>
+<p>Esta página cobre composição e sincronismo do <strong>catálogo</strong>: menus, categorias, item-offers, option-groups e opções. Para Merchant ID, services e pause, veja <a href="../merchant-store/">Dados da Loja</a>.</p>
 <hr />
 <h2 id="hierarquia-do-catalogo">Hierarquia do catálogo<a class="headerlink" href="#hierarquia-do-catalogo" title="Permanent link">&para;</a></h2>
 <p>O catálogo é composto por entidades independentes com relacionamentos explícitos. Cada entidade é gerenciada por <strong>CRUD granular</strong> — não há mais a operação monolítica de publicação do cardápio da V1.</p>
@@ -2761,7 +2790,7 @@
             └── OptionGroup (recursivo)
                 └── Option
 </code></pre></div>
-<p>Um estabelecimento pode ter <strong>múltiplos menus</strong> (ex.: almoço, janta, bebidas). Cada <a href="../merchant/#serviço-service">Service</a> pode referenciar o menu ativo via <code>menuId</code>.</p>
+<p>Um estabelecimento pode ter <strong>múltiplos menus</strong> (ex.: almoço, janta, bebidas). Cada <a href="../merchant-store/#serviço-service">Service</a> em Dados da Loja pode referenciar o menu ativo via <code>menuId</code>.</p>
 <hr />
 <h2 id="menu-e-categoria">Menu e Categoria<a class="headerlink" href="#menu-e-categoria" title="Permanent link">&para;</a></h2>
 <p>Um <strong>Menu</strong> agrupa Categorias. Uma <strong>Categoria</strong> agrupa ItemOffers.</p>
@@ -2970,8 +2999,8 @@
   <div class="od-next-step__label">Próximo passo</div>
   <div class="od-next-step__links">
     <a href="merchant/">Visão geral Merchant</a>
+    <a href="merchant-store/">Dados da Loja</a>
     <a href="../reference/merchant/">OpenAPI Merchant</a>
-    <a href="orders/">Capability Orders</a>
   </div>
 </div>
 
@@ -3011,7 +3040,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../merchant/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Visão geral">
+          <a href="../merchant-store/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Dados da Loja">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -3021,7 +3050,7 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Visão geral
+                Dados da Loja
               </div>
             </div>
           </a>
@@ -3213,7 +3242,11 @@
       url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/merchant/",
       active: false
     },{
-      title: "Menu / Card\u00e1pio",
+      title: "Dados da Loja",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/merchant-store/",
+      active: false
+    },{
+      title: "Menus",
       url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/menu/",
       active: true
     }]

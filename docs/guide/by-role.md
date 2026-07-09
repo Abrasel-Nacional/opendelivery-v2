@@ -27,7 +27,7 @@ Você **cria pedidos** e, em muitos fluxos, é dono do **Merchant ID** e do card
 
 1. [Discovery](../protocol/discovery.md) — manifesto well-known
 2. [Autenticação](../protocol/authentication.md) — OAuth por aplicação
-3. [Merchant](../protocol/merchant.md) + [Menu](../protocol/menu.md) — identidade, services e catálogo
+3. [Merchant](../protocol/merchant.md): [Dados da Loja](../protocol/merchant-store.md) + [Menus](../protocol/menu.md)
 4. [Orders](../protocol/orders.md) — criar pedidos, cancelar, consumir eventos/status
 5. Opcional: [Logistics](../protocol/logistics.md), [Customer](../protocol/customer.md) (push de clientes), [Indoor](../protocol/indoor.md) (totem/QR)
 
@@ -36,7 +36,7 @@ Você **cria pedidos** e, em muitos fluxos, é dono do **Merchant ID** e do card
 | Tipo | Link |
 |---|---|
 | Guia | [Primeiros Passos](getting-started.md) |
-| Protocolo | [Orders](../protocol/orders.md) · [Merchant](../protocol/merchant.md) · [Menu](../protocol/menu.md) |
+| Protocolo | [Orders](../protocol/orders.md) · [Merchant](../protocol/merchant.md) · [Menus](../protocol/menu.md) |
 | API | [Referência Orders](../reference/orders.md) · [Merchant](../reference/merchant.md) |
 | Migração | [V1→V2](migration-v1-v2.md) |
 
@@ -57,7 +57,7 @@ Você é a **fonte operacional** da loja: confirma pedidos, envia cardápio, é 
 ### O que implementar
 
 1. [Discovery](../protocol/discovery.md) + [Auth](../protocol/authentication.md)
-2. [Merchant](../protocol/merchant.md) + [Menu](../protocol/menu.md) — services, pause, CRUD/snapshot de catálogo
+2. [Dados da Loja](../protocol/merchant-store.md) + [Menus](../protocol/menu.md) — services, pause, CRUD/snapshot
 3. [Orders](../protocol/orders.md) — confirmação, preparo, eventos, cancelamento V2
 4. [Indoor](../protocol/indoor.md) — se houver salão (Account, pagamentos, fiscal)
 5. Webhooks de eventos (e/ou polling onde o manifesto declarar)
@@ -66,14 +66,16 @@ Você é a **fonte operacional** da loja: confirma pedidos, envia cardápio, é 
 
 | Tipo | Link |
 |---|---|
-| Protocolo | [Merchant](../protocol/merchant.md) · [Menu](../protocol/menu.md) · [Orders](../protocol/orders.md) · [Indoor](../protocol/indoor.md) |
+| Protocolo | [Merchant](../protocol/merchant.md) · [Dados da Loja](../protocol/merchant-store.md) · [Menus](../protocol/menu.md) · [Orders](../protocol/orders.md) · [Indoor](../protocol/indoor.md) |
 | API | [Merchant](../reference/merchant.md) · [Orders](../reference/orders.md) · [Indoor](../reference/indoor.md) |
 | Matrizes | [Eventos por perfil (Orders)](../protocol/orders.md#matrizes-de-eventos-por-perfil) |
 
 <div class="od-next-step">
   <div class="od-next-step__label">Próximo passo — PDV</div>
   <div class="od-next-step__links">
-    <a href="../protocol/merchant/">Protocolo Merchant</a>
+    <a href="../protocol/merchant/">Merchant</a>
+    <a href="../protocol/merchant-store/">Dados da Loja</a>
+    <a href="../protocol/menu/">Menus</a>
     <a href="../reference/merchant/">OpenAPI Merchant</a>
   </div>
 </div>

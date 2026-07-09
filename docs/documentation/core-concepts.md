@@ -41,7 +41,7 @@ Capabilities são as áreas funcionais primárias do protocolo. Elas representam
 
 | Capability | Descrição |
 |---|---|
-| **Merchant** | Identidade do estabelecimento, serviços e catálogo (ver módulo Menu) |
+| **Merchant** | Estabelecimento: **Dados da Loja** + **Menus** |
 | **Orders** | Ciclo de vida de pedidos, gerenciamento de estado e coordenação |
 | **Customer** | CRM, leads, eventos de cliente e visões de pedidos centradas no cliente |
 | **Logistics** | Coordenação de entrega, rastreamento e tratamento de problemas |
@@ -52,9 +52,11 @@ Capabilities são **independentes** entre si. Uma plataforma pode implementar qu
 
 Alguns domínios grandes são fatiados em páginas de protocolo para legibilidade, **sem** mudar o Discovery:
 
-| Módulo | Capability | Descrição |
+| Página | Capability | Descrição |
 |---|---|---|
-| **Menu / Cardápio** | Merchant | Hierarquia de catálogo, snapshot e sincronismo |
+| **Visão geral** | Merchant | Conceito e mapa do domínio |
+| **Dados da Loja** | Merchant | Merchant ID, services, horários, pause |
+| **Menus** | Merchant | Hierarquia de catálogo, snapshot e sincronismo |
 
 ## Extensões
 

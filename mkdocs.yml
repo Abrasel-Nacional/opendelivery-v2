@@ -39,7 +39,8 @@ nav:
     - Capabilities:
       - Merchant:
         - Visão geral: protocol/merchant.md
-        - Menu / Cardápio: protocol/menu.md
+        - Dados da Loja: protocol/merchant-store.md
+        - Menus: protocol/menu.md
       - Orders / Pedidos:
         - Visão geral: protocol/orders.md
         - Indoor / Salão: protocol/indoor.md

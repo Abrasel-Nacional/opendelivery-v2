@@ -145,14 +145,14 @@ description: A linguagem de interoperabilidade do delivery de alimentos no Brasi
   <!-- ── CAPABILITIES ──────────────────────────────────────────── -->
   <div class="section-intro">
     <h2>Capabilities do protocolo</h2>
-    <p>Capabilities independentes. <strong>Módulos</strong> (ex.: Menu) organizam o conteúdo da capability; <strong>extensões</strong> (Indoor, Reviews, Loyalty) são opcionais e dependem do pai no Discovery.</p>
+    <p>Implemente só o que o seu papel precisa. Itens aninhados detalham a capability pai; o que é novo na V2 aparece marcado.</p>
   </div>
 
   <div class="cap-strip">
 
-    <!-- Merchant + Menu (módulo, não extensão) -->
+    <!-- Merchant -->
     <div class="cap-group">
-      <a href="protocol/merchant/" class="cap-item">
+      <a href="protocol/merchant/" class="cap-item cap-item--parent">
         <div class="cap-item-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <rect x="4" y="3" width="11" height="18" rx="1"/>
@@ -162,25 +162,32 @@ description: A linguagem de interoperabilidade do delivery de alimentos no Brasi
           </svg>
         </div>
         <span class="cap-item-name">Merchant</span>
-        <span class="cap-item-ext">core</span>
       </a>
       <div class="cap-group__children">
-        <div class="cap-group__children-label">Módulo</div>
+        <a href="protocol/merchant-store/" class="cap-item cap-item--child">
+          <div class="cap-item-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9l1.5-4.5h15L21 9"/>
+              <path d="M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9"/>
+              <path d="M10 20v-6h4v6"/>
+            </svg>
+          </div>
+          <span class="cap-item-name">Dados da Loja</span>
+        </a>
         <a href="protocol/menu/" class="cap-item cap-item--child">
           <div class="cap-item-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M4 6h16M4 12h16M4 18h10"/>
             </svg>
           </div>
-          <span class="cap-item-name">Menu</span>
-          <span class="cap-item-ext cap-item-ext--module">módulo</span>
+          <span class="cap-item-name">Menus</span>
         </a>
       </div>
     </div>
 
     <!-- Orders + Indoor -->
     <div class="cap-group">
-      <a href="protocol/orders/" class="cap-item">
+      <a href="protocol/orders/" class="cap-item cap-item--parent">
         <div class="cap-item-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <rect x="6" y="4" width="12" height="17" rx="2"/>
@@ -189,10 +196,8 @@ description: A linguagem de interoperabilidade do delivery de alimentos no Brasi
           </svg>
         </div>
         <span class="cap-item-name">Orders</span>
-        <span class="cap-item-ext">core</span>
       </a>
       <div class="cap-group__children">
-        <div class="cap-group__children-label">Extensões</div>
         <a href="protocol/indoor/" class="cap-item cap-item--child">
           <div class="cap-item-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -204,14 +209,14 @@ description: A linguagem de interoperabilidade do delivery de alimentos no Brasi
             </svg>
           </div>
           <span class="cap-item-name">Indoor</span>
-          <span class="cap-item-ext">ext</span>
+          <span class="cap-item-new">Novo</span>
         </a>
       </div>
     </div>
 
     <!-- Logistics -->
     <div class="cap-group">
-      <a href="protocol/logistics/" class="cap-item">
+      <a href="protocol/logistics/" class="cap-item cap-item--parent">
         <div class="cap-item-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 21s7-7.21 7-12a7 7 0 1 0-14 0c0 4.79 7 12 7 12Z"/>
@@ -219,13 +224,12 @@ description: A linguagem de interoperabilidade do delivery de alimentos no Brasi
           </svg>
         </div>
         <span class="cap-item-name">Logistics</span>
-        <span class="cap-item-ext">core</span>
       </a>
     </div>
 
     <!-- Customer + Reviews + Loyalty -->
     <div class="cap-group">
-      <a href="protocol/customer/" class="cap-item">
+      <a href="protocol/customer/" class="cap-item cap-item--parent">
         <div class="cap-item-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="8" r="3.5"/>
@@ -233,10 +237,9 @@ description: A linguagem de interoperabilidade do delivery de alimentos no Brasi
           </svg>
         </div>
         <span class="cap-item-name">Customer</span>
-        <span class="cap-item-ext">core · novo V2</span>
+        <span class="cap-item-new">Novo</span>
       </a>
       <div class="cap-group__children">
-        <div class="cap-group__children-label">Extensões</div>
         <a href="extensions/reviews/" class="cap-item cap-item--child">
           <div class="cap-item-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -244,7 +247,7 @@ description: A linguagem de interoperabilidade do delivery de alimentos no Brasi
             </svg>
           </div>
           <span class="cap-item-name">Reviews</span>
-          <span class="cap-item-ext">ext</span>
+          <span class="cap-item-new">Novo</span>
         </a>
         <a href="extensions/loyalty/" class="cap-item cap-item--child">
           <div class="cap-item-icon">
@@ -253,7 +256,7 @@ description: A linguagem de interoperabilidade do delivery de alimentos no Brasi
             </svg>
           </div>
           <span class="cap-item-name">Loyalty</span>
-          <span class="cap-item-ext">ext</span>
+          <span class="cap-item-new">Novo</span>
         </a>
       </div>
     </div>

@@ -1,20 +1,19 @@
-# Menu / Cardápio
+# Menus
 
 <p class="od-meta">
-  <span class="od-badge od-badge--core">Módulo</span>
-  <span class="od-badge od-badge--code">menu</span>
-  <span class="od-badge">capability: merchant</span>
+  <span class="od-badge od-badge--code">merchant</span>
+  <span class="od-badge">Merchant · catálogo</span>
 </p>
 
 <div class="od-api-callout">
-  <p>O cardápio é um <strong>módulo da capability Merchant</strong> — não uma extensão opcional. Mesmo contrato OpenAPI.</p>
+  <p>Catálogo (menus, itens, opcionais). Identidade e services em <strong>Dados da Loja</strong> — mesmo OpenAPI Merchant.</p>
   <a href="../reference/merchant/">Abrir referência OpenAPI →</a>
 </div>
 
-!!! note "Não é extensão formal"
-    Diferente de [Indoor](indoor.md) ou [Loyalty](../extensions/loyalty.md), o Menu **não** se declara como `extension` no Discovery. Ele faz parte da capability `merchant`. A separação nesta documentação é só para **navegação e clareza**: identidade/serviços vs catálogo.
+!!! note "Parte da capability Merchant"
+    **Menus** e **[Dados da Loja](merchant-store.md)** compõem a capability `merchant` (ver [Visão geral](merchant.md)). Não são extensões do Discovery.
 
-Esta página cobre a composição e o sincronismo do **catálogo**: menus, categorias, item-offers, option-groups e opções. Para Merchant ID, services e pause, veja a [visão geral de Merchant](merchant.md).
+Esta página cobre composição e sincronismo do **catálogo**: menus, categorias, item-offers, option-groups e opções. Para Merchant ID, services e pause, veja [Dados da Loja](merchant-store.md).
 
 ---
 
@@ -32,7 +31,7 @@ Merchant
                 └── Option
 ```
 
-Um estabelecimento pode ter **múltiplos menus** (ex.: almoço, janta, bebidas). Cada [Service](merchant.md#serviço-service) pode referenciar o menu ativo via `menuId`.
+Um estabelecimento pode ter **múltiplos menus** (ex.: almoço, janta, bebidas). Cada [Service](merchant-store.md#serviço-service) em Dados da Loja pode referenciar o menu ativo via `menuId`.
 
 ---
 
@@ -142,7 +141,7 @@ Quem é **fonte da verdade** do catálogo (PDV vs originador) deve ser declarado
   <div class="od-next-step__label">Próximo passo</div>
   <div class="od-next-step__links">
     <a href="merchant/">Visão geral Merchant</a>
+    <a href="merchant-store/">Dados da Loja</a>
     <a href="../reference/merchant/">OpenAPI Merchant</a>
-    <a href="orders/">Capability Orders</a>
   </div>
 </div>

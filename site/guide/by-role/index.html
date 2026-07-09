@@ -1579,6 +1579,8 @@
       
         
       
+        
+      
     
     
     
@@ -1657,6 +1659,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../protocol/merchant-store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dados da Loja
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../protocol/menu/" class="md-nav__link">
         
   
@@ -1664,7 +1694,7 @@
   <span class="md-ellipsis">
     
   
-    Menu / Cardápio
+    Menus
   
 
     
@@ -2966,7 +2996,7 @@
 <ol>
 <li><a href="../../protocol/discovery/">Discovery</a> — manifesto well-known</li>
 <li><a href="../../protocol/authentication/">Autenticação</a> — OAuth por aplicação</li>
-<li><a href="../../protocol/merchant/">Merchant</a> + <a href="../../protocol/menu/">Menu</a> — identidade, services e catálogo</li>
+<li><a href="../../protocol/merchant/">Merchant</a>: <a href="../../protocol/merchant-store/">Dados da Loja</a> + <a href="../../protocol/menu/">Menus</a></li>
 <li><a href="../../protocol/orders/">Orders</a> — criar pedidos, cancelar, consumir eventos/status</li>
 <li>Opcional: <a href="../../protocol/logistics/">Logistics</a>, <a href="../../protocol/customer/">Customer</a> (push de clientes), <a href="../../protocol/indoor/">Indoor</a> (totem/QR)</li>
 </ol>
@@ -2985,7 +3015,7 @@
 </tr>
 <tr>
 <td>Protocolo</td>
-<td><a href="../../protocol/orders/">Orders</a> · <a href="../../protocol/merchant/">Merchant</a> · <a href="../../protocol/menu/">Menu</a></td>
+<td><a href="../../protocol/orders/">Orders</a> · <a href="../../protocol/merchant/">Merchant</a> · <a href="../../protocol/menu/">Menus</a></td>
 </tr>
 <tr>
 <td>API</td>
@@ -3011,7 +3041,7 @@
 <h3 id="o-que-implementar_1">O que implementar<a class="headerlink" href="#o-que-implementar_1" title="Permanent link">&para;</a></h3>
 <ol>
 <li><a href="../../protocol/discovery/">Discovery</a> + <a href="../../protocol/authentication/">Auth</a></li>
-<li><a href="../../protocol/merchant/">Merchant</a> + <a href="../../protocol/menu/">Menu</a> — services, pause, CRUD/snapshot de catálogo</li>
+<li><a href="../../protocol/merchant-store/">Dados da Loja</a> + <a href="../../protocol/menu/">Menus</a> — services, pause, CRUD/snapshot</li>
 <li><a href="../../protocol/orders/">Orders</a> — confirmação, preparo, eventos, cancelamento V2</li>
 <li><a href="../../protocol/indoor/">Indoor</a> — se houver salão (Account, pagamentos, fiscal)</li>
 <li>Webhooks de eventos (e/ou polling onde o manifesto declarar)</li>
@@ -3027,7 +3057,7 @@
 <tbody>
 <tr>
 <td>Protocolo</td>
-<td><a href="../../protocol/merchant/">Merchant</a> · <a href="../../protocol/menu/">Menu</a> · <a href="../../protocol/orders/">Orders</a> · <a href="../../protocol/indoor/">Indoor</a></td>
+<td><a href="../../protocol/merchant/">Merchant</a> · <a href="../../protocol/merchant-store/">Dados da Loja</a> · <a href="../../protocol/menu/">Menus</a> · <a href="../../protocol/orders/">Orders</a> · <a href="../../protocol/indoor/">Indoor</a></td>
 </tr>
 <tr>
 <td>API</td>
@@ -3042,7 +3072,9 @@
 <div class="od-next-step">
   <div class="od-next-step__label">Próximo passo — PDV</div>
   <div class="od-next-step__links">
-    <a href="../protocol/merchant/">Protocolo Merchant</a>
+    <a href="../protocol/merchant/">Merchant</a>
+    <a href="../protocol/merchant-store/">Dados da Loja</a>
+    <a href="../protocol/menu/">Menus</a>
     <a href="../reference/merchant/">OpenAPI Merchant</a>
   </div>
 </div>
@@ -3392,7 +3424,11 @@
       url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/merchant/",
       active: false
     },{
-      title: "Menu / Card\u00e1pio",
+      title: "Dados da Loja",
+      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/merchant-store/",
+      active: false
+    },{
+      title: "Menus",
       url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/menu/",
       active: false
     }]
