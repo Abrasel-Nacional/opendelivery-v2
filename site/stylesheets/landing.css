@@ -55,7 +55,8 @@
   gap: 10px;
 }
 
-.hero-btn {
+/* Especificidade acima de `.md-typeset a` (Material pinta links de verde). */
+.landing-page a.hero-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -67,42 +68,49 @@
   transition: background 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
 
-.hero-btn:hover {
+.landing-page a.hero-btn:hover,
+.landing-page a.hero-btn:focus {
   text-decoration: none;
 }
 
-.hero-btn--primary {
+.landing-page a.hero-btn--primary,
+.landing-page a.hero-btn--primary:visited {
   background: var(--od-green);
   color: #fff;
   border: 1px solid var(--od-green);
 }
 
-.hero-btn--primary:hover {
+.landing-page a.hero-btn--primary:hover,
+.landing-page a.hero-btn--primary:focus {
   background: var(--od-green-dark);
   border-color: var(--od-green-dark);
   color: #fff;
   box-shadow: var(--od-shadow-sm);
 }
 
-.hero-btn--secondary {
+.landing-page a.hero-btn--secondary,
+.landing-page a.hero-btn--secondary:visited {
   background: #fff;
   color: var(--od-green);
   border: 1px solid var(--od-green-soft);
 }
 
-.hero-btn--secondary:hover {
+.landing-page a.hero-btn--secondary:hover,
+.landing-page a.hero-btn--secondary:focus {
   background: var(--od-bg-soft);
   color: var(--od-green-dark);
   border-color: var(--od-green);
 }
 
-.hero-btn--ghost {
+.landing-page a.hero-btn--ghost,
+.landing-page a.hero-btn--ghost:visited {
   background: transparent;
   color: var(--od-text-soft);
   border: 1px solid var(--od-border);
 }
 
-.hero-btn--ghost:hover {
+.landing-page a.hero-btn--ghost:hover,
+.landing-page a.hero-btn--ghost:focus {
   color: var(--od-green);
   border-color: var(--od-green-soft);
   background: var(--od-gray-50);
@@ -282,12 +290,29 @@
 
 .path-links li a:hover::after { opacity: 1; }
 
-/* ── Capabilities strip ───────────────────────────────────────── */
+/* ── Capabilities (grupos pai + extensões filhas) ─────────────── */
 .cap-strip {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
   margin: 0 0 48px;
+  align-items: stretch;
+}
+
+.cap-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: var(--od-bg-soft);
+  border: 1px solid var(--od-border);
+  border-radius: var(--od-radius-md);
+  overflow: hidden;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.cap-group:hover {
+  border-color: var(--od-green-soft);
+  box-shadow: var(--od-shadow-md);
 }
 
 .cap-item {
@@ -295,19 +320,14 @@
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  padding: 20px 10px 16px;
-  background: var(--od-bg-soft);
-  border: 1px solid var(--od-border);
-  border-radius: var(--od-radius-md);
+  padding: 20px 12px 16px;
+  background: transparent;
   text-decoration: none;
-  transition: all 0.2s;
+  transition: background 0.15s;
   text-align: center;
 }
 
 .cap-item:hover {
-  border-color: var(--od-green-soft);
-  box-shadow: var(--od-shadow-md);
-  transform: translateY(-2px);
   background: #fff;
   text-decoration: none;
 }
@@ -342,6 +362,76 @@
   padding: 1px 7px;
   border-radius: 99px;
   margin-top: -4px;
+}
+
+/* Extensões aninhadas sob o pai */
+.cap-group__children {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px dashed var(--od-border);
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.cap-group__children-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--od-text-soft);
+  padding: 8px 12px 0;
+}
+
+.cap-item--child {
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 10px 12px 12px;
+  text-align: left;
+  position: relative;
+}
+
+.cap-item--child::before {
+  content: "";
+  position: absolute;
+  left: 18px;
+  top: 0;
+  bottom: 50%;
+  width: 10px;
+  border-left: 2px solid var(--od-border);
+  border-bottom: 2px solid var(--od-border);
+  border-bottom-left-radius: 6px;
+  pointer-events: none;
+}
+
+.cap-item--child .cap-item-icon {
+  width: 28px;
+  height: 28px;
+  margin-left: 14px;
+  flex-shrink: 0;
+}
+
+.cap-item--child .cap-item-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.cap-item--child .cap-item-name {
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.cap-item--child .cap-item-ext {
+  margin-top: 0;
+  margin-left: auto;
+}
+
+.cap-group__children .cap-item--child + .cap-item--child {
+  border-top: 1px solid var(--od-border);
+  padding-top: 12px;
+}
+
+.cap-group__children .cap-item--child + .cap-item--child::before {
+  top: -1px;
 }
 
 /* ── Ecosystem links ──────────────────────────────────────────── */
@@ -473,9 +563,11 @@
   .path-grid,
   .layers-grid { grid-template-columns: 1fr; }
   .role-grid { grid-template-columns: repeat(2, 1fr); }
+  .cap-strip { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 768px) {
   .hero-wrapper { padding: 20px 0 28px; }
   .role-grid { grid-template-columns: 1fr; }
+  .cap-strip { grid-template-columns: 1fr; }
 }

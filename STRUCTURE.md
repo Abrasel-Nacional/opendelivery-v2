@@ -20,11 +20,11 @@ Open Delivery Protocol v2
 │   ├── Capabilities
 │   │   ├── Merchant / Cardápio
 │   │   ├── Orders / Pedidos
+│   │   │   └── Indoor / Salão (extensão)
 │   │   ├── Logística
-│   │   ├── Customer / CRM
-│   │   ├── Reviews (ext. Customer)
-│   │   ├── Loyalty (ext. Customer)
-│   │   └── Indoor (ext. Orders)
+│   │   └── Customer / CRM
+│   │       ├── Reviews (extensão)
+│   │       └── Loyalty / Fidelidade (extensão)
 │   └── Bindings REST (documentação de transporte complementar)
 │
 └── 3. REFERÊNCIA DA API (OpenAPI + ReDoc)

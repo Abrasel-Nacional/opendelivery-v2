@@ -38,12 +38,14 @@ nav:
       - Autenticação: protocol/authentication.md
     - Capabilities:
       - Merchant / Cardápio: protocol/merchant.md
-      - Orders / Pedidos: protocol/orders.md
+      - Orders / Pedidos:
+        - Visão geral: protocol/orders.md
+        - Indoor / Salão: protocol/indoor.md
       - Logística: protocol/logistics.md
-      - Customer / CRM: protocol/customer.md
-      - Reviews: extensions/reviews.md
-      - Fidelidade: extensions/loyalty.md
-      - Indoor / Salão: protocol/indoor.md
+      - Customer / CRM:
+        - Visão geral: protocol/customer.md
+        - Reviews: extensions/reviews.md
+        - Fidelidade: extensions/loyalty.md
     - Bindings REST:
       - Visão Geral: transport-bindings/rest-http.md
       - Discovery: transport-bindings/rest-http-discovery.md
@@ -57,10 +59,11 @@ nav:
       - Autenticação: reference/authentication.md
     - Capabilities:
       - Merchant: reference/merchant.md
-      - Pedidos: reference/orders.md
+      - Pedidos:
+        - Visão geral: reference/orders.md
+        - Indoor: reference/indoor.md
       - Logística: reference/logistics.md
       - Customer & Fidelidade: reference/customer.md
-      - Indoor: reference/indoor.md
 
 plugins:
   - search
