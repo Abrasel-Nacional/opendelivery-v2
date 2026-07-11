@@ -6,6 +6,11 @@ hide:
   - navigation
 ---
 
-!!! note "Idioma do contrato"
-    O contrato OpenAPI desta pagina esta **somente em ingles**.
+!!! tip "Guia + contrato"
+    Esta página é o **contrato OpenAPI** (endpoints, campos, erros e exemplos) — o suficiente para implementar Indoor.
 
+    Se você ainda não conhece o domínio (conta, pré-close, canais, papéis), leia antes o [guia Indoor](../protocol/indoor.md).
+
+    **Pré-requisito:** [Orders](orders.md) (`orderType: INDOOR`). Indoor é extensão de Orders, não capability autônoma.
+
+    **Idioma do contrato:** o OpenAPI é **sempre em inglês**. O guia de protocolo é bilíngue (PT/EN).

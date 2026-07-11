@@ -42,6 +42,61 @@ Open Delivery Protocol v2
 - **Bindings REST** (`docs/transport-bindings/`) são legado pré-ReDoc e **não** entram no site (`exclude_docs`).
 - Atas de comitê em `docs/reference/v2/comites/` ficam no repositório mas **não** entram no site.
 
+## Modelo Guia ↔ OpenAPI (capabilities)
+
+Padrão híbrido (piloto: **Indoor**; replicar nas demais capabilities):
+
+| Camada | Arquivo | Conteúdo |
+|--------|---------|----------|
+| **Guia** | `docs/protocol/{capability}.md` | Visão geral, papéis, conceitos, fluxos Mermaid, checklists, Discovery, mapa ops → OpenAPI, fora do MVP |
+| **OpenAPI** | `docs/reference/v2/{capability}.openapi.yaml` | Normativa auto-suficiente **em inglês**: endpoints, campos, MUST/MAY, erros, **exemplos JSON**, webhooks |
+| **Casca ReDoc** | `docs/reference/{capability}.md` (+ `.en.md`) | Front matter `template: redoc.html` + callout ligando ao guia (nota de idioma) |
+
+### Regras
+
+1. **OpenAPI se basta** — quem só abre o ReDoc consegue implementar (exemplos em request/response/schemas).
+2. **Guia é auxiliar** — não é fonte normativa de campos; evita tabelas de schema longas (linka para a spec).
+3. **Cruzamento obrigatório**
+   - Guia → callout + tabela “objetivo → operationId” + próximo passo para ReDoc.
+   - OpenAPI → `info.externalDocs` + links no `info.description` / tags para o guia e specs irmãs (Orders, Auth, Discovery).
+4. **Fora do MVP** — temas em debate no comitê ficam explícitos (não se tornam normativos “por acaso”).
+5. **Atas** em `docs/reference/v2/comites/` orientam decisões; não inventar regras sem base.
+
+### Call flow card (endpoints)
+
+ReDoc **escapes raw HTML** in descriptions. Use a fenced block processed by JS in `overrides/redoc.html`:
+
+````markdown
+```od-call-flow
+method: GET
+from: Ordering Application
+fromLabel: Client
+fromParty: oa
+to: Software Service
+toLabel: Host
+toParty: ss
+```
+````
+
+- **OA → SS** (normal): Client = Ordering Application, Host = Software Service
+- **SS → OA** (webhook): reverse parties (adds `od-call-flow--webhook` styling)
+
+Same idea as the old Hosted/Called table; reusable for all capabilities.
+
+### Checklist ao editar uma capability
+
+- [ ] Guia **PT + EN** (`page.md` e `page.en.md`): callout de camadas, Discovery, mapa ops, fora do MVP
+- [ ] OpenAPI **somente EN**: exemplos em todas as operações e schemas-chave
+- [ ] OpenAPI: tag **External docs** no grupo Overview (não `info.externalDocs` solto)
+- [ ] OpenAPI: `.od-call-flow` em cada operação (hosts/calls + method)
+- [ ] OpenAPI: eventos com obrigatoriedade MUST/MAY alinhada ao guia
+- [ ] `reference/{capability}.md` + `.en.md`: callout para o guia + “OpenAPI always English”
+- [ ] `python -m mkdocs build --strict`
+
+### Ordem sugerida (pós-Indoor)
+
+Orders → Merchant → Logistics → Customer (e extensões Reviews/Loyalty).
+
 ## i18n (PT + EN)
 
 Plugin: **mkdocs-static-i18n** (`docs_structure: suffix`).
@@ -52,10 +107,12 @@ Plugin: **mkdocs-static-i18n** (`docs_structure: suffix`).
 | **en** | `page.en.md` | `/en/…` |
 
 - `fallback_to_default: true` — se faltar `.en.md`, o EN reutiliza o PT (temporário).
-- **OpenAPI / ReDoc:** sempre **inglês**; YAML compartilhado em `docs/reference/v2/`.
-- **Não traduzir** nomes de schemas, campos, enums, eventos, paths nem exemplos JSON (iguais à spec).
+- **OpenAPI / ReDoc contracts:** **always English** (`docs/reference/v2/*.openapi.yaml`). No exceptions per capability.
+- **Guides / protocol pages:** **bilingual** — PT default (`page.md`) + EN (`page.en.md`).
+- **Não traduzir** nomes de schemas, campos, enums, eventos, paths nem tokens de protocolo nos exemplos JSON.
 - Nav EN via `nav_translations` no `mkdocs.yml`.
 - `navigation.instant` desativado (incompatível com language switcher).
+- Full language rules: see **`AGENTS.md`**.
 
 ### Como adicionar uma página bilingue
 

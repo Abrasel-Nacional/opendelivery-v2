@@ -3,6 +3,19 @@
 {% block extrahead %}
 {{ super() }}
 <style>
+  /* Tokens espelhados do theme.css — o ReDoc não herda :root do Material
+     de forma confiável em todos os nós; redeclara no container. */
+  #redoc-container {
+    --od-green: #00652e;
+    --od-green-dark: #004621;
+    --od-gray-50: #f7faf8;
+    --od-gray-200: #dde6e1;
+    --od-border: #d3e4d6;
+    --od-text: #24332a;
+    --od-text-soft: #4a6151;
+    --od-radius-sm: 6px;
+  }
+
   .md-main__inner,
   .md-content,
   .md-content__inner {
@@ -31,16 +44,93 @@
     text-decoration: none;
   }
 
+  /* ── Shell da sidebar (P0: fundo + borda como MkDocs) ───────────────────
+     .menu-content é o painel fixo do ReDoc. Largura também vem do theme API. */
+  #redoc-container .menu-content {
+    background-color: var(--od-gray-50) !important;
+    border-right: 1px solid var(--od-border);
+    /* Fallback nativo (se Perfect Scrollbar não estiver no nó) */
+    scrollbar-width: thin;
+    scrollbar-color: var(--od-gray-200) transparent;
+  }
+
+  #redoc-container .menu-content::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  #redoc-container .menu-content::-webkit-scrollbar-thumb {
+    background: var(--od-gray-200);
+    border-radius: 99px;
+  }
+
+  #redoc-container .menu-content::-webkit-scrollbar-thumb:hover {
+    background: var(--od-border);
+  }
+
+  /* ReDoc 2.x usa Perfect Scrollbar (.ps / .ps__thumb-y) no menu —
+     o visual nativo sozinho quase nunca aparece. Espelha o thin do MkDocs. */
+  #redoc-container .menu-content .ps__rail-y,
+  #redoc-container .menu-content .ps__rail-x {
+    background: transparent !important;
+    opacity: 1 !important;
+  }
+
+  #redoc-container .menu-content .ps__rail-y {
+    width: 8px !important;
+    right: 2px !important;
+  }
+
+  #redoc-container .menu-content .ps__thumb-y {
+    background-color: var(--od-gray-200) !important;
+    width: 5px !important;
+    right: 1.5px !important;
+    border-radius: 99px !important;
+  }
+
+  #redoc-container .menu-content .ps__rail-y:hover .ps__thumb-y,
+  #redoc-container .menu-content .ps__rail-y:focus .ps__thumb-y,
+  #redoc-container .menu-content .ps__rail-y.ps--clicking .ps__thumb-y {
+    background-color: var(--od-border) !important;
+    width: 6px !important;
+  }
+
+  /* Qualquer .ps dentro do redoc-wrap (menu é o caso principal) */
+  #redoc-container .ps__rail-y {
+    background: transparent !important;
+  }
+
+  #redoc-container .ps__thumb-y {
+    background-color: var(--od-gray-200) !important;
+    border-radius: 99px !important;
+  }
+
+  #redoc-container .ps__rail-y:hover .ps__thumb-y,
+  #redoc-container .ps__rail-y.ps--clicking .ps__thumb-y {
+    background-color: var(--od-border) !important;
+  }
+
+  /* Respiro horizontal: labels do ReDoc costumam ser width 100% colados
+     na borda; forçamos gutter nas laterais (como margin do MkDocs). */
+  #redoc-container .menu-content label.-depth0,
+  #redoc-container .menu-content label.-depth1,
+  #redoc-container .menu-content label.-depth2 {
+    box-sizing: border-box !important;
+    width: calc(100% - 0.9rem) !important;
+    max-width: calc(100% - 0.9rem) !important;
+    margin-left: 0.5rem !important;
+    margin-right: 0.4rem !important;
+  }
+
   /* ── Sidebar: grupo (depth0) ─────────────────────────────────────────────
      Cabeçalhos dos x-tagGroups. Seletores de profundidade (-depthN) são
      estáveis entre versões do ReDoc — não dependem de classes hash geradas. */
   #redoc-container label.-depth0 {
-    font-size: 0.62rem !important;
-    font-weight: 600 !important;
-    letter-spacing: 0.07em;
+    font-size: 0.68rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: #00652e !important;
-    border-top: 1px solid #e2ede4;
+    color: var(--od-green) !important;
+    border-top: 1px solid var(--od-border);
     margin-top: 2px !important;
     padding-top: 12px !important;
     padding-bottom: 2px !important;
@@ -54,28 +144,206 @@
 
   /* ── Sidebar: tags e traits (depth1) ──────────────────────────────────── */
   #redoc-container label.-depth1 {
-    font-size: 0.68rem !important;
+    font-size: 0.78rem !important;
     font-weight: 500 !important;
-    border-radius: 6px;
-    transition: background-color .12s;
+    border-radius: var(--od-radius-sm);
+    color: var(--od-text-soft);
+    transition: background-color 0.12s ease, color 0.12s ease;
   }
 
   #redoc-container label.-depth1:hover {
     background-color: rgba(0, 101, 46, 0.06);
+    color: var(--od-green-dark);
   }
 
   /* ── Sidebar: endpoints e seções de traits (depth2) ───────────────────── */
   #redoc-container label.-depth2 {
-    font-size: 0.64rem !important;
+    font-size: 0.76rem !important;
     font-weight: 400 !important;
-    opacity: 0.8;
-    border-radius: 6px;
-    transition: background-color .12s, opacity .12s;
+    opacity: 0.9;
+    border-radius: var(--od-radius-sm);
+    color: var(--od-text-soft);
+    transition: background-color 0.12s ease, color 0.12s ease, opacity 0.12s ease;
   }
 
   #redoc-container label.-depth2:hover {
     background-color: rgba(0, 101, 46, 0.06);
+    color: var(--od-green-dark);
     opacity: 1;
+  }
+
+  /* ── Ativo = pill + barra esquerda (espelha MkDocs) ─────────────────────
+     ReDoc marca o item com .active no label (e às vezes no li). */
+  #redoc-container label.active,
+  #redoc-container label.-depth1.active,
+  #redoc-container label.-depth2.active,
+  #redoc-container li.active > label {
+    background-color: rgba(0, 101, 46, 0.10) !important;
+    color: var(--od-green) !important;
+    font-weight: 650 !important;
+    opacity: 1 !important;
+    border-radius: var(--od-radius-sm);
+    box-shadow: inset 3px 0 0 var(--od-green);
+  }
+
+  #redoc-container label.active:hover,
+  #redoc-container li.active > label:hover {
+    background-color: rgba(0, 101, 46, 0.14) !important;
+    color: var(--od-green-dark) !important;
+    box-shadow: inset 3px 0 0 var(--od-green);
+  }
+
+  /* ── Call flow card (Host / Call) — template for capability OpenAPIs ───── */
+  #redoc-container .od-call-flow {
+    margin: 1rem 0 1.25rem;
+    padding: 0;
+    max-width: 36rem;
+  }
+
+  #redoc-container .od-call-flow__track {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 0.5rem;
+    padding: 0.85rem 0.9rem;
+    border: 1px solid var(--od-border);
+    border-radius: 12px;
+    background:
+      linear-gradient(180deg, #fbfefc 0%, var(--od-gray-50) 100%);
+    box-shadow: 0 1px 2px rgba(0, 70, 33, 0.05);
+  }
+
+  #redoc-container .od-call-flow__party {
+    flex: 1 1 8.5rem;
+    min-width: 7.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.7rem 0.8rem;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    background: #fff;
+  }
+
+  #redoc-container .od-call-flow__party--oa {
+    border-color: rgba(15, 111, 115, 0.22);
+    box-shadow: inset 3px 0 0 #0f6f73;
+  }
+
+  #redoc-container .od-call-flow__party--ss {
+    border-color: rgba(239, 108, 0, 0.25);
+    box-shadow: inset 3px 0 0 #ef6c00;
+  }
+
+  #redoc-container .od-call-flow__label {
+    display: inline-flex;
+    align-self: flex-start;
+    font-size: 0.55rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1.2;
+    padding: 0.14rem 0.38rem;
+    border-radius: 999px;
+  }
+
+  #redoc-container .od-call-flow__party--oa .od-call-flow__label {
+    color: #0f6f73;
+    background: rgba(15, 111, 115, 0.10);
+  }
+
+  #redoc-container .od-call-flow__party--ss .od-call-flow__label {
+    color: #c45a00;
+    background: rgba(239, 108, 0, 0.12);
+  }
+
+  #redoc-container .od-call-flow__name {
+    font-size: 0.74rem;
+    font-weight: 650;
+    color: var(--od-text);
+    line-height: 1.25;
+  }
+
+  #redoc-container .od-call-flow__hint {
+    display: none; /* optional secondary label — not shown */
+  }
+
+  #redoc-container .od-call-flow__edge {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    min-width: 4.25rem;
+    padding: 0.25rem 0.15rem;
+    align-self: center;
+  }
+
+  #redoc-container .od-call-flow__method {
+    font-family: "JetBrains Mono", "Roboto Mono", monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--od-green);
+    background: rgba(0, 101, 46, 0.10);
+    border: 1px solid rgba(0, 101, 46, 0.18);
+    border-radius: 999px;
+    padding: 0.2rem 0.55rem;
+    line-height: 1.2;
+  }
+
+  #redoc-container .od-call-flow__arrow {
+    display: block;
+    width: 2.75rem;
+    height: 2px;
+    background: linear-gradient(90deg, rgba(0, 101, 46, 0.25), var(--od-green));
+    border-radius: 2px;
+    position: relative;
+  }
+
+  #redoc-container .od-call-flow__arrow::after {
+    content: "";
+    position: absolute;
+    right: -1px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 5px solid transparent;
+    border-left-color: var(--od-green);
+    border-right-width: 0;
+  }
+
+  #redoc-container .od-call-flow--webhook .od-call-flow__method {
+    color: #c45a00;
+    background: rgba(239, 108, 0, 0.12);
+    border-color: rgba(239, 108, 0, 0.22);
+  }
+
+  #redoc-container .od-call-flow--webhook .od-call-flow__arrow {
+    background: linear-gradient(90deg, rgba(239, 108, 0, 0.25), #ef6c00);
+  }
+
+  #redoc-container .od-call-flow--webhook .od-call-flow__arrow::after {
+    border-left-color: #ef6c00;
+  }
+
+  @media (max-width: 720px) {
+    #redoc-container .od-call-flow__track {
+      flex-direction: column;
+    }
+
+    #redoc-container .od-call-flow__edge {
+      flex-direction: row;
+      min-width: 0;
+      width: 100%;
+      padding: 0.15rem 0;
+    }
+
+    #redoc-container .od-call-flow__arrow {
+      flex: 1;
+      width: auto;
+      max-width: 6rem;
+    }
   }
 </style>
 {% endblock %}
@@ -119,62 +387,169 @@
      aqui: o global ainda não existe. Adiamos toda a configuração até o
      `mermaid` estar disponível (poll leve; resolve antes do `load`, já que
      o script do rodapé não é async/defer). */
-  var odMermaidObserver = null;
+  var odEnhanceObserver = null;
+
+  function odParseFenceMeta(text) {
+    var meta = {};
+    String(text || "").split(/\r?\n/).forEach(function (line) {
+      var m = line.match(/^\s*([A-Za-z]+)\s*:\s*(.+?)\s*$/);
+      if (m) meta[m[1]] = m[2];
+    });
+    return meta;
+  }
+
+  function odBuildCallFlowCard(meta) {
+    var method = meta.method || "GET";
+    var fromParty = meta.fromParty || "oa";
+    var toParty = meta.toParty || "ss";
+    var root = document.createElement("div");
+    root.className = "od-call-flow";
+    if (fromParty === "ss" || meta.webhook === "true") {
+      root.classList.add("od-call-flow--webhook");
+    }
+
+    var track = document.createElement("div");
+    track.className = "od-call-flow__track";
+
+    function party(partyKey, label, name) {
+      var el = document.createElement("div");
+      el.className = "od-call-flow__party od-call-flow__party--" + partyKey;
+      var lab = document.createElement("span");
+      lab.className = "od-call-flow__label";
+      lab.textContent = label;
+      var nm = document.createElement("span");
+      nm.className = "od-call-flow__name";
+      nm.textContent = name;
+      el.appendChild(lab);
+      el.appendChild(nm);
+      return el;
+    }
+
+    var edge = document.createElement("div");
+    edge.className = "od-call-flow__edge";
+    var meth = document.createElement("span");
+    meth.className = "od-call-flow__method";
+    meth.textContent = method;
+    var arrow = document.createElement("span");
+    arrow.className = "od-call-flow__arrow";
+    arrow.setAttribute("aria-hidden", "true");
+    edge.appendChild(meth);
+    edge.appendChild(arrow);
+
+    track.appendChild(party(
+      fromParty,
+      meta.fromLabel || "Client",
+      meta.from || "Ordering Application"
+    ));
+    track.appendChild(edge);
+    track.appendChild(party(
+      toParty,
+      meta.toLabel || "Host",
+      meta.to || "Software Service"
+    ));
+    root.appendChild(track);
+    return root;
+  }
+
+  /* ReDoc escapa HTML em descriptions; usamos fence ```od-call-flow e montamos o DOM.
+     Fallback: se o highlighter não preserva language-*, detecta pelo conteúdo. */
+  function odProcessCallFlows() {
+    var blocks = document.querySelectorAll(
+      "#redoc-container code.language-od-call-flow:not([data-od-call-flow-processed]), " +
+      "#redoc-container pre > code:not([data-od-call-flow-processed])"
+    );
+    blocks.forEach(function (code) {
+      if (code.dataset.odCallFlowProcessed) return;
+      var raw = code.textContent || "";
+      var isFence =
+        code.classList.contains("language-od-call-flow") ||
+        (/^\s*method\s*:/m.test(raw) &&
+          /fromParty\s*:/m.test(raw) &&
+          /toParty\s*:/m.test(raw));
+      if (!isFence) return;
+      code.dataset.odCallFlowProcessed = "1";
+      var pre = code.closest("pre");
+      if (!pre) return;
+      var meta = odParseFenceMeta(raw);
+      pre.replaceWith(odBuildCallFlowCard(meta));
+    });
+  }
 
   function odProcessMermaid() {
+    if (typeof mermaid === "undefined") return;
     var blocks = document.querySelectorAll(
-      '#redoc-container code.language-mermaid:not([data-mermaid-processed])'
+      "#redoc-container code.language-mermaid:not([data-mermaid-processed])"
     );
     if (!blocks.length) return;
     blocks.forEach(function (code) {
-      code.dataset.mermaidProcessed = '1';
-      var pre = code.closest('pre');
+      code.dataset.mermaidProcessed = "1";
+      var pre = code.closest("pre");
       if (!pre) return;
-      var div = document.createElement('div');
-      div.className = 'mermaid';
+      var div = document.createElement("div");
+      div.className = "mermaid";
       div.textContent = code.textContent;
       pre.replaceWith(div);
     });
-    mermaid.run({ querySelector: '#redoc-container .mermaid:not([data-processed])' });
+    mermaid.run({ querySelector: "#redoc-container .mermaid:not([data-processed])" });
   }
 
-  function odInitMermaid() {
-    if (typeof mermaid === 'undefined') {
-      setTimeout(odInitMermaid, 50);
-      return;
+  function odProcessEnhancements() {
+    odProcessCallFlows();
+    odProcessMermaid();
+  }
+
+  function odInitEnhancements() {
+    /* Call-flow não depende do mermaid — processa já; mermaid entra quando carregar. */
+    odProcessCallFlows();
+
+    if (typeof mermaid !== "undefined") {
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: "neutral",
+        flowchart: { curve: "basis", useMaxWidth: true },
+        stateDiagram: { useMaxWidth: true }
+      });
+      odProcessMermaid();
+    } else {
+      setTimeout(function () {
+        if (typeof mermaid === "undefined") return;
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: "neutral",
+          flowchart: { curve: "basis", useMaxWidth: true },
+          stateDiagram: { useMaxWidth: true }
+        });
+        odProcessMermaid();
+      }, 50);
     }
 
-    mermaid.initialize({
-      startOnLoad: false,
-      theme: 'neutral',
-      flowchart: { curve: 'basis', useMaxWidth: true },
-      stateDiagram: { useMaxWidth: true }
-    });
-
-    odMermaidObserver = new MutationObserver(function (mutations) {
+    odEnhanceObserver = new MutationObserver(function (mutations) {
       var hasNew = mutations.some(function (m) {
         return Array.from(m.addedNodes).some(function (n) {
-          return n.nodeType === 1 && (
-            n.matches && n.matches('.language-mermaid') ||
-            n.querySelector && n.querySelector('.language-mermaid')
+          return (
+            n.nodeType === 1 &&
+            ((n.matches &&
+              (n.matches(".language-mermaid") ||
+                n.matches(".language-od-call-flow") ||
+                n.matches("pre"))) ||
+              (n.querySelector &&
+                (n.querySelector(".language-mermaid") ||
+                  n.querySelector(".language-od-call-flow"))))
           );
         });
       });
-      if (hasNew) odProcessMermaid();
+      if (hasNew) odProcessEnhancements();
     });
 
-    /* ReDoc já pode ter renderizado blocos mermaid enquanto aguardávamos o
-       global carregar — processa o que já existe antes de observar novos. */
-    odProcessMermaid();
-    odMermaidObserver.observe(document.getElementById('redoc-container'), {
+    odEnhanceObserver.observe(document.getElementById("redoc-container"), {
       childList: true,
       subtree: true
     });
   }
 
-  odInitMermaid();
+  odInitEnhancements();
 
-  Redoc.init(
+  var odRedocReady = Redoc.init(
     {{ page.meta.openapi_spec | tojson }},
     {
       scrollYOffset: odHeaderOffset,
@@ -210,20 +585,21 @@
             hover: "#004621"
           }
         },
+        /* P0: tokens e densidade alinhados à sidebar MkDocs (theme.css) */
         sidebar: {
-          width: "230px",
-          backgroundColor: "#f8faf8",
-          textColor: "#33453a",
+          width: "12.1rem",
+          backgroundColor: "#f7faf8",
+          textColor: "#4a6151",
           activeTextColor: "#00652e",
           groupItems: {
             textTransform: "uppercase",
             activeTextColor: "#00652e",
-            activeBackgroundColor: "rgba(0,101,46,0.08)"
+            activeBackgroundColor: "rgba(0,101,46,0.10)"
           },
           level1Items: {
             textTransform: "none",
             activeTextColor: "#00652e",
-            activeBackgroundColor: "rgba(0,101,46,0.08)"
+            activeBackgroundColor: "rgba(0,101,46,0.10)"
           },
           arrow: {
             color: "#00652e"
@@ -240,6 +616,15 @@
     },
     document.getElementById("redoc-container")
   );
+
+  /* Garante processar call-flows/mermaid após o primeiro paint do ReDoc. */
+  if (odRedocReady && typeof odRedocReady.then === "function") {
+    odRedocReady.then(function () {
+      odProcessEnhancements();
+    });
+  } else {
+    setTimeout(odProcessEnhancements, 300);
+  }
 </script>
 
 {% endblock %}

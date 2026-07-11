@@ -580,6 +580,12 @@
     var link = tab.querySelector('.md-tabs__link');
     if (!link) return;
 
+    /* Pai clicável → primeira página da seção (Início / Princípios / Visão Geral) */
+    var home = firstUrl(section);
+    if (home && home.url) {
+      link.setAttribute('href', home.url);
+    }
+
     link.setAttribute('aria-haspopup', 'menu');
     link.setAttribute('aria-expanded', 'false');
     link.setAttribute('aria-controls', 'od-header-dropdown');
@@ -588,6 +594,9 @@
       var chevron = document.createElement('span');
       chevron.className = 'od-chevron';
       chevron.setAttribute('aria-hidden', 'true');
+      /* botão visual: abre o submenu sem navegar */
+      chevron.setAttribute('role', 'button');
+      chevron.setAttribute('tabindex', '-1');
       link.appendChild(chevron);
     }
 
@@ -596,23 +605,31 @@
     });
     tab.addEventListener('mouseleave', scheduleHide);
 
+    /* Clique no texto/link → navega para a home da tab.
+       Clique no chevron → só abre/fecha o dropdown (touch/desktop). */
     link.addEventListener('click', function (e) {
-      if (currentTab === tab && portal.classList.contains('od-dropdown--visible')) {
-        hidePortal(true);
+      if (e.target.closest('.od-chevron')) {
         e.preventDefault();
+        e.stopPropagation();
+        if (currentTab === tab && portal.classList.contains('od-dropdown--visible')) {
+          hidePortal(true);
+        } else {
+          showPortal(tab, section.children, 'click', false);
+        }
         return;
       }
-      showPortal(tab, section.children, 'click', false);
-      e.preventDefault();
+      /* deixa o <a href> navegar; fecha dropdown se estiver aberto */
+      hidePortal(true);
     });
 
     link.addEventListener('keydown', function (e) {
-      if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+      if (e.key === 'ArrowDown' || e.key === ' ') {
         e.preventDefault();
         showPortal(tab, section.children, 'keyboard', true);
       } else if (e.key === 'Escape') {
         hidePortal(true);
       }
+      /* Enter: comportamento nativo do link (vai à home da tab) */
     });
   });
 

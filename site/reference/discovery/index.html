@@ -293,6 +293,19 @@
 
 
 <style>
+  /* Tokens espelhados do theme.css — o ReDoc não herda :root do Material
+     de forma confiável em todos os nós; redeclara no container. */
+  #redoc-container {
+    --od-green: #00652e;
+    --od-green-dark: #004621;
+    --od-gray-50: #f7faf8;
+    --od-gray-200: #dde6e1;
+    --od-border: #d3e4d6;
+    --od-text: #24332a;
+    --od-text-soft: #4a6151;
+    --od-radius-sm: 6px;
+  }
+
   .md-main__inner,
   .md-content,
   .md-content__inner {
@@ -321,16 +334,93 @@
     text-decoration: none;
   }
 
+  /* ── Shell da sidebar (P0: fundo + borda como MkDocs) ───────────────────
+     .menu-content é o painel fixo do ReDoc. Largura também vem do theme API. */
+  #redoc-container .menu-content {
+    background-color: var(--od-gray-50) !important;
+    border-right: 1px solid var(--od-border);
+    /* Fallback nativo (se Perfect Scrollbar não estiver no nó) */
+    scrollbar-width: thin;
+    scrollbar-color: var(--od-gray-200) transparent;
+  }
+
+  #redoc-container .menu-content::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  #redoc-container .menu-content::-webkit-scrollbar-thumb {
+    background: var(--od-gray-200);
+    border-radius: 99px;
+  }
+
+  #redoc-container .menu-content::-webkit-scrollbar-thumb:hover {
+    background: var(--od-border);
+  }
+
+  /* ReDoc 2.x usa Perfect Scrollbar (.ps / .ps__thumb-y) no menu —
+     o visual nativo sozinho quase nunca aparece. Espelha o thin do MkDocs. */
+  #redoc-container .menu-content .ps__rail-y,
+  #redoc-container .menu-content .ps__rail-x {
+    background: transparent !important;
+    opacity: 1 !important;
+  }
+
+  #redoc-container .menu-content .ps__rail-y {
+    width: 8px !important;
+    right: 2px !important;
+  }
+
+  #redoc-container .menu-content .ps__thumb-y {
+    background-color: var(--od-gray-200) !important;
+    width: 5px !important;
+    right: 1.5px !important;
+    border-radius: 99px !important;
+  }
+
+  #redoc-container .menu-content .ps__rail-y:hover .ps__thumb-y,
+  #redoc-container .menu-content .ps__rail-y:focus .ps__thumb-y,
+  #redoc-container .menu-content .ps__rail-y.ps--clicking .ps__thumb-y {
+    background-color: var(--od-border) !important;
+    width: 6px !important;
+  }
+
+  /* Qualquer .ps dentro do redoc-wrap (menu é o caso principal) */
+  #redoc-container .ps__rail-y {
+    background: transparent !important;
+  }
+
+  #redoc-container .ps__thumb-y {
+    background-color: var(--od-gray-200) !important;
+    border-radius: 99px !important;
+  }
+
+  #redoc-container .ps__rail-y:hover .ps__thumb-y,
+  #redoc-container .ps__rail-y.ps--clicking .ps__thumb-y {
+    background-color: var(--od-border) !important;
+  }
+
+  /* Respiro horizontal: labels do ReDoc costumam ser width 100% colados
+     na borda; forçamos gutter nas laterais (como margin do MkDocs). */
+  #redoc-container .menu-content label.-depth0,
+  #redoc-container .menu-content label.-depth1,
+  #redoc-container .menu-content label.-depth2 {
+    box-sizing: border-box !important;
+    width: calc(100% - 0.9rem) !important;
+    max-width: calc(100% - 0.9rem) !important;
+    margin-left: 0.5rem !important;
+    margin-right: 0.4rem !important;
+  }
+
   /* ── Sidebar: grupo (depth0) ─────────────────────────────────────────────
      Cabeçalhos dos x-tagGroups. Seletores de profundidade (-depthN) são
      estáveis entre versões do ReDoc — não dependem de classes hash geradas. */
   #redoc-container label.-depth0 {
-    font-size: 0.62rem !important;
-    font-weight: 600 !important;
-    letter-spacing: 0.07em;
+    font-size: 0.68rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: #00652e !important;
-    border-top: 1px solid #e2ede4;
+    color: var(--od-green) !important;
+    border-top: 1px solid var(--od-border);
     margin-top: 2px !important;
     padding-top: 12px !important;
     padding-bottom: 2px !important;
@@ -344,28 +434,53 @@
 
   /* ── Sidebar: tags e traits (depth1) ──────────────────────────────────── */
   #redoc-container label.-depth1 {
-    font-size: 0.68rem !important;
+    font-size: 0.78rem !important;
     font-weight: 500 !important;
-    border-radius: 6px;
-    transition: background-color .12s;
+    border-radius: var(--od-radius-sm);
+    color: var(--od-text-soft);
+    transition: background-color 0.12s ease, color 0.12s ease;
   }
 
   #redoc-container label.-depth1:hover {
     background-color: rgba(0, 101, 46, 0.06);
+    color: var(--od-green-dark);
   }
 
   /* ── Sidebar: endpoints e seções de traits (depth2) ───────────────────── */
   #redoc-container label.-depth2 {
-    font-size: 0.64rem !important;
+    font-size: 0.76rem !important;
     font-weight: 400 !important;
-    opacity: 0.8;
-    border-radius: 6px;
-    transition: background-color .12s, opacity .12s;
+    opacity: 0.9;
+    border-radius: var(--od-radius-sm);
+    color: var(--od-text-soft);
+    transition: background-color 0.12s ease, color 0.12s ease, opacity 0.12s ease;
   }
 
   #redoc-container label.-depth2:hover {
     background-color: rgba(0, 101, 46, 0.06);
+    color: var(--od-green-dark);
     opacity: 1;
+  }
+
+  /* ── Ativo = pill + barra esquerda (espelha MkDocs) ─────────────────────
+     ReDoc marca o item com .active no label (e às vezes no li). */
+  #redoc-container label.active,
+  #redoc-container label.-depth1.active,
+  #redoc-container label.-depth2.active,
+  #redoc-container li.active > label {
+    background-color: rgba(0, 101, 46, 0.10) !important;
+    color: var(--od-green) !important;
+    font-weight: 650 !important;
+    opacity: 1 !important;
+    border-radius: var(--od-radius-sm);
+    box-shadow: inset 3px 0 0 var(--od-green);
+  }
+
+  #redoc-container label.active:hover,
+  #redoc-container li.active > label:hover {
+    background-color: rgba(0, 101, 46, 0.14) !important;
+    color: var(--od-green-dark) !important;
+    box-shadow: inset 3px 0 0 var(--od-green);
   }
 </style>
 
@@ -456,8 +571,8 @@
         type="text"
         class="md-search__input"
         name="query"
-        aria-label="Buscar capabilities, endpoints, eventos…"
-        placeholder="Buscar capabilities, endpoints, eventos…"
+        aria-label="Buscar (tecla /)"
+        placeholder="Buscar"
         autocapitalize="off"
         autocorrect="off"
         autocomplete="off"
@@ -465,6 +580,8 @@
         data-md-component="search-query"
         required
       >
+      
+      <kbd class="od-search-hotkey" title="Pressione / para buscar" aria-hidden="true">/</kbd>
       <label class="md-search__icon md-icon" for="__search">
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
@@ -630,8 +747,6 @@
           
   
   
-    
-  
   Guia
 
         </a>
@@ -659,8 +774,6 @@
           
   
   
-    
-  
   Protocolo
 
         </a>
@@ -685,8 +798,6 @@
         <a href="../" class="md-tabs__link">
           
   
-  
-    
   
   Referência da API
 
@@ -756,29 +867,11 @@
   
     
     
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
     
     
       
+      
+        
       
     
     
@@ -789,9 +882,8 @@
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" >
         
           
-          <div class="md-nav__link md-nav__container">
-            <a href="../.." class="md-nav__link ">
-              
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
   
   
   <span class="md-ellipsis">
@@ -805,14 +897,8 @@
   
   
 
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_1" id="__nav_1_label" tabindex="0">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
+            <span class="md-nav__icon md-icon"></span>
+          </label>
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_1">
@@ -825,6 +911,32 @@
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Início
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
               
             
               
@@ -1003,17 +1115,11 @@
   
     
     
-      
-        
-      
-        
-      
-        
-      
-    
     
     
       
+      
+        
       
     
     
@@ -1160,17 +1266,11 @@
   
     
     
-      
-        
-      
-        
-      
-        
-      
-    
     
     
       
+      
+        
       
     
     
@@ -1218,21 +1318,11 @@
   
     
     
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
     
     
       
+      
+        
       
     
     
@@ -1428,15 +1518,11 @@
   
     
     
+    
+    
+      
       
         
-      
-        
-      
-    
-    
-    
-      
       
     
     
@@ -1548,19 +1634,11 @@
   
     
     
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
     
     
       
+      
+        
       
     
     
@@ -1608,17 +1686,11 @@
   
     
     
-      
-        
-      
-        
-      
-        
-      
-    
     
     
       
+      
+        
       
     
     
@@ -1758,15 +1830,11 @@
   
     
     
+    
+    
+      
       
         
-      
-        
-      
-    
-    
-    
-      
       
     
     
@@ -1906,17 +1974,11 @@
   
     
     
-      
-        
-      
-        
-      
-        
-      
-    
     
     
       
+      
+        
       
     
     
@@ -2073,22 +2135,14 @@
   
     
     
-      
-        
-          
-        
-      
-        
-      
-        
-      
-    
     
     
       
         
         
       
+      
+        
       
     
     
@@ -2099,9 +2153,8 @@
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
-          <div class="md-nav__link md-nav__container">
-            <a href="../" class="md-nav__link ">
-              
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
   
   
   <span class="md-ellipsis">
@@ -2115,14 +2168,8 @@
   
   
 
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
+            <span class="md-nav__icon md-icon"></span>
+          </label>
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
@@ -2136,6 +2183,32 @@
           <ul class="md-nav__list" data-md-scrollfix>
             
               
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visão Geral
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -2147,26 +2220,25 @@
   
     
     
+    
+    
+      
       
         
-      
+          
+          
         
       
     
     
-    
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" checked>
         
           
-          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="">
             
   
   
@@ -2275,30 +2347,25 @@
   
     
     
+    
+    
+      
       
         
-      
-        
-      
-        
-      
+          
+          
         
       
     
     
-    
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" >
         
           
-          <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="">
             
   
   
@@ -2363,15 +2430,11 @@
   
     
     
+    
+    
+      
       
         
-      
-        
-      
-    
-    
-    
-      
       
     
     
@@ -2706,20 +2769,21 @@
             hover: "#004621"
           }
         },
+        /* P0: tokens e densidade alinhados à sidebar MkDocs (theme.css) */
         sidebar: {
-          width: "230px",
-          backgroundColor: "#f8faf8",
-          textColor: "#33453a",
+          width: "12.1rem",
+          backgroundColor: "#f7faf8",
+          textColor: "#4a6151",
           activeTextColor: "#00652e",
           groupItems: {
             textTransform: "uppercase",
             activeTextColor: "#00652e",
-            activeBackgroundColor: "rgba(0,101,46,0.08)"
+            activeBackgroundColor: "rgba(0,101,46,0.10)"
           },
           level1Items: {
             textTransform: "none",
             activeTextColor: "#00652e",
-            activeBackgroundColor: "rgba(0,101,46,0.08)"
+            activeBackgroundColor: "rgba(0,101,46,0.10)"
           },
           arrow: {
             color: "#00652e"
@@ -2842,7 +2906,7 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "navigation.indexes", "navigation.footer", "content.code.copy", "content.tooltips", "content.tabs.link", "content.action.edit", "toc.follow", "search.suggest", "search.highlight", "search.share"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copiado para \u00e1rea de transfer\u00eancia", "clipboard.copy": "Copiar para \u00e1rea de transfer\u00eancia", "search.result.more.one": "Mais 1 nesta p\u00e1gina", "search.result.more.other": "Mais # nesta p\u00e1gina", "search.result.none": "Nenhum resultado encontrado", "search.result.one": "1 resultado encontrado", "search.result.other": "# resultados encontrados", "search.result.placeholder": "Digite para iniciar a busca", "search.result.term.missing": "Ausente", "select.version": "Selecione a vers\u00e3o"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.tracking", "navigation.footer", "content.code.copy", "content.tooltips", "content.tabs.link", "content.action.edit", "toc.follow", "search.suggest", "search.highlight", "search.share"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copiado para \u00e1rea de transfer\u00eancia", "clipboard.copy": "Copiar para \u00e1rea de transfer\u00eancia", "search.result.more.one": "Mais 1 nesta p\u00e1gina", "search.result.more.other": "Mais # nesta p\u00e1gina", "search.result.none": "Nenhum resultado encontrado", "search.result.one": "1 resultado encontrado", "search.result.other": "# resultados encontrados", "search.result.placeholder": "Digite para iniciar a busca", "search.result.term.missing": "Ausente", "select.version": "Selecione a vers\u00e3o"}, "version": null}</script>
     
     
 
@@ -3361,6 +3425,12 @@
     var link = tab.querySelector('.md-tabs__link');
     if (!link) return;
 
+    /* Pai clicável → primeira página da seção (Início / Princípios / Visão Geral) */
+    var home = firstUrl(section);
+    if (home && home.url) {
+      link.setAttribute('href', home.url);
+    }
+
     link.setAttribute('aria-haspopup', 'menu');
     link.setAttribute('aria-expanded', 'false');
     link.setAttribute('aria-controls', 'od-header-dropdown');
@@ -3369,6 +3439,9 @@
       var chevron = document.createElement('span');
       chevron.className = 'od-chevron';
       chevron.setAttribute('aria-hidden', 'true');
+      /* botão visual: abre o submenu sem navegar */
+      chevron.setAttribute('role', 'button');
+      chevron.setAttribute('tabindex', '-1');
       link.appendChild(chevron);
     }
 
@@ -3377,23 +3450,31 @@
     });
     tab.addEventListener('mouseleave', scheduleHide);
 
+    /* Clique no texto/link → navega para a home da tab.
+       Clique no chevron → só abre/fecha o dropdown (touch/desktop). */
     link.addEventListener('click', function (e) {
-      if (currentTab === tab && portal.classList.contains('od-dropdown--visible')) {
-        hidePortal(true);
+      if (e.target.closest('.od-chevron')) {
         e.preventDefault();
+        e.stopPropagation();
+        if (currentTab === tab && portal.classList.contains('od-dropdown--visible')) {
+          hidePortal(true);
+        } else {
+          showPortal(tab, section.children, 'click', false);
+        }
         return;
       }
-      showPortal(tab, section.children, 'click', false);
-      e.preventDefault();
+      /* deixa o <a href> navegar; fecha dropdown se estiver aberto */
+      hidePortal(true);
     });
 
     link.addEventListener('keydown', function (e) {
-      if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+      if (e.key === 'ArrowDown' || e.key === ' ') {
         e.preventDefault();
         showPortal(tab, section.children, 'keyboard', true);
       } else if (e.key === 'Escape') {
         hidePortal(true);
       }
+      /* Enter: comportamento nativo do link (vai à home da tab) */
     });
   });
 

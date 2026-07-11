@@ -7,8 +7,8 @@
         type="text"
         class="md-search__input"
         name="query"
-        aria-label="{% if config.theme.language == 'en' %}Search capabilities, endpoints, events…{% else %}Buscar capabilities, endpoints, eventos…{% endif %}"
-        placeholder="{% if config.theme.language == 'en' %}Search capabilities, endpoints, events…{% else %}Buscar capabilities, endpoints, eventos…{% endif %}"
+        aria-label="{% if config.theme.language == 'en' %}Search (press /){% else %}Buscar (tecla /){% endif %}"
+        placeholder="{% if config.theme.language == 'en' %}Search{% else %}Buscar{% endif %}"
         autocapitalize="off"
         autocorrect="off"
         autocomplete="off"
@@ -16,6 +16,8 @@
         data-md-component="search-query"
         required
       >
+      {# Atalho padrão do Material: "/" foca a busca #}
+      <kbd class="od-search-hotkey" title="{% if config.theme.language == 'en' %}Press / to search{% else %}Pressione / para buscar{% endif %}" aria-hidden="true">/</kbd>
       <label class="md-search__icon md-icon" for="__search">
         {% set icon = config.theme.icon.search or "material/magnify" %}
         {% include ".icons/" ~ icon ~ ".svg" %}

@@ -8,13 +8,21 @@
 </p>
 
 <div class="od-api-callout">
-  <p>Regras e fluxos nesta página. Contrato HTTP na referência OpenAPI.</p>
-  <a href="../reference/indoor/">Abrir referência OpenAPI →</a>
+  <p><strong>Guia auxiliar</strong> — conceitos, papéis e fluxos. A normativa completa (campos, endpoints, erros e exemplos JSON) está na OpenAPI; um implementador experiente pode integrar só pela spec.</p>
+  <a href="../reference/indoor/">Implementar pela OpenAPI Indoor →</a>
 </div>
 
 A capability **Indoor** padroniza as operações de consumo no local — mesa, comanda e balcão — cobrindo tanto atendimento mediado por garçom quanto **autoatendimento completo** via totem, QR Code ou tablet. Ela cobre o ciclo completo de uma sessão de salão: agrupar os pedidos numa **conta**, registrar pagamentos (inclusive parciais), emitir documento fiscal e fechar a conta — tudo sincronizado entre o sistema de gestão do restaurante e a aplicação de pedido.
 
-Esta página explica o que é a capability, os conceitos que você precisa dominar, os fluxos de interação e como implementar cada lado. As regras normativas e a referência completa de campos estão na [spec da API Indoor](../reference/indoor.md).
+Esta página é o **guia de leitura**: o que é a capability, os conceitos que você precisa dominar, os fluxos de interação e checklists por papel. **Campos, schemas, códigos de erro e exemplos de payload** vivem na [OpenAPI Indoor](../reference/indoor.md) (ReDoc) — a fonte normativa e auto-suficiente.
+
+!!! note "Idioma"
+    O contrato OpenAPI é **sempre em inglês**. Os guias de protocolo são bilíngues (esta página em PT + versão EN).
+
+| Camada | O que contém | Quando usar |
+|---|---|---|
+| **Este guia** | Visão de negócio, papéis, fluxos Mermaid, checklists | Você está conhecendo o domínio ou montando a integração pela primeira vez |
+| **[OpenAPI Indoor](../reference/indoor.md)** | Endpoints, campos, MUST/MAY, erros, exemplos JSON | Você vai codar ou validar o contrato HTTP |
 
 ---
 
@@ -29,9 +37,12 @@ Sem um padrão, cada integração entre PDV e aplicação de salão precisava ne
 ## Pré-requisito: protocolo de Orders
 
 !!! warning "Indoor é uma extensão de Orders, não uma capability autônoma"
-    Esta capability pressupõe que ambas as partes já implementaram o **protocolo de Orders** do Open Delivery. Um pedido indoor (`orderType: INDOOR`) trafega pelo mesmo ciclo de vida e pelos mesmos mecanismos de evento de qualquer outro pedido. O Indoor adiciona, sobre esse fluxo base, a gestão da conta de salão.
+    Ambas as partes **DEVEM** implementar o **protocolo de Orders** antes de Indoor. A **conta de salão é aberta a partir de um pedido**: quando o Orders processa um pedido com `orderType: INDOOR` para uma chave operacional sem conta aberta, o Software Service cria a conta. Pedidos INDOOR seguintes na mesma chave só acumulam itens.
 
-    Implementações que não possuem o protocolo de Orders ativo não podem usar esta capability.
+    Detalhes de ciclo de vida e eventos do **pedido** ficam só em Orders — não se redefinem aqui. Implementações sem Orders ativo **não podem** usar esta capability.
+
+    - Guia: [Orders](orders.md)
+    - Contrato: [OpenAPI Orders](../reference/orders.md)
 
 O pedido é o **canal de entrada de itens**; a conta é o **agrupador operacional** desses pedidos para fins de pagamento, fechamento e integração fiscal.
 
@@ -45,6 +56,58 @@ O pedido é o **canal de entrada de itens**; a conta é o **agrupador operaciona
 | **Ordering Application** | Aplicação de pedido (totem, tablet do garçom, app do cliente, frente de caixa). **Consome** os endpoints e **recebe** os eventos via webhook para manter-se sincronizada. |
 
 Em todas as operações desta capability o Software Service é o servidor e a Ordering Application é o cliente.
+
+---
+
+## Discovery
+
+Participantes que expõem Indoor **DEVEM** declarar a extensão no manifesto well-known (`GET /.well-known/opendelivery`), sob a capability pai **Orders** (ou conforme o binding de Discovery da implementação).
+
+Campos típicos da declaração Indoor no Discovery (detalhe normativo na [OpenAPI Discovery](../reference/discovery.md)):
+
+| Campo | Significado |
+|---|---|
+| `invoiceIssuer` | Quem emite o documento fiscal (`pos` / `app` / `platform`) |
+| `invoiceIssueMoment` | Momento da emissão (`account_closing`, `item_addition`, `payment`) |
+| `usesAccountId` | Se o participante rastreia sessões com `accountId` |
+
+```json
+"capabilities": {
+  "orders": {
+    "endpoint": "https://api.example.com/od/v2"
+  },
+  "indoor": {
+    "endpoint": "https://api.example.com/od/v2",
+    "invoiceIssuer": "pos",
+    "invoiceIssueMoment": "account_closing",
+    "usesAccountId": true
+  }
+}
+```
+
+Guia geral: [Discovery](discovery.md). Contrato: [OpenAPI Discovery](../reference/discovery.md).
+
+---
+
+## Mapa: o que fazer → operação na OpenAPI
+
+Use esta tabela para ir do fluxo de negócio ao contrato HTTP. Todos os links abrem a [Referência OpenAPI Indoor](../reference/indoor.md).
+
+| Objetivo | Operação | Onde na spec |
+|---|---|---|
+| Abrir conta / adicionar itens | `POST /orders` com `orderType: INDOOR` | [Orders](../reference/orders.md) (pré-requisito) |
+| Consultar conta (mesa/comanda) | `GET /accounts?operationMode&identifier` | `getAccount` |
+| Consultar conta por ID | `GET /accounts/{accountId}` | `getAccountById` |
+| Pré-fechar (lock) | `POST /accounts/pre-close` | `preCloseAccount` |
+| Desbloquear | `POST /accounts/unlock` | `unlockAccount` |
+| Fechar conta | `POST /accounts/close` | `closeAccount` |
+| Cancelar item | `POST /accounts/items/{itemId}/cancel` | `cancelAccountItem` |
+| Transferir itens/conta | `POST /accounts/transfers` | `transferAccountContent` |
+| Lançar pagamento | `POST /accounts/payments` | `createPayment` |
+| Listar pagamentos | `GET /accounts/payments` | `listAccountPayments` |
+| Solicitar fiscal | `POST /accounts/fiscal` | `requestFiscalDocument` |
+| Consultar documentos fiscais | `GET /accounts/fiscal` | `listAccountFiscalDocuments` |
+| Receber eventos | Webhook `accountEvent` | `receiveAccountEvent` |
 
 ---
 
@@ -147,10 +210,11 @@ A cada transição relevante, o Software Service **DEVE** notificar a Ordering A
 | `ACCOUNT_ITEM_REMOVED` | Itens transferidos para outra conta | <span class="od-badge od-badge--may">MAY</span> | `IN_USE` | Transferência entre mesas/comandas |
 | `ACCOUNT_ITEM_CANCELLED` | Item cancelado | <span class="od-badge od-badge--must">MUST</span> | `IN_USE` | Cancelamento de item, não da conta |
 | `PAYMENT_CREATED` | Pagamento lançado | <span class="od-badge od-badge--must">MUST</span> | — | Válido em `IN_USE` e `IN_PAYMENT` |
+| `PAYMENT_UPDATED` | Ajuste interno de um pagamento já criado | <span class="od-badge od-badge--may">MAY</span> | — | Conciliação; omitível se não houver update pós-create |
 | `ACCOUNT_PRE_CLOSED` | Conta bloqueada para pagamento | <span class="od-badge od-badge--must">MUST</span> | `IN_PAYMENT` | Lock — sem novos itens |
 | `ACCOUNT_UNLOCKED` | Bloqueio revertido | <span class="od-badge od-badge--may">MAY</span> | `IN_USE` | Reabre para novos itens |
-| `FISCAL_ISSUED` | Documento fiscal emitido | <span class="od-badge od-badge--must">MUST</span> | — | Assíncrono; GET como fallback |
-| `FISCAL_ERROR` | Falha na emissão fiscal | <span class="od-badge od-badge--must">MUST</span> | — | Assíncrono; conta pode fechar mesmo assim |
+| `FISCAL_ISSUED` | Documento fiscal emitido | <span class="od-badge od-badge--must">MUST</span> | — | Se fiscal solicitado; assíncrono; GET como fallback |
+| `FISCAL_ERROR` | Falha na emissão fiscal | <span class="od-badge od-badge--must">MUST</span> | — | Se fiscal solicitado e falhar; conta pode fechar mesmo assim |
 | `ACCOUNT_CLOSED` | Conta fechada definitivamente | <span class="od-badge od-badge--must">MUST</span> | `CLOSED` | Irreversível |
 
 </div>
@@ -158,6 +222,25 @@ A cada transição relevante, o Software Service **DEVE** notificar a Ordering A
 
 !!! tip "Pedidos Indoor vs conta"
     O ciclo de vida do **pedido** INDOOR (CREATED → CONFIRMED → …) está na [matriz Orders — perfil INDOOR](orders.md#perfil-indoor). A matriz acima é só da **conta** (Account).
+
+!!! note "Payloads de webhook e exemplos JSON"
+    Exemplos de cada `EventType` e do contrato `EventNotification` estão na OpenAPI, operação [`receiveAccountEvent`](../reference/indoor.md) — não são duplicados aqui para evitar drift.
+
+---
+
+## Fora do MVP (V2.1+)
+
+O comitê Salão/Indoor debateu e **deixou de fora** desta release candidate:
+
+| Tema | Status |
+|---|---|
+| Reservas de mesa e fila de espera | Pós-V2 (possível V2.1) |
+| Endpoint de “chamar garçom” | Avaliado; não normativo nesta RC |
+| Histórico estruturado de transferências (`TransferHistoryEntry`) | Em debate; use `reason` no `TransferRequest` |
+| Polling de eventos de conta (`GET /events`) | Comentado na spec; entrega é **webhook-only** |
+| Timeout automático de lock / pré-close por origem | Em avaliação operacional |
+
+Não espere esses comportamentos de uma implementação conforme V2.0.0-rc.
 
 ---
 
@@ -389,14 +472,16 @@ Se você consome os endpoints e exibe a conta ao operador ou cliente, atente par
 
 ---
 
-**Referência completa de campos e regras normativas:** [API Indoor →](../reference/indoor.md)
+**Contrato normativo (campos, endpoints, erros, exemplos):** [OpenAPI Indoor →](../reference/indoor.md)
 
 ---
 
 <div class="od-next-step">
   <div class="od-next-step__label">Próximo passo</div>
   <div class="od-next-step__links">
-    <a href="../reference/indoor/">Abrir referência OpenAPI</a>
-    <a href="orders/">Protocolo Orders</a>
+    <a href="../reference/indoor/">Implementar pela OpenAPI Indoor</a>
+    <a href="orders/">Protocolo Orders (pré-requisito)</a>
+    <a href="../reference/orders/">OpenAPI Orders</a>
+    <a href="discovery/">Discovery</a>
   </div>
 </div>

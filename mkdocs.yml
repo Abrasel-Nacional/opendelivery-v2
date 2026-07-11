@@ -135,9 +135,13 @@ theme:
   features:
     - navigation.tabs
     - navigation.tabs.sticky
+    - navigation.sections
     - navigation.top
     - navigation.tracking
-    - navigation.indexes
+    # navigation.indexes desativado: com ele, index.md (Início / Visão Geral)
+    # vira o link do título da tab e some do menu lateral — deixando Guia e
+    # Referência com markup diferente de Protocolo. Sem indexes, o nome da
+    # tab fica só como label e Início/Visão Geral aparecem como itens normais.
     - navigation.footer
     # navigation.instant desativado: incompatível com o language switcher do mkdocs-static-i18n
     - content.code.copy
