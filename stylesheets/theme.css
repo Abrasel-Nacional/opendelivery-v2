@@ -31,6 +31,18 @@
   --od-shadow-sm:      0 1px 2px rgba(0, 70, 33, 0.06);
   --od-shadow-md:      0 4px 14px rgba(0, 70, 33, 0.10);
   --od-shadow-lg:      0 12px 32px rgba(0, 70, 33, 0.16);
+
+  --od-font-family:   "Google Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  /* Semântica normativa (MUST / SHOULD / MAY) */
+  --od-must:          #b42318;
+  --od-must-bg:       rgba(180, 35, 24, 0.08);
+  --od-should:        #b54708;
+  --od-should-bg:     rgba(181, 71, 8, 0.10);
+  --od-may:           #027a48;
+  --od-may-bg:        rgba(2, 122, 72, 0.10);
+  --od-rc:            #175cd3;
+  --od-rc-bg:         rgba(23, 92, 211, 0.10);
 }
 
 /* ============================================================
@@ -55,35 +67,275 @@
   --md-typeset-a-color:              var(--od-green);
 }
 
-/* ── Header logo: maior e com mais destaque que o padrão do Material ── */
+/* ── Header ──────────────────────────────────────────────────────────── */
 :root {
-  --md-header-height: 3.6rem;
+  --md-header-height: 3.4rem;
+  /* Controles do header (busca, idioma, ícones) — mesma altura visual */
+  --od-header-control-h: 1.85rem;
 }
 
+/* Aplicar fonte Google Sans globalmente */
+body,
+html,
+.md-typeset {
+  font-family: var(--od-font-family);
+}
+
+.md-header {
+  background-color: #fff;
+  border-bottom: 1px solid var(--od-border);
+  color: var(--od-green-dark);
+  /* acima do dropdown (z-index: 3) — garante o efeito "de trás" */
+  z-index: 4;
+}
+
+.md-header--shadow {
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Linha do header: logo define a altura; resto centraliza na faixa */
+.md-header__inner {
+  align-items: center;
+  min-height: var(--md-header-height);
+}
+
+.md-header__button {
+  color: var(--od-green-dark);
+}
+
+.md-header__button:hover {
+  opacity: 1;
+  color: var(--od-green-soft);
+}
+
+.md-header__topic,
+.md-header__title {
+  color: var(--od-green-dark);
+}
+
+/* Logo: maior, ancora a altura máxima do cabeçalho */
 .md-header__button.md-logo {
-  margin: 0.2rem 0.6rem 0.2rem 0.4rem;
-  padding: 0.2rem;
+  margin: 0.15rem 0.55rem 0.15rem 0.35rem;
+  padding: 0.15rem;
+  display: inline-flex;
+  align-items: center;
 }
 
 .md-header__button.md-logo img,
 .md-header__button.md-logo svg {
-  height: 2.6rem;
+  height: 2.75rem;
   width: auto;
+  filter: url(#od-logo-color);
 }
 
-/* Sombra do header ao rolar: o Material já alterna a classe
-   `.md-header--shadow` sozinho via bundle.js; só afinamos a cor
-   pra ficar coerente com a marca em vez do cinza padrão. */
-.md-header--shadow {
-  box-shadow: 0 .2rem .6rem rgba(0, 70, 33, .18), 0 0 .05rem rgba(0, 70, 33, .3);
+/* ── Nav no header (tabs com dropdown) ─────────────────────────────────
+   Tabs esticam na altura do header para o underline cair na borda
+   inferior; texto mais presente (sem exagero). */
+.od-header-nav {
+  flex: 1;
+  align-self: stretch;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  min-height: 100%;
 }
 
-/* ── Sidebar esquerda: encostar no topo ───────────────────────────────
-   O Material reserva 1.2rem de padding-top por padrão (.md-sidebar) antes
-   do primeiro item — com a busca custom ocupando esse topo, o respiro
-   ficava grande demais em relação à barra de tabs. */
-.md-sidebar--primary {
-  padding-top: 0.3rem;
+.od-header-nav .md-tabs__list {
+  display: flex;
+  align-items: stretch;
+  align-self: stretch;
+  gap: 0.15rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  height: 100%;
+}
+
+.od-header-nav .md-tabs__item {
+  display: flex;
+  align-items: stretch;
+  height: 100%;
+}
+
+.od-header-nav .md-tabs__link {
+  position: relative;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  height: 100%;
+  margin: 0;
+  padding: 0 0.95rem;
+  font-size: 0.84rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  color: var(--od-text);
+  white-space: nowrap;
+  text-decoration: none;
+  background: transparent;
+  box-shadow: none;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+/* Underline na borda inferior do cabeçalho (não “sob o texto”) */
+.od-header-nav .md-tabs__link::after {
+  content: "";
+  position: absolute;
+  left: 0.55rem;
+  right: 0.55rem;
+  bottom: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--od-green);
+  opacity: 0;
+  transform: scaleX(0.55);
+  transition: opacity 0.15s ease, transform 0.18s ease;
+  pointer-events: none;
+}
+
+.od-header-nav .md-tabs__link:hover {
+  background: transparent;
+  color: var(--od-green-dark);
+  text-decoration: none;
+  box-shadow: none;
+}
+
+.od-header-nav .md-tabs__link:hover::after {
+  opacity: 0.55;
+  transform: scaleX(1);
+}
+
+/* Ativa: Material marca o LI (.md-tabs__item--active), não o link.
+   Linha fixa na borda inferior + peso um pouco maior. */
+.od-header-nav .md-tabs__item--active > .md-tabs__link,
+.od-header-nav .md-tabs__item--active > .md-tabs__link:hover,
+.od-header-nav .md-tabs__link--active,
+.od-header-nav .md-tabs__link--active:hover {
+  color: var(--od-green-dark);
+  font-weight: 700;
+  box-shadow: none;
+}
+
+.od-header-nav .md-tabs__item--active > .md-tabs__link::after,
+.od-header-nav .md-tabs__item--active > .md-tabs__link:hover::after,
+.od-header-nav .md-tabs__link--active::after,
+.od-header-nav .md-tabs__link--active:hover::after {
+  opacity: 1;
+  transform: scaleX(1);
+  background: var(--od-green);
+}
+
+/* Material default underlines — desliga; usamos só o ::after acima */
+.od-header-nav .md-tabs__link::before,
+.od-header-nav .md-tabs__link--active::before,
+.od-header-nav .md-tabs__item--active > .md-tabs__link::before {
+  display: none !important;
+}
+
+@media screen and (max-width: 59.9375em) {
+  .od-header-nav { display: none; }
+}
+
+/* ── Controles do header: busca + idioma (altura unificada) ─────────── */
+@media screen and (min-width: 60em) {
+  .md-header .md-search {
+    padding: 0;
+    margin: 0 0.2rem;
+    display: flex;
+    align-items: center;
+  }
+
+  .md-header .md-search__inner {
+    width: 10.75rem;
+  }
+
+  /* Material usa #00000042 (pensado em header colorido) — em header
+     branco vira um cinza sujo. Troca pelo token OD. */
+  .md-header .md-search__form {
+    height: var(--od-header-control-h);
+    border-radius: var(--od-radius-sm);
+    background-color: var(--od-gray-50);
+    border: 1px solid var(--od-border);
+    box-shadow: none;
+    transition: background-color 0.15s, border-color 0.15s;
+  }
+
+  .md-header .md-search__form:hover {
+    background-color: var(--od-bg-soft);
+    border-color: var(--od-green-soft);
+  }
+
+  .md-header .md-search__input {
+    font-size: 0.72rem;
+    height: var(--od-header-control-h);
+    color: var(--od-text);
+    /* espaço à direita para o chip de atalho (/) */
+    padding-right: 1.85rem !important;
+  }
+
+  .md-header .md-search__input::placeholder {
+    color: var(--od-gray-600);
+    font-size: 0.72rem;
+    opacity: 1;
+  }
+
+  .md-header .md-search__input ~ .md-search__icon {
+    color: var(--od-gray-600);
+  }
+
+  .md-header .md-search__input:focus,
+  .md-header .md-search__input:focus-within {
+    outline: none;
+  }
+
+  .md-header .md-search__form:focus-within {
+    border-color: var(--od-green-soft);
+    background-color: #fff;
+    box-shadow: 0 0 0 2px rgba(0, 101, 46, 0.10);
+  }
+
+  /* Ícone da lupa alinhado à altura compacta */
+  .md-header .md-search__icon.md-icon {
+    color: var(--od-gray-600);
+  }
+
+  /* Atalho Material: tecla "/" abre a busca */
+  .md-header .od-search-hotkey {
+    position: absolute;
+    right: 0.35rem;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.15rem;
+    height: 1.15rem;
+    padding: 0 0.28rem;
+    border: 1px solid var(--od-border);
+    border-radius: 4px;
+    background: #fff;
+    color: var(--od-gray-600);
+    font-family: inherit;
+    font-size: 0.62rem;
+    font-weight: 650;
+    line-height: 1;
+    pointer-events: none;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+  }
+
+  .md-header .md-search__form:focus-within .od-search-hotkey,
+  [data-md-toggle="search"]:checked ~ .md-header .od-search-hotkey {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  [data-md-toggle="search"]:checked ~ .md-header .md-search__form {
+    background-color: #fff;
+    border-color: var(--od-border);
+    border-radius: var(--od-radius-sm) var(--od-radius-sm) 0 0;
+  }
 }
 
 /* ── Medida de leitura ──────────────────────────────────────────────
@@ -91,7 +343,7 @@
    só o conteúdo de prosa (não mexe no grid geral, então não afeta o
    layout full-bleed do ReDoc nem a largura da landing page). */
 .md-typeset {
-  font-size: 0.74rem;
+  font-size: 0.875rem;
   line-height: 1.7;
 }
 
@@ -117,8 +369,8 @@
 }
 
 .md-typeset .highlight {
-  background-color: #f6faf7;
-  border: 1px solid var(--od-gray-200);
+  background-color: #edf2ee;
+  border: 1px solid #b8cfbc;
 }
 
 .md-clipboard {
@@ -169,129 +421,841 @@
   background-color: var(--od-green-soft);
 }
 
-/* ── Busca: migrada do cabeçalho para o topo do menu lateral ──────────
-   O ícone de busca original do cabeçalho fica escondido; o componente
-   real (.md-search) é movido via JS em main.html para dentro da
-   sidebar primária. Por isso as regras nativas do Material que regem
-   o estado "aberto" (`[data-md-toggle=search]:checked~.md-header ...`)
-   não se aplicam mais — replicamos aqui o equivalente, trocando o
-   ancestral por `.md-container`, que continua sendo irmão do checkbox
-   #__search no <body>. */
-.md-header__button.md-icon[for="__search"] {
-  display: none;
+/* ── Pesos dos headings de conteúdo ────────────────────────────── */
+.md-typeset h1 { font-weight: 450; }
+.md-typeset h2 { font-weight: 500; }
+.md-typeset h3 { font-weight: 500; }
+
+/* ── Sidebar: colar no header ─────────────────────────────────────
+   1) Material (tabs.sticky + lifted) usa top:4.8rem no CSS, mas o JS
+      sobrescreve com a altura medida do header (inline style).
+   2) O gap residual vinha do padding vertical default da sidebar
+      (.md-sidebar { padding: 1.2rem 0 }) — o JS ainda desconta 2×esse
+      valor na altura do scrollwrap, gerando faixa vazia sob o header.
+   Tabs estão no header (.od-header-nav); .md-tabs está display:none. */
+@media screen and (min-width: 76.25em) {
+  .md-header--lifted ~ .md-container .md-sidebar {
+    top: var(--md-header-height);
+  }
+
+  /* Zera o padding que criava a faixa; o JS recalcula o scrollwrap. */
+  .md-sidebar--primary {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
 }
 
-/* Visual inspirado no campo de busca do próprio ReDoc (extraído do
-   bundle: input.search-input) — sem caixa preenchida, só uma linha
-   inferior, fundo transparente e respiro nas laterais, bem menos
-   chamativo que o input padrão do Material. */
-/* position:relative + z-index eleva o stacking deste bloco; sem isso o
-   .md-search__output (position:fixed) é pintado atrás do conteúdo da
-   página e os resultados "somem". Não tem relação com a máscara antiga
-   (já removida) — é o que mantém o dropdown visível por cima de tudo. */
-.md-search.od-sidebar-search {
-  display: block;
-  position: relative;
-  z-index: 999;
-  padding: 0.15rem 0 0.4rem;
+/* ── Sidebar primária (nav lateral) ───────────────────────────────
+   Pill no ativo, hover com superfície, hierarquia tipográfica e
+   fundo sutil — alinhado ao design system OD e a docs modernas.
+   Escopo: só .md-sidebar--primary (não mexe no TOC secundário). */
+.md-sidebar--primary {
+  background-color: var(--od-gray-50);
 }
 
-.md-search.od-sidebar-search .md-search__inner {
-  position: static;
-  float: none;
-  width: 100% !important;
-  padding: 0;
-  transform: none;
-  opacity: 1;
-  height: auto;
+.md-sidebar--primary .md-sidebar__scrollwrap {
+  background-color: var(--od-gray-50);
+  /* scrollbar discreta (Firefox + WebKit) */
+  scrollbar-width: thin;
+  scrollbar-color: var(--od-gray-200) transparent;
 }
 
-.md-search.od-sidebar-search .md-search__form {
-  margin: 0 1rem;
-  width: auto;
-  background-color: transparent;
-  border: none;
-  border-bottom: 1px solid var(--od-border);
-  border-radius: 0;
-  height: 1.7rem;
-  box-shadow: none;
+.md-sidebar--primary .md-sidebar__scrollwrap::-webkit-scrollbar {
+  width: 6px;
 }
 
-.md-search.od-sidebar-search .md-search__form:hover {
-  background-color: transparent;
-  border-bottom-color: var(--od-green);
+.md-sidebar--primary .md-sidebar__scrollwrap::-webkit-scrollbar-thumb {
+  background: var(--od-gray-200);
+  border-radius: 99px;
 }
 
-.md-search.od-sidebar-search .md-search__input {
-  color: var(--od-text);
-  font-weight: 600;
-  font-size: 0.72rem;
-  height: 1.7rem;
+.md-sidebar--primary .md-sidebar__scrollwrap::-webkit-scrollbar-thumb:hover {
+  background: var(--od-border);
 }
 
-.md-search.od-sidebar-search .md-search__input::placeholder {
-  color: var(--od-text);
-  opacity: 0.5;
+/* Separador sutil entre nav e conteúdo (desktop) */
+@media screen and (min-width: 76.25em) {
+  .md-sidebar--primary {
+    border-right: 1px solid var(--od-border);
+  }
 }
 
-.md-search.od-sidebar-search .md-search__input ~ .md-search__icon,
-.md-search.od-sidebar-search .md-search__icon[for="__search"] {
-  color: var(--od-text);
-  opacity: 0.65;
-  top: 50%;
-  transform: translateY(-50%);
+/* Material desenha border-top em cada .md-nav__item da primary —
+   no desktop lifted isso vira um “traço” residual no início/entre itens.
+   Removemos na primary; hover/pill já dão hierarquia. */
+.md-sidebar--primary .md-nav--primary .md-nav__item {
+  border-top: none;
 }
 
-.md-search.od-sidebar-search .md-search__icon svg {
-  height: 0.9rem;
-  width: 0.9rem;
-}
-
-.md-search.od-sidebar-search .md-search__options {
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-/* position:fixed escapa do overflow-y:auto do .md-sidebar__scrollwrap
-   (que recortaria o dropdown na largura do menu). left/top são
-   calculados via JS em main.html, a partir do retângulo real da caixa
-   de busca — não dá pra resolver isso só com CSS porque a posição
-   muda com o scroll (.md-sidebar é position:sticky). */
-.md-search.od-sidebar-search .md-search__output {
-  position: fixed;
-  left: var(--od-search-left, 0);
-  top: var(--od-search-top, 0);
-  /* Sobrescreve o width:100% nativo do Material (pensado pra viver
-     dentro da caixa de busca no cabeçalho). Em position:fixed, 100%
-     vira 100% da viewport — sem isso a sombra/borda do dropdown se
-     estica até a borda da página mesmo o conteúdo visível (que segue
-     a largura própria do .md-search__scrollwrap) terminando antes. */
-  width: auto;
-  opacity: 0;
-  max-height: 0;
-  overflow: hidden;
+/* Links base: densidade e tipografia legíveis */
+.md-sidebar--primary .md-nav__link {
+  margin: 0.1rem 0.35rem;
+  padding: 0.4rem 0.65rem;
   border-radius: var(--od-radius-sm);
-  transition: opacity 0.15s, max-height 0.15s;
-  z-index: 1000;
+  font-size: 0.78rem;
+  font-weight: 450;
+  line-height: 1.35;
+  color: var(--od-text-soft);
+  border-left: none;
+  transition:
+    background-color 0.12s ease,
+    color 0.12s ease;
+}
+
+/* Hover / focus: superfície suave (não só cor do texto) */
+.md-sidebar--primary .md-nav__link[href]:hover,
+.md-sidebar--primary .md-nav__link[for]:hover,
+.md-sidebar--primary .md-nav__link[href]:focus,
+.md-sidebar--primary .md-nav__link[for]:focus {
+  background-color: rgba(0, 101, 46, 0.06);
+  color: var(--od-green-dark);
+}
+
+/* Ativo: pill + barra esquerda verde (marca “você está aqui”).
+   Não aplica em headers de seção nem no título sticky da tab. */
+.md-sidebar--primary .md-nav__link--active,
+.md-sidebar--primary .md-nav__item--active:not(.md-nav__item--section) > .md-nav__link:not([for]) {
+  background-color: rgba(0, 101, 46, 0.10);
+  color: var(--od-green);
+  font-weight: 650;
+  box-shadow: inset 3px 0 0 var(--od-green);
+}
+
+.md-sidebar--primary .md-nav__link--active:hover,
+.md-sidebar--primary .md-nav__link--active:focus,
+.md-sidebar--primary .md-nav__item--active:not(.md-nav__item--section) > .md-nav__link:not([for]):hover,
+.md-sidebar--primary .md-nav__item--active:not(.md-nav__item--section) > .md-nav__link:not([for]):focus {
+  background-color: rgba(0, 101, 46, 0.14);
+  color: var(--od-green-dark);
+  box-shadow: inset 3px 0 0 var(--od-green);
+}
+
+/* Focus-visible da marca (a11y teclado) */
+.md-sidebar--primary .md-nav__link:focus-visible {
+  outline: 2px solid var(--od-green-soft);
+  outline-offset: 1px;
+  background-color: rgba(0, 101, 46, 0.08);
+}
+
+/* Seções internas (navigation.sections): labels de grupo.
+   Só sob .md-nav[data-md-level] — o título sticky da tab (lifted
+   level-0) NÃO entra aqui e tem estilo próprio mais abaixo. */
+.md-sidebar--primary .md-nav[data-md-level] > .md-nav__list > .md-nav__item--section > .md-nav__link,
+.md-sidebar--primary .md-nav[data-md-level] > .md-nav__list > .md-nav__item--section > .md-nav__link.md-nav__container {
+  margin-top: 0.85rem;
+  margin-bottom: 0.15rem;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--od-gray-600);
+  background: transparent;
+  box-shadow: none;
   pointer-events: none;
 }
 
-#__search:checked ~ .md-container .od-sidebar-search.md-search .md-search__output {
+.md-sidebar--primary .md-nav[data-md-level] > .md-nav__list > .md-nav__item--section:first-child > .md-nav__link {
+  margin-top: 0.35rem;
+}
+
+/* Nested (Merchant, Pedidos…): compactos; grupos um pouco mais fortes */
+.md-sidebar--primary .md-nav[data-md-level="2"] .md-nav__link,
+.md-sidebar--primary .md-nav[data-md-level="3"] .md-nav__link {
+  font-size: 0.76rem;
+  padding: 0.32rem 0.6rem;
+}
+
+.md-sidebar--primary .md-nav__item--nested:not(.md-nav__item--section) > .md-nav__link[for] {
+  font-weight: 600;
+  color: var(--od-text);
+}
+
+.md-sidebar--primary .md-nav[data-md-level="3"] .md-nav__link {
+  color: var(--od-text-soft);
+}
+
+/* ── Título sticky da tab (lifted) ─────────────────────────────────
+   Sem navigation.indexes, Guia / Protocolo / Referência usam o mesmo
+   markup: <label class="md-nav__link"> — só label, não link. */
+.md-sidebar--primary .md-nav--lifted > .md-nav__list > .md-nav__item--active {
+  margin: 0;
+}
+
+/* Título da tab: mesmo estilo dos labels de seção (uppercase, tracking,
+   peso), só a cor muda para verde escuro. Material força cinza em
+   .md-nav__link[for] — por isso o seletor precisa incluir [for]. */
+.md-sidebar--primary .md-nav--lifted > .md-nav__list > .md-nav__item--active.md-nav__item--section > .md-nav__link,
+.md-sidebar--primary .md-nav--lifted > .md-nav__list > .md-nav__item--active > .md-nav__link[for],
+.md-sidebar--primary .md-nav--lifted > .md-nav__list > .md-nav__item--active.md-nav__item--section > .md-nav__link[for] {
+  display: flex;
+  align-items: center;
+  min-height: auto;
+  margin: 0.45rem 0.35rem 0.15rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--od-radius-sm);
+  background: var(--od-gray-50);
+  box-shadow: 0 0 0.4rem 0.4rem var(--od-gray-50);
+  color: var(--od-green-dark);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.35;
+  text-transform: uppercase;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.md-sidebar--primary .md-nav--lifted > .md-nav__list > .md-nav__item--active.md-nav__item--section > .md-nav__link .md-ellipsis,
+.md-sidebar--primary .md-nav--lifted > .md-nav__list > .md-nav__item--active > .md-nav__link[for] .md-ellipsis {
+  color: var(--od-green-dark);
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+
+/* Esconde o chevron no título da tab (lifted = sempre aberta) */
+.md-sidebar--primary .md-nav--lifted > .md-nav__list > .md-nav__item--active > .md-nav__link > .md-nav__icon {
+  display: none;
+}
+
+/* Espaço uniforme entre título da tab e o 1º item da lista */
+.md-sidebar--primary .md-nav--lifted > .md-nav__list > .md-nav__item--active > .md-nav:not(.md-nav--secondary) {
+  margin-top: 0.1rem;
+}
+
+.md-sidebar--primary .md-nav--lifted > .md-nav__list > .md-nav__item--active > .md-nav > .md-nav__list > .md-nav__item:first-child > .md-nav__link {
+  margin-top: 0.15rem;
+}
+
+/* Ícone de expand/collapse um pouco mais discreto */
+.md-sidebar--primary .md-nav__icon {
+  opacity: 0.55;
+}
+
+.md-sidebar--primary .md-nav__link:hover .md-nav__icon,
+.md-sidebar--primary .md-nav__link:focus .md-nav__icon {
+  opacity: 0.85;
+}
+
+/* Drawer mobile: herda pills; fundo da superfície */
+.md-sidebar--primary .md-nav--primary {
+  background-color: var(--od-gray-50);
+}
+
+.md-sidebar--primary .md-nav__title {
+  background-color: var(--od-gray-50);
+  color: var(--od-green-dark);
+  font-weight: 650;
+  box-shadow: none;
+  border-bottom: 1px solid var(--od-border);
+}
+
+.md-sidebar--primary .md-nav__source {
+  background-color: var(--od-bg-soft);
+  border-bottom: 1px solid var(--od-border);
+}
+
+/* ============================================================
+   Componentes de página (capabilities / extensões)
+   ============================================================ */
+
+/* Meta bar sob o H1: badges de tipo, código, pai */
+.md-typeset .od-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin: -0.4rem 0 1.25rem;
+  max-width: none;
+}
+
+.md-typeset .od-badge,
+.od-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.55rem;
+  border-radius: 99px;
+  border: 1px solid var(--od-border);
+  background: var(--od-gray-100);
+  color: var(--od-text-soft);
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.od-badge--core {
+  background: var(--od-bg-soft);
+  border-color: var(--od-green-soft);
+  color: var(--od-green);
+}
+
+.od-badge--ext {
+  background: rgba(139, 197, 63, 0.12);
+  border-color: rgba(139, 197, 63, 0.45);
+  color: #4a6b00;
+}
+
+.od-badge--code {
+  font-family: "JetBrains Mono", "Roboto Mono", monospace;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  background: #edf2ee;
+  color: var(--od-green-dark);
+}
+
+.od-badge--rc {
+  background: var(--od-rc-bg);
+  border-color: rgba(23, 92, 211, 0.35);
+  color: var(--od-rc);
+}
+
+.od-badge--must {
+  background: var(--od-must-bg);
+  border-color: rgba(180, 35, 24, 0.35);
+  color: var(--od-must);
+}
+
+.od-badge--should {
+  background: var(--od-should-bg);
+  border-color: rgba(181, 71, 8, 0.35);
+  color: var(--od-should);
+}
+
+.od-badge--may {
+  background: var(--od-may-bg);
+  border-color: rgba(2, 122, 72, 0.35);
+  color: var(--od-may);
+}
+
+.od-badge--new {
+  background: rgba(139, 197, 63, 0.16);
+  border-color: var(--od-accent);
+  color: #3d5a00;
+}
+
+/* Callout Protocolo ↔ API */
+.md-typeset .od-api-callout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.25rem;
+  margin: 1rem 0 1.5rem;
+  padding: 0.85rem 1.1rem;
+  border: 1px solid var(--od-border);
+  border-left: 4px solid var(--od-green);
+  border-radius: var(--od-radius-md);
+  background: var(--od-bg-soft);
+  max-width: 46rem;
+}
+
+.md-typeset .od-api-callout p {
+  margin: 0;
+  color: var(--od-text-soft);
+  font-size: 0.875rem;
+  max-width: none;
+}
+
+.md-typeset .od-api-callout a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.md-typeset .od-api-callout a:hover {
+  text-decoration: underline;
+}
+
+/* Relacionado (fim de página — mapa de links, não trilha linear) */
+.md-typeset .od-related {
+  margin: 2.75rem 0 1rem;
+  padding: 1rem 1.15rem 1.05rem;
+  max-width: 46rem;
+  border: 1px solid var(--od-border);
+  border-radius: var(--od-radius-md);
+  background: var(--od-gray-50);
+  border-left: 3px solid var(--od-green-soft);
+}
+
+.md-typeset .od-related__label {
+  margin: 0 0 0.65rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--od-text-soft);
+}
+
+.md-typeset .od-related__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.md-typeset .od-related__list li {
+  margin: 0;
+  padding: 0;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--od-text-soft);
+}
+
+.md-typeset .od-related__list a {
+  font-weight: 600;
+  color: var(--od-green);
+  text-decoration: none;
+}
+
+.md-typeset .od-related__list a:hover {
+  text-decoration: underline;
+  color: var(--od-green-dark);
+}
+
+/* Legacy class aliases (unused) */
+.md-typeset .od-api-callout,
+.md-typeset .od-next-step {
+  display: none;
+}
+
+/* Tabela normativa: coluna de obrigação */
+.md-typeset table:not([class]) td .od-badge,
+.md-typeset table:not([class]) th .od-badge {
+  font-size: 0.62rem;
+  padding: 0.12rem 0.45rem;
+}
+
+/* Matrizes de eventos — wrapper com scroll e header sticky */
+.md-typeset .od-matrix {
+  margin: 1rem 0 1.75rem;
+  max-width: none;
+}
+
+.md-typeset .od-matrix__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
+  color: var(--od-text-soft);
+  max-width: none;
+}
+
+.md-typeset .od-matrix__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.md-typeset .od-matrix__scroll {
+  overflow-x: auto;
+  border: 1px solid var(--od-border);
+  border-radius: var(--od-radius-md);
+  background: #fff;
+  -webkit-overflow-scrolling: touch;
+}
+
+.md-typeset .od-matrix__scroll table {
+  margin: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  display: table;
+  width: 100%;
+  min-width: 640px;
+}
+
+.md-typeset .od-matrix__scroll table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: var(--od-bg-soft) !important;
+  box-shadow: inset 0 -1px 0 var(--od-border);
+  white-space: nowrap;
+}
+
+.md-typeset .od-matrix__scroll table td:nth-child(1),
+.md-typeset .od-matrix__scroll table th:nth-child(1) {
+  font-family: "JetBrains Mono", "Roboto Mono", monospace;
+  font-size: 0.78em;
+  white-space: nowrap;
+}
+
+/* Linhas MUST NOT com ênfase sutil */
+.md-typeset .od-matrix__scroll tr.od-row-forbidden td {
+  color: var(--od-text-soft);
+  background: rgba(180, 35, 24, 0.03);
+}
+
+.od-badge--mustnot {
+  background: rgba(180, 35, 24, 0.06);
+  border-color: rgba(180, 35, 24, 0.25);
+  color: #912018;
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+/* Dropdown a11y */
+.od-dropdown:focus {
+  outline: none;
+}
+
+.od-dropdown a:focus-visible {
+  outline: 2px solid var(--od-green-soft);
+  outline-offset: -2px;
+  background: var(--od-bg-soft);
+}
+
+/* Dropdown aberto: mantém underline como ativo (borda inferior) */
+.od-header-nav .md-tabs__link[aria-expanded="true"] {
+  color: var(--od-green-dark);
+  font-weight: 700;
+  box-shadow: none;
+}
+
+.od-header-nav .md-tabs__link[aria-expanded="true"]::after {
   opacity: 1;
-  max-height: 60vh;
-  pointer-events: auto;
-  box-shadow: var(--od-shadow-lg);
+  transform: scaleX(1);
 }
 
-#__search:checked ~ .md-container .od-sidebar-search.md-search .md-search__scrollwrap {
-  max-height: 60vh;
+.od-header-nav .md-tabs__link:focus-visible {
+  outline: 2px solid var(--od-green-soft);
+  outline-offset: -2px;
 }
 
-@media screen and (max-width: 59.984375em) {
-  .md-search.od-sidebar-search .md-search__inner {
-    position: static;
-    height: auto;
-    opacity: 1;
+/* Focus ring da marca */
+.md-typeset a:focus-visible,
+.md-header__button:focus-visible,
+.od-header-nav .md-tabs__link:focus-visible {
+  outline: 2px solid var(--od-green-soft);
+  outline-offset: 2px;
+}
+
+/* ── Language switcher: mesma altura/estilo da busca ──────────── */
+.md-header .od-lang-select {
+  color: var(--od-green-dark);
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+}
+
+.md-header .md-header__option {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+}
+
+.md-header .od-lang-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  height: var(--od-header-control-h);
+  padding: 0 0.45rem 0 0.35rem;
+  margin: 0 0.15rem;
+  border-radius: var(--od-radius-sm);
+  border: 1px solid var(--od-border);
+  background: var(--od-gray-50);
+  color: var(--od-green-dark);
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.md-header .od-lang-button:hover,
+.md-header .od-lang-select:hover .od-lang-button,
+.md-header .od-lang-select:focus-within .od-lang-button {
+  background: var(--od-bg-soft);
+  border-color: var(--od-green-soft);
+  color: var(--od-green);
+}
+
+.md-header .od-lang-flag {
+  display: block;
+  width: 16px;
+  height: 11px;
+  border-radius: 2px;
+  object-fit: cover;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+  flex-shrink: 0;
+}
+
+.md-header .od-lang-code {
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.md-header .od-lang-button__chevron {
+  width: 0;
+  height: 0;
+  border-left: 3px solid transparent;
+  border-right: 3px solid transparent;
+  border-top: 3.5px solid currentColor;
+  opacity: 0.55;
+  margin-top: 1px;
+  margin-left: 0.02rem;
+}
+
+.md-header .od-lang-select .md-select__list {
+  background: #fff;
+  border: 1px solid var(--od-border);
+  border-radius: var(--od-radius-md);
+  box-shadow: var(--od-shadow-md);
+  min-width: 6.5rem;
+}
+
+.md-header .od-lang-select .md-select__link.od-lang-link {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--od-green-dark);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.45rem 0.7rem;
+}
+
+.md-header .od-lang-select .md-select__link.od-lang-link:hover {
+  background: var(--od-bg-soft);
+  color: var(--od-green);
+}
+
+.md-header .od-lang-select .md-select__link.od-lang-active {
+  background: rgba(0, 101, 46, 0.08);
+  color: var(--od-green);
+  font-weight: 700;
+}
+
+/* Repo GitHub: alinha à faixa de controles; largura pra caber "ODP on GitHub" */
+.md-header .md-header__source {
+  display: flex;
+  align-items: center;
+  align-self: center;
+  width: auto;
+  max-width: none;
+  min-width: 8.5rem;
+  margin-left: 0.6rem;
+}
+
+.md-header .md-source {
+  color: var(--od-green-dark);
+  font-size: 0.72rem;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.md-header .md-source__repository {
+  max-width: none;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.md-header .md-source__icon {
+  height: var(--od-header-control-h);
+  width: 1.75rem;
+}
+
+.md-header .md-source__icon svg {
+  margin-top: 0.35rem;
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+/* ── Footer global ─────────────────────────────────────────────── */
+.md-footer-meta {
+  background-color: var(--od-gray-50);
+  border-top: 1px solid var(--od-border);
+  color: var(--od-text-soft);
+}
+
+.md-footer-meta a {
+  color: var(--od-green);
+}
+
+.md-footer-meta a:hover {
+  color: var(--od-green-dark);
+}
+
+.od-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.15rem;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.od-footer-brand {
+  font-weight: 600;
+  color: var(--od-green-dark);
+  margin-right: 0.25rem;
+}
+
+.od-footer-sep {
+  margin: 0 0.35rem;
+  opacity: 0.45;
+}
+
+.md-social__link {
+  color: var(--od-green-dark);
+}
+
+/* ── What's new (changelog) ───────────────────────────────────── */
+.md-typeset .od-whats-new {
+  margin: 0 0 1.75rem;
+  max-width: none;
+}
+
+.md-typeset .od-whats-new__intro {
+  margin: 0 0 1rem;
+  max-width: 46rem;
+  color: var(--od-text-soft);
+}
+
+.md-typeset .od-whats-new__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0.85rem;
+  margin: 0 0 1.25rem;
+  max-width: none;
+}
+
+.md-typeset .od-wn-card {
+  display: block;
+  padding: 1rem 1.05rem;
+  border: 1px solid var(--od-border);
+  border-radius: var(--od-radius-md);
+  background: var(--od-bg-soft);
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow 0.15s, border-color 0.15s, transform 0.15s;
+  max-width: none;
+}
+
+.md-typeset a.od-wn-card:hover {
+  border-color: var(--od-green-soft);
+  box-shadow: var(--od-shadow-md);
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+
+.md-typeset .od-wn-card__tag {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.12rem 0.45rem;
+  border-radius: 99px;
+  margin-bottom: 0.45rem;
+}
+
+.md-typeset .od-wn-card__tag--break {
+  background: var(--od-must-bg);
+  color: var(--od-must);
+  border: 1px solid rgba(180, 35, 24, 0.25);
+}
+
+.md-typeset .od-wn-card__tag--new {
+  background: rgba(139, 197, 63, 0.16);
+  color: #4a6b00;
+  border: 1px solid rgba(139, 197, 63, 0.4);
+}
+
+.md-typeset .od-wn-card__tag--improve {
+  background: rgba(0, 101, 46, 0.08);
+  color: var(--od-green);
+  border: 1px solid rgba(0, 101, 46, 0.2);
+}
+
+.md-typeset .od-wn-card__title {
+  display: block;
+  font-weight: 650;
+  font-size: 0.92rem;
+  color: var(--od-green-dark);
+  margin-bottom: 0.3rem;
+}
+
+.md-typeset .od-wn-card p {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--od-text-soft);
+  max-width: none;
+}
+
+.md-typeset .od-version-banner,
+.od-version-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 1rem;
+  margin: 0 0 1.25rem;
+  padding: 0.85rem 1.1rem;
+  border: 1px solid var(--od-border);
+  border-left: 4px solid var(--od-green);
+  border-radius: var(--od-radius-md);
+  background: linear-gradient(180deg, var(--od-bg-soft) 0%, #fff 100%);
+  max-width: 46rem;
+}
+
+.md-typeset .od-version-banner--rc,
+.od-version-banner--rc {
+  border-left-color: var(--od-rc);
+  background: linear-gradient(180deg, var(--od-rc-bg) 0%, #fff 100%);
+  max-width: none;
+}
+
+.md-typeset .od-version-banner__ver,
+.od-version-banner__ver {
+  font-weight: 700;
+  color: var(--od-green-dark);
+  font-size: 0.95rem;
+}
+
+.md-typeset .od-version-banner--rc .od-version-banner__ver,
+.od-version-banner--rc .od-version-banner__ver {
+  color: var(--od-rc);
+}
+
+.md-typeset .od-version-banner__meta,
+.od-version-banner__meta {
+  font-size: 0.82rem;
+  color: var(--od-text-soft);
+  flex: 1 1 16rem;
+  line-height: 1.45;
+}
+
+.md-typeset .od-version-banner__meta a,
+.od-version-banner__meta a {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .path-card,
+  .cap-item,
+  .layer-card,
+  .od-wn-card {
+    transition: none;
+  }
+  .path-card:hover,
+  .cap-item:hover,
+  .layer-card:hover,
+  .od-wn-card:hover {
     transform: none;
   }
 }

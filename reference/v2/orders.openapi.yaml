@@ -1,0 +1,2280 @@
+openapi: 3.1.0
+x-spectral-ignore:
+- owasp:api4:2023-string-restricted
+info:
+  title: Open Delivery V2 — Orders
+  version: 2.0.0-rc
+  summary: Normative Orders contracts — lifecycle, status, events, polling, and webhooks
+  description: |-
+    This specification is the **normative, self-contained contract** of Open Delivery
+    for the **order lifecycle**: endpoints, fields, MUST rules, errors, and JSON examples.
+
+    Recommended reading flow in ReDoc:
+    1. **Release notes** (RC status and V1 breaking changes)
+    2. **Overview** (model and status vs events)
+    3. **Integration** (authentication and Discovery declarations)
+    4. **Orders** (lifecycle operation semantics)
+    5. **Events** (polling/webhook delivery and deduplication)
+    6. **External docs** (related capabilities and guides)
+
+    The RC and compatibility notes are in the **Release notes** section.
+servers:
+- url: https://api.example.com/od/v2
+  description: Production environment
+  x-internal: false
+- url: https://sandbox.example.com/od/v2
+  description: Staging / homologation environment
+  x-internal: true
+security:
+- bearerAuth: []
+tags:
+- name: ReleaseNotes
+  x-displayName: Release notes
+  x-traitTag: true
+  description: |-
+    ## Release Candidate status
+
+    This contract is part of Open Delivery Protocol **V2.0.0-rc** (Release Candidate).
+    It is published for **ecosystem validation**: company review and implementation pilots.
+    Clarifying or corrective changes may still occur based on pilot feedback.
+    A stable release will follow only after validation completes.
+    **V1 remains the production reference** during the transition.
+
+    ## Breaking changes from V1
+
+    | Change | V1 | V2 |
+    |---|---|---|
+    | Cancellation (Software Service → OA) | `POST …/requestCancellation`; outcomes via events | **Kept** + explicit **`CANCELLATION_REQUEST_ACCEPTED`** then **`CANCELLED`** (or `CANCELLATION_REQUEST_DENIED`) |
+    | Cancellation (Ordering Application → SS) | Optional handshake: event `ORDER_CANCELLATION_REQUEST` + `acceptCancellation` / `denyCancellation`, **or** mandatory `CANCELLED` | **Handshake removed.** Only **mandatory cancellation**: OA emits **`CANCELLED`** (and status `CANCELLED`); SS MUST apply it |
+    | Cancel endpoints removed | `acceptCancellation`, `denyCancellation` | **Removed** (they existed only for OA-initiated handshake) |
+    | Event `ORDER_CANCELLATION_REQUEST` | OA → SS (handshake) | **Removed** |
+    | `PICKED_UP` / `pickedUp` | Present (ambiguous takeout vs logistics) | **Removed** |
+    | Order profile field | `order.type` at root | **Moved** to `fulfillment.orderType` (profile discriminator) |
+    | Order fulfillment context fields | `order.delivery` / `order.takeout` / `order.indoor` at root | **Moved** to `order.fulfillment.delivery` / `.takeout` / `.indoor` |
+    | Order create HTTP | None (event-driven) | Still **none** — explicit: no `POST /orders` |
+    | Duplicate lifecycle call | Often `422` if treated as sync reprocess | **`202` if already in target state** |
+    | Authoritative status field (`order.status`) | No authoritative status field; many integrations inferred state from events (`lastEvent`) | **Added** on `GET /orders/{orderId}` as source of truth |
+    | Status vs events semantics | Frequently confused | **Status** on GET is authoritative; events are notifications |
+    | Merchant id on order | Often PDV-generated | Originator-owned merchant id + PDV `externalCode` (see Merchant) |
+- name: CapabilityOverview
+  x-displayName: Overview
+  x-traitTag: true
+  description: |-
+    ## Orders capability
+
+    Open Delivery Orders coordinates the **interoperable lifecycle of an order** between
+    the Ordering Application (originator) and the Software Service (merchant systems),
+    with optional logistics parties.
+
+    > **Open Delivery is a protocol, not a product API.**
+    > There is no central server. Each party hosts the endpoints it is responsible for.
+
+    ## How an order enters the protocol
+
+    1. The **Ordering Application** creates the order in its own system.
+    2. It emits a **`CREATED`** event (polling and/or webhook).
+    3. The **Software Service** acknowledges the event and calls
+       **`GET /orders/{orderId}`** to load the full snapshot (items, totals, fulfillment).
+    4. Lifecycle progresses via explicit operations (`confirm`, `preparing`, …) hosted by
+       the Ordering Application (marketplace model, same as V1).
+    5. Every relevant fact is notified again as an **event**. **`order.status`** on GET
+       remains the reconciliation source of truth.
+
+    ```mermaid
+    sequenceDiagram
+        participant OA as Ordering Application
+        participant SS as Software Service
+
+        Note over OA: Order created in OA system
+        SS->>OA: GET /events:polling
+        OA-->>SS: 200 [{ eventType: CREATED, orderId }]
+        SS->>OA: POST /events/acknowledgment
+        SS->>OA: GET /orders/{orderId}
+        OA-->>SS: 200 Order (status: CREATED)
+        SS->>OA: POST /orders/{orderId}/confirm
+        OA-->>SS: 202 Accepted
+        SS->>OA: GET /events:polling
+        OA-->>SS: 200 [{ eventType: CONFIRMED, orderId }]
+    ```
+
+    ## Parties
+
+    | Role | Responsibility in this capability |
+    |---|---|
+    | **Ordering Application** | Originates the order. **Hosts** polling, order GET, and lifecycle mutation endpoints (marketplace model). Emits events. |
+    | **Software Service** | Merchant system. **Consumes** events (polling and/or webhook), loads order details, calls lifecycle operations. Operational authority at the store. |
+    | **Delivery Platform** (optional) | Logistics. Emits **informational** tracking facts that MUST NOT redefine order status. See Logistics. |
+
+    ## Status vs events
+
+    V2 introduces **authoritative order status** as a first-class concept. V1 integrations
+    often relied on lifecycle events alone; in V2, implementers must separate the
+    **current business state** of the order from the **notifications** that announce facts
+    about that order.
+
+    | Concept | What it is | Source of truth |
+    |---|---|---|
+    | **Status** | Current business condition of the order | `order.status` on `GET /orders/{orderId}` |
+    | **Event** | Immutable lifecycle fact / notification | Polling or webhook payload (`eventId`, `eventType`) |
+
+    - **Status** MUST be explicit and queryable at any time. Use it for reconciliation.
+    - **Events** MUST NOT be treated as commands. They notify that something happened.
+    - Some events **project** a status change (for example `CONFIRMED` -> status `CONFIRMED`).
+    - Some events are **informational only** and MUST NOT change authoritative order status.
+    - Consumers MUST NOT infer authoritative status from the event stream alone.
+
+    The full state machine and profile-specific lifecycle obligations are defined in
+    [Order lifecycle](#tag/Orders).
+
+    ## Responsibilities by endpoint (marketplace model)
+
+    | Endpoint | Hosted by | Called by |
+    |---|---|---|
+    | [`GET /events:polling`](#operation/pollingEvents) | Ordering Application | Software Service |
+    | [`POST /events/acknowledgment`](#operation/acknowledgeEvents) | Ordering Application | Software Service |
+    | Webhook [`orderEvent`](#operation/receiveOrderEvent) | Software Service | Ordering Application |
+    | [`GET /orders/{orderId}`](#operation/getOrder) | Ordering Application | Software Service |
+    | [`POST …/confirm`](#operation/confirmOrder) (and other lifecycle) | Ordering Application | Software Service |
+    | [`POST …/tracking`](#operation/sendOrderTracking) | Ordering Application | Software Service or delivery operator acting for merchant |
+    | [`POST …/validateCode`](#operation/validateDeliveryCode) | Ordering Application | Software Service or delivery operator acting for merchant |
+    | [`PATCH …/details`](#operation/patchOrderDetails) | Ordering Application | Software Service |
+    | [`POST …/requestCancellation`](#operation/requestCancellation) | Ordering Application | Software Service (merchant wants to cancel) |
+    | Mandatory cancel (`CANCELLED` event) | Ordering Application emits | Software Service consumes (no HTTP accept/deny) |
+
+    Authentication and Discovery declarations are defined in [Integration](#tag/IntegrationProfile).
+
+- name: IntegrationProfile
+  x-displayName: Integration
+  x-traitTag: true
+  description: |-
+    ## Authentication
+
+    All endpoints require `Authorization: Bearer {token}` unless marked otherwise.
+
+    OAuth 2.0 grant models, scopes, and webhook signature validation (HMAC-SHA256)
+    are defined in the [Authentication specification](../authentication/).
+
+    Preferred scope for this capability: `od.orders`.
+
+    <SecurityDefinitions />
+
+    ## Discovery declarations
+
+    Implementations MUST publish Orders capability behavior in
+    [Discovery](../discovery/) so counterparties can integrate predictably.
+
+    At minimum, declare:
+    - `capabilities.orders.version` and `capabilities.orders.supported`.
+    - Role declarations under `capabilities.orders.originator` and/or `capabilities.orders.receiver`.
+    - Delivery mode support via `supportsWebhook` and `supportsPolling` in the active role.
+    - `supportedOperations`/`unsupportedOperations` and `supportedEvents`/`unsupportedEvents` as applicable.
+
+    Legacy migration note (V1 `sendXXX` style flags):
+    - `sendPreparing` -> declare `setOrderPreparing` in `supportedOperations`.
+    - `sendReadyForPickup` -> declare `setOrderReadyForPickup` in `supportedOperations`.
+    - `sendDispatch` -> declare `dispatchOrder` in `supportedOperations`.
+    - `sendDelivered` -> declare `setOrderDelivered` in `supportedOperations`.
+    - `sendTracking` -> declare `sendOrderTracking` in `supportedOperations`.
+    - `sendPickedUp` is deprecated/removed in V2 and MUST NOT be declared as active behavior.
+
+    Normative interpretation:
+    - `MUST` events remain mandatory regardless of Discovery declarations.
+    - `MUST NOT` events remain forbidden for the profile.
+    - `MAY` events become integration commitments when declared in Discovery.
+    - Consumers SHOULD implement all mandatory behavior plus declared optional behavior.
+
+- name: ExternalDocs
+  x-displayName: External docs
+  x-traitTag: true
+  description: |-
+    ## External docs
+
+    | Document | Purpose |
+    |---|---|
+    | [Orders guide (concepts and flows)](../../protocol/orders/) | Status vs events, V1→V2, checklists |
+    | [Indoor API Spec](../indoor/) | Account extension for `fulfillment.orderType: INDOOR` |
+    | [Logistics API Spec](../logistics/) | Delivery execution (does not redefine order status) |
+    | [Customer API Spec](../customer/) | CRM — future order exchange endpoints use the same Order shape |
+    | [Authentication API Spec](../authentication/) | OAuth 2.0 and HMAC webhook signatures |
+    | [Discovery API Spec](../discovery/) | Declaring `orders`, webhook/polling support, event obligations |
+    | [General conventions](../conventions/) | Duplicate lifecycle default, shared rules |
+- name: Orders
+  description: |-
+    Order snapshot and lifecycle progression operations.
+
+    ## Lifecycle operating model
+
+    - There is **no** `POST /orders` create endpoint in V2. Orders enter the protocol via
+      event (`CREATED`) and are read with `GET /orders/{orderId}`.
+    - There is **no** `POST /orders/{orderId}/conclude` endpoint in V2. `CONCLUDED` is an
+      originator-defined event, emitted by the Ordering Application according to its own
+      business timing (for example after `DELIVERED`, user action, or timeout policy).
+    - Lifecycle transitions are **async-first**: a `202 Accepted` means accepted for
+      processing, not final state confirmation.
+    - Reconcile with `GET /orders/{orderId}` (`order.status` is authoritative).
+
+    ## Discovery-driven optional behavior
+
+    Optional (`MAY`) lifecycle events in this capability SHOULD be treated as active
+    integration commitments only when declared in [Discovery](../discovery/).
+
+    Consumers SHOULD rely on:
+    - all mandatory (`MUST`) behavior, and
+    - optional (`MAY`) behavior explicitly declared in Discovery.
+
+    ## Status machine (authoritative states)
+
+    ```mermaid
+    stateDiagram-v2
+        direction LR
+        [*] --> CREATED
+        CREATED --> CONFIRMED: confirm
+        CONFIRMED --> PREPARING: preparing
+        PREPARING --> READY: ready-for-pickup
+        CONFIRMED --> READY: ready-for-pickup
+        READY --> IN_DELIVERY: dispatch (DELIVERY)
+        READY --> DELIVERED: delivered (TAKEOUT/INDOOR)
+        IN_DELIVERY --> DELIVERED: delivered
+        CREATED --> CANCELLED: CANCELLED (OA decision)
+        CONFIRMED --> CANCELLED: CANCELLED (OA decision)
+        PREPARING --> CANCELLED: CANCELLED (OA decision)
+        READY --> CANCELLED: CANCELLED (OA decision)
+        IN_DELIVERY --> CANCELLED: CANCELLED (OA decision)
+        DELIVERED --> CONCLUDED: CONCLUDED (originator-defined timing)
+        CANCELLED --> CONCLUDED: CONCLUDED (originator-defined timing)
+    ```
+
+    | Status | Meaning |
+    |---|---|
+    | `CREATED` | Registered; awaiting merchant confirmation |
+    | `CONFIRMED` | Merchant accepted the order |
+    | `PREPARING` | Preparation in progress |
+    | `READY` | Ready for courier pickup, customer collection, or service |
+    | `IN_DELIVERY` | Out for delivery (`DELIVERY` only) |
+    | `DELIVERED` | Customer received / collected / served |
+    | `CANCELLED` | Order cancelled (final cancel state) |
+    | `CONCLUDED` | Logical closure after delivery or cancellation |
+
+    ## Event matrix by profile
+
+    Legend: **MUST** / **MAY** / **MUST NOT** (reject with `422` if a MUST NOT event is forced for the profile).
+    For optional behavior, Discovery declarations define which `MAY` events are expected
+    between counterparties.
+
+    ### DELIVERY
+
+    | Event | Projects status | Obligation | Notes |
+    |---|---|---|---|
+    | `CREATED` | `CREATED` | MUST | Entry signal |
+    | `CONFIRMED` | `CONFIRMED` | MUST | After confirm |
+    | `PREPARATION_REQUESTED` | (unchanged) | MAY | Informational / on-demand prep |
+    | `PREPARING` | `PREPARING` | MAY | |
+    | `READY_FOR_PICKUP` | `READY` | MAY | Ready for courier |
+    | `PICKUP_ONGOING` | (unchanged) | MAY | Informational logistics |
+    | `RIDER_ARRIVED_AT_STORE` | (unchanged) | MAY | Informational logistics |
+    | `DISPATCHED` | `IN_DELIVERY` | MAY | Under review for deprecation in later RC |
+    | `ORDER_COLLECTED` | `IN_DELIVERY` | MAY | Full-service logistics handoff |
+    | `DELIVERY_ONGOING` | (unchanged) | MAY | Informational logistics |
+    | `ARRIVED_AT_CUSTOMER` | (unchanged) | MAY | Informational logistics |
+    | `DELIVERED` | `DELIVERED` | MUST | Customer received |
+    | `CANCELLATION_REQUESTED` | (unchanged) | MAY | Intermediate after SS `requestCancellation` |
+    | `CANCELLATION_REQUEST_ACCEPTED` | (unchanged) | MAY | OA accepted merchant request; **MUST** be followed by `CANCELLED` |
+    | `CANCELLATION_REQUEST_DENIED` | (unchanged) | MAY | OA denied merchant cancel request |
+    | `CANCELLED` | `CANCELLED` | MUST | Final cancel (after accept path **or** OA mandatory) |
+    | `CONCLUDED` | `CONCLUDED` | MAY | Originator-defined close timing |
+
+    ### TAKEOUT
+
+    | Event | Projects status | Obligation | Notes |
+    |---|---|---|---|
+    | `CREATED` | `CREATED` | MUST | |
+    | `CONFIRMED` | `CONFIRMED` | MUST | |
+    | `PREPARATION_REQUESTED` | (unchanged) | MAY | |
+    | `PREPARING` | `PREPARING` | MAY | |
+    | `READY_FOR_PICKUP` | `READY` | MUST | Waiting at counter |
+    | `PICKUP_ONGOING` | — | MUST NOT | No courier |
+    | `RIDER_ARRIVED_AT_STORE` | — | MUST NOT | |
+    | `ORDER_COLLECTED` | — | MUST NOT | |
+    | `DISPATCHED` | — | MUST NOT | |
+    | `DELIVERY_ONGOING` | — | MUST NOT | |
+    | `ARRIVED_AT_CUSTOMER` | — | MUST NOT | |
+    | `DELIVERED` | `DELIVERED` | MUST | Customer collected |
+    | `CANCELLATION_REQUESTED` | (unchanged) | MAY | After SS request |
+    | `CANCELLATION_REQUEST_ACCEPTED` | (unchanged) | MAY | Accepted; **then** `CANCELLED` |
+    | `CANCELLATION_REQUEST_DENIED` | (unchanged) | MAY | Request denied |
+    | `CANCELLED` | `CANCELLED` | MUST | Final cancel |
+    | `CONCLUDED` | `CONCLUDED` | MAY | Originator-defined close timing |
+
+    ### INDOOR
+
+    | Event | Projects status | Obligation | Notes |
+    |---|---|---|---|
+    | `CREATED` | `CREATED` | MUST | Opens/feeds Indoor account on SS |
+    | `CONFIRMED` | `CONFIRMED` | MUST | |
+    | `PREPARATION_REQUESTED` | (unchanged) | MAY | |
+    | `PREPARING` | `PREPARING` | MAY | |
+    | `READY_FOR_PICKUP` | `READY` | MAY | Ready to serve |
+    | Logistics events | — | MUST NOT | No external delivery |
+    | `DELIVERED` | `DELIVERED` | MAY | Served at table/counter |
+    | `CANCELLATION_REQUESTED` | (unchanged) | MAY | After SS request |
+    | `CANCELLATION_REQUEST_ACCEPTED` | (unchanged) | MAY | Accepted; **then** `CANCELLED` |
+    | `CANCELLATION_REQUEST_DENIED` | (unchanged) | MAY | Request denied |
+    | `CANCELLED` | `CANCELLED` | MUST | Final cancel |
+    | `CONCLUDED` | `CONCLUDED` | MAY | Originator-defined close timing |
+
+    Account-level events (`ACCOUNT_*`, payments, fiscal) are defined only in the
+    [Indoor API Spec](../indoor/) — they do not replace order status.
+
+    ## Repeated lifecycle requests (endpoint idempotent behavior)
+
+    Applies to lifecycle operations such as `confirm`, `preparing`, `ready-for-pickup`,
+    `dispatch`, and `delivered`.
+
+    | Situation | HTTP | Side effects |
+    |---|---|---|
+    | Transition is valid and not yet applied | `202 Accepted` | Process toward target state; emit event when done |
+    | Same operation already applied (target state already reached) | `202 Accepted` | No new transition; receiver MAY re-present related event |
+    | Transition is impossible for current status | `409 Conflict` | No state change; machine-readable error body |
+
+    Receivers **MUST NOT** return `422` / `409` only because the same successful
+    lifecycle operation was invoked again after the target state was already reached.
+
+    No client idempotency header is defined by this spec.
+- name: Cancellation
+  description: |-
+    Cancellation contracts and flows for Orders V2.
+
+    ## Model overview
+
+    V2 keeps only one cancellation endpoint:
+    - `POST /orders/{orderId}/requestCancellation` (Direction A, Software Service -> Ordering Application)
+
+    Direction B (Ordering Application initiated) has **no endpoint**. The originator emits
+    `CANCELLED` directly and the Software Service MUST apply it.
+
+    ## Direction A flow (merchant requests cancellation)
+
+    ```mermaid
+    sequenceDiagram
+      participant SS as Software Service
+      participant OA as Ordering Application
+
+      SS->>OA: POST /orders/{orderId}/requestCancellation
+      OA-->>SS: 202 Accepted (request accepted for async processing)
+      OA-->>SS: Event CANCELLATION_REQUESTED (optional)
+      alt Request accepted
+        OA-->>SS: Event CANCELLATION_REQUEST_ACCEPTED
+        OA-->>SS: Event CANCELLED (mandatory after accepted)
+      else Request denied
+        OA-->>SS: Event CANCELLATION_REQUEST_DENIED
+      end
+    ```
+
+    Normative points:
+    - `202` on request means accepted for processing, not final cancellation.
+    - After `CANCELLATION_REQUEST_ACCEPTED`, OA MUST emit `CANCELLED`.
+    - SS MUST treat the order as cancelled only on `CANCELLED` / status `CANCELLED`.
+
+    ## Direction B flow (originator cancels)
+
+    ```mermaid
+    sequenceDiagram
+      participant OA as Ordering Application
+      participant SS as Software Service
+
+      OA-->>SS: Event CANCELLED (mandatory cancel signal)
+      Note over SS: Apply cancellation immediately (no accept/deny endpoint)
+    ```
+
+    Normative points:
+    - V1 handshake artifacts are removed (`ORDER_CANCELLATION_REQUEST`, `acceptCancellation`, `denyCancellation`).
+    - No HTTP accept/deny step exists in V2 for originator-initiated cancellation.
+- name: Events
+  description: |-
+    Order event delivery via **polling** and/or **webhook**.
+
+    ## At-least-once delivery and deduplication
+
+    Event delivery is at-least-once. The same event may be delivered more than once.
+    Consumers MUST deduplicate using `eventId`.
+
+    ## Normative rules
+
+    | Rule |
+    |---|
+    | Event delivery mode (polling, webhook, or both) **MUST** match what the participant declares in Discovery. |
+    | Profile-dependent `MAY` events SHOULD be treated as active obligations when declared in Discovery. |
+    | Consumers **MUST** deduplicate by `eventId`. |
+    | Consumers **MUST NOT** assume strict delivery ordering across events. |
+    | After polling, the Software Service **MUST** acknowledge received events so they are not returned forever. |
+    | Webhook receivers **MUST** verify HMAC-SHA256 signatures (`X-App-Id`, `X-App-MerchantId`, `X-App-Signature`) — see Authentication. |
+    | `order.status` on GET remains the reconciliation source of truth if an event is missed. |
+x-tagGroups:
+- name: Read first
+  tags:
+  - ReleaseNotes
+- name: Overview
+  tags:
+  - CapabilityOverview
+  - ExternalDocs
+- name: Integration
+  tags:
+  - IntegrationProfile
+- name: Order lifecycle
+  tags:
+  - Orders
+- name: Cancellation
+  tags:
+  - Cancellation
+- name: Events
+  tags:
+  - Events
+paths:
+  /events:polling:
+    get:
+      tags: [Events]
+      operationId: pollingEvents
+      summary: Poll new order events
+      description: |-
+        Returns pending order lifecycle events for merchants associated with the
+        authenticated application. Each event **MUST** be acknowledged via
+        [`POST /events/acknowledgment`](#operation/acknowledgeEvents) or it may be
+        returned again on subsequent polls.
+
+
+        ```od-call-flow
+        method: GET
+        from: Software Service
+        fromLabel: Client
+        fromParty: ss
+        to: Ordering Application
+        toLabel: Host
+        toParty: oa
+        ```
+
+        **Status vs events:** a polled event is a notification. Always reconcile with
+        [`GET /orders/{orderId}`](#operation/getOrder) when in doubt.
+      parameters:
+        - name: x-polling-merchants
+          in: header
+          required: false
+          schema:
+            type: array
+            items: { type: string }
+            maxItems: 100
+          description: Optional subset of merchant ids to poll. Omit to use the authenticated scope.
+        - name: eventType
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/OrderEventType'
+            maxItems: 20
+          description: |
+            Filter by event types. If set, other types are omitted from the response and
+            SHOULD be auto-acknowledged by the host (same practice as V1).
+      responses:
+        '200':
+          description: One or more events
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 1000
+                items:
+                  $ref: '#/components/schemas/OrderEvent'
+              examples:
+                createdAndConfirmed:
+                  summary: New order then confirmation
+                  value:
+                    - eventId: evt-9f3a
+                      eventType: CREATED
+                      orderId: order-abc123
+                      orderURL: https://api.example.com/od/v2/orders/order-abc123
+                      createdAt: '2026-07-01T14:30:00Z'
+                      sourceAppId: 11111111-1111-1111-1111-111111111111
+                    - eventId: evt-9f3b
+                      eventType: CONFIRMED
+                      orderId: order-abc123
+                      orderURL: https://api.example.com/od/v2/orders/order-abc123
+                      createdAt: '2026-07-01T14:31:10Z'
+        '204':
+          description: No pending events
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /events/acknowledgment:
+    post:
+      tags: [Events]
+      operationId: acknowledgeEvents
+      summary: Acknowledge polled events
+      description: |-
+        Dismisses events from future polling responses. The Software Service **MUST**
+        acknowledge events it has processed (including types it does not use).
+
+
+        ```od-call-flow
+        method: POST
+        from: Software Service
+        fromLabel: Client
+        fromParty: ss
+        to: Ordering Application
+        toLabel: Host
+        toParty: oa
+        ```
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [eventIds]
+              properties:
+                eventIds:
+                  type: array
+                  minItems: 1
+                  maxItems: 1000
+                  items: { type: string }
+                  description: Event ids previously returned by polling
+            examples:
+              ack:
+                value:
+                  eventIds: [evt-9f3a, evt-9f3b]
+      responses:
+        '202':
+          description: Acknowledgment accepted for asynchronous processing.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /orders/{orderId}:
+    parameters:
+      - $ref: '#/components/parameters/OrderId'
+    get:
+      tags: [Orders]
+      operationId: getOrder
+      summary: Get order details
+      description: |-
+        Returns the current snapshot of an order, including authoritative **`status`**.
+        This is the reconciliation source of truth when events are missed or reordered.
+
+
+        ```od-call-flow
+        method: GET
+        from: Software Service
+        fromLabel: Client
+        fromParty: ss
+        to: Ordering Application
+        toLabel: Host
+        toParty: oa
+        ```
+      responses:
+        '200':
+          description: Order snapshot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+              examples:
+                deliveryCreated:
+                  summary: DELIVERY order in CREATED
+                  value:
+                    id: order-abc123
+                    displayId: A123
+                    status: CREATED
+                    lastEvent: CREATED
+                    createdAt: '2026-07-01T14:30:00Z'
+                    orderTiming: INSTANT
+                    merchant:
+                      id: merchant-originator-001
+                      externalCode: pdv-loja-42
+                      name: Pizza Plaza
+                    items:
+                      - id: item-1
+                        name: Classic Burger
+                        externalCode: SKU-BURGER-01
+                        quantity: 2
+                        unity_price: 2500
+                        total_price: 5000
+                        options:
+                          - id: opt-1
+                            name: Extra cheese
+                            quantity: 1
+                            option_price: 0
+                    total:
+                      value: 5500
+                      currency: BRL
+                      subtotal: 5000
+                      deliveryFee: 500
+                      discount: 0
+                    customer:
+                      id: cust-1
+                      name: Ana Silva
+                      phone: '+5511999990000'
+                    payments:
+                      - method: CREDIT_CARD
+                        value: 5500
+                        prepaid: true
+                    fulfillment:
+                      orderType: DELIVERY
+                      delivery:
+                        address:
+                          street: Rua das Flores 100
+                          neighborhood: Centro
+                          city: São Paulo
+                          state: SP
+                          postalCode: '01000-000'
+                          coordinates:
+                            latitude: -23.55
+                            longitude: -46.63
+                indoorOrder:
+                  summary: INDOOR order (feeds account)
+                  value:
+                    id: order-indoor-1001
+                    displayId: M5-01
+                    status: CONFIRMED
+                    lastEvent: CONFIRMED
+                    createdAt: '2026-07-01T19:02:11Z'
+                    orderTiming: INSTANT
+                    merchant:
+                      id: merchant-originator-001
+                      externalCode: pdv-loja-42
+                    items:
+                      - id: item-1
+                        name: Classic Burger
+                        quantity: 2
+                        unity_price: 3290
+                        total_price: 6580
+                    total:
+                      value: 6580
+                      currency: BRL
+                    fulfillment:
+                      orderType: INDOOR
+                      indoor:
+                        operationMode: TABLE
+                        identifier: '5'
+                        account:
+                          id: acc-table-5-20260315
+                        originChannel:
+                          type: QR_CODE
+                          id: qr-table-5
+                          notes: Table 5 QR sticker
+                        consumptionType: DINE_IN
+                        fulfillment:
+                          type: CALL
+                          call:
+                            notifyOriginator: true
+                            type: TICKET_NUMBER
+                            label: A42
+                        service:
+                          waiterCode: WT-01
+                          waiterName: Carla
+                          peopleCount: 2
+                        notifications:
+                          whatsAppId: '5511999990000'
+                        fiscal:
+                          shouldIssueDocument: true
+                          documentStatus: PENDING
+                          printDocument: true
+                          paymentNSURequiredForNFCE: true
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /orders/{orderId}/confirm:
+    parameters:
+      - $ref: '#/components/parameters/OrderId'
+    post:
+      tags: [Orders]
+      operationId: confirmOrder
+      summary: Confirm order for processing
+      description: |-
+        This endpoint confirms the order for processing.
+        It MUST be supported for all profiles.
+
+        | Event emitted | Projected status | Obligation |
+        |---|---|---|
+        | `CONFIRMED` | `CONFIRMED` | **MUST** (all profiles) |
+
+        **Duplicate request behavior:** if the order is already `CONFIRMED`
+        (or in a later valid status), return **`202 Accepted`** with no new transition;
+        the host MAY re-present the `CONFIRMED` event.
+
+
+        ```od-call-flow
+        method: POST
+        from: Software Service
+        fromLabel: Client
+        fromParty: ss
+        to: Ordering Application
+        toLabel: Host
+        toParty: oa
+        ```
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                estimatedPreparationTimeMinutes:
+                  type: integer
+                  minimum: 0
+                  description: Estimated preparation time in minutes
+                  example: 25
+            examples:
+              withEta:
+                value:
+                  estimatedPreparationTimeMinutes: 25
+      responses:
+        '202':
+          description: Accepted for asynchronous processing, or already applied (idempotent success).
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Invalid state for confirmation (e.g. order cancelled). Not for “already confirmed”.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                cancelled:
+                  value:
+                    code: INVALID_ORDER_STATE_TRANSITION
+                    message: Cannot confirm an order in CANCELLED status
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /orders/{orderId}/preparing:
+    parameters:
+      - $ref: '#/components/parameters/OrderId'
+    post:
+      tags: [Orders]
+      operationId: setOrderPreparing
+      summary: Signal that preparation has started
+      description: |-
+        This endpoint signals that preparation has started.
+        It is optional for some profiles.
+
+        | Event emitted | Projected status | Obligation |
+        |---|---|---|
+        | `PREPARING` | `PREPARING` | **MAY** (profile-dependent) |
+
+        **Duplicate request behavior:** if the order is already `PREPARING`
+        (or in a later valid status), return **`202 Accepted`** with no new transition;
+        the host MAY re-present the `PREPARING` event.
+
+
+        ```od-call-flow
+        method: POST
+        from: Software Service
+        fromLabel: Client
+        fromParty: ss
+        to: Ordering Application
+        toLabel: Host
+        toParty: oa
+        ```
+      responses:
+        '202':
+          description: Accepted for asynchronous processing, or already applied (idempotent success).
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Invalid state for this transition (not “already applied”)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /orders/{orderId}/ready-for-pickup:
+    parameters:
+      - $ref: '#/components/parameters/OrderId'
+    post:
+      tags: [Orders]
+      operationId: setOrderReadyForPickup
+      summary: Signal order is ready for pickup
+      description: |-
+        This endpoint signals that the order is ready for pickup/service.
+
+        - **DELIVERY:** Ready for courier pickup at the store
+        - **TAKEOUT:** Ready for customer collection (MUST in typical takeout flows)
+        - **INDOOR:** Ready to be served (MAY)
+
+        | Event emitted | Projected status | Obligation |
+        |---|---|---|
+        | `READY_FOR_PICKUP` | `READY` | **DELIVERY:** MAY; **TAKEOUT:** MUST; **INDOOR:** MAY |
+
+        **Duplicate request behavior:** if the order is already `READY`
+        (or in a later valid status), return **`202 Accepted`** with no new transition;
+        the host MAY re-present the `READY_FOR_PICKUP` event.
+
+
+        ```od-call-flow
+        method: POST
+        from: Software Service
+        fromLabel: Client
+        fromParty: ss
+        to: Ordering Application
+        toLabel: Host
+        toParty: oa
+        ```
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pickupCode:
+                  type: string
+                  description: Code shown to customer for TAKEOUT pickup
+                  example: A42
+      responses:
+        '202':
+          description: Accepted for asynchronous processing, or already applied (idempotent success).
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Invalid state for this transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /orders/{orderId}/dispatch:
+    parameters:
+      - $ref: '#/components/parameters/OrderId'
+    post:
+      tags: [Orders]
+      operationId: dispatchOrder
+      summary: Signal order dispatched to customer
+      description: |-
+        This endpoint signals dispatch to the customer.
+        It is valid **only** for `DELIVERY`.
+
+        | Event emitted | Projected status | Obligation |
+        |---|---|---|
+        | `DISPATCHED` | `IN_DELIVERY` | **MAY** (`DELIVERY` only) |
+
+        > **Possible deprecation:** this signal is under review for a later release.
+        > Prefer clear logistics events when using the Logistics capability; do not treat
+        > dispatch as required if Discovery marks it optional.
+
+        **Duplicate request behavior:** if the order is already `IN_DELIVERY`
+        (or in a later valid status), return **`202 Accepted`** with no new transition;
+        the host MAY re-present the `DISPATCHED` event.
+
+
+        ```od-call-flow
+        method: POST
+        from: Software Service
+        fromLabel: Client
+        fromParty: ss
+        to: Ordering Application
+        toLabel: Host
+        toParty: oa
+        ```
+      responses:
+        '202':
+          description: Accepted for asynchronous processing, or already applied (idempotent success).
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /orders/{orderId}/delivered:
+    parameters:
+      - $ref: '#/components/parameters/OrderId'
+    post:
+      tags: [Orders]
+      operationId: setOrderDelivered
+      summary: Signal order delivered to customer
+      description: |-
+        This endpoint signals that the customer received the order.
+        It applies to all profiles:
+
+        - **DELIVERY:** at the delivery address
+        - **TAKEOUT:** collected at the counter
+        - **INDOOR:** served at table / counter
+
+        | Event emitted | Projected status | Obligation |
+        |---|---|---|
+        | `DELIVERED` | `DELIVERED` | **DELIVERY:** MUST; **TAKEOUT:** MUST; **INDOOR:** MAY |
+
+        **Duplicate request behavior:** if the order is already `DELIVERED`
+        (or in a later valid status), return **`202 Accepted`** with no new transition;
+        the host MAY re-present the `DELIVERED` event.
+
+
+        ```od-call-flow
+        method: POST
+        from: Software Service
+        fromLabel: Client
+        fromParty: ss
+        to: Ordering Application
+        toLabel: Host
+        toParty: oa
+        ```
+      responses:
+        '202':
+          description: Accepted for asynchronous processing, or already applied (idempotent success).
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Invalid state for this transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /orders/{orderId}/tracking:
+    parameters:
+      - $ref: '#/components/parameters/OrderId'
+    post:
+      tags: [Orders]
+      operationId: sendOrderTracking
+      summary: Send delivery tracking updates (merchant-controlled delivery)
+      description: |-
+        Sends delivery tracking updates to the Ordering Application when the
+        delivery execution is controlled by the merchant side (Software Service
+        and/or its delivery operator).
+
+        This endpoint belongs to the Orders capability.
+
+        It is typically used only for `DELIVERY` profile orders and does not,
+        by itself, redefine the authoritative `order.status`.
+
+        **Duplicate request behavior:** if the same tracking snapshot is sent more than once,
+        return **`202 Accepted`** and keep processing idempotent.
+
+
+        ```od-call-flow
+        method: POST
+        from: Software Service
+        fromLabel: Client
+        fromParty: ss
+        to: Ordering Application
+        toLabel: Host
+        toParty: oa
+        ```
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderTracking'
+      responses:
+        '202':
+          description: Accepted for asynchronous processing, or already applied (idempotent success).
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: Business validation failed for tracking payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /orders/{orderId}/validateCode:
+    parameters:
+      - $ref: '#/components/parameters/OrderId'
+      - name: deliveryCode
+        in: query
+        required: true
+        schema:
+          type: string
+        description: Delivery confirmation code informed by the customer
+    post:
+      tags: [Orders]
+      operationId: validateDeliveryCode
+      summary: Validate customer delivery confirmation code
+      description: |-
+        Validates the delivery confirmation code generated by the Ordering Application
+        and informed by the customer at handoff time.
+
+        This endpoint MUST be synchronous and MUST NOT emit lifecycle events by itself.
+
+        It may be called by the merchant Software Service or by a delivery operator
+        acting under merchant control.
+
+
+        ```od-call-flow
+        method: POST
+        from: Software Service
+        fromLabel: Client
+        fromParty: ss
+        to: Ordering Application
+        toLabel: Host
+        toParty: oa
+        ```
+      responses:
+        '200':
+          description: Delivery code is valid; handoff can proceed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryConfirmationCode'
+        '400':
+          description: Delivery code is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /orders/{orderId}/details:
+    parameters:
+      - $ref: '#/components/parameters/OrderId'
+    patch:
+      tags: [Orders]
+      operationId: patchOrderDetails
+      summary: Update non-lifecycle order details
+      description: |-
+        Optional endpoint to update order properties that do not represent
+        a lifecycle status transition.
+
+        This endpoint belongs to Orders and is intended for partial, targeted
+        corrections such as preparation planning details.
+
+
+        ```od-call-flow
+        method: PATCH
+        from: Software Service
+        fromLabel: Client
+        fromParty: ss
+        to: Ordering Application
+        toLabel: Host
+        toParty: oa
+        ```
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchOrderDetails'
+      responses:
+        '200':
+          description: Order details updated successfully.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /orders/{orderId}/requestCancellation:
+    parameters:
+      - $ref: '#/components/parameters/OrderId'
+    post:
+      tags: [Cancellation]
+      operationId: requestCancellation
+      summary: Request order cancellation (merchant / Software Service)
+      description: |-
+        This endpoint requests cancellation in **Direction A**
+        (Software Service initiates, merchant wants to cancel).
+
+        Host: **Ordering Application**. Caller: **Software Service**.
+
+        This is a **request**, not a final cancel. HTTP `202` means the Ordering Application
+        accepted the request for **asynchronous processing**. The order is cancelled only when
+        a **`CANCELLED`** event is emitted and `order.status` becomes `CANCELLED`.
+
+        | Event emitted | Projected status | Obligation |
+        |---|---|---|
+        | `CANCELLATION_REQUESTED` | Unchanged | **MAY** |
+        | `CANCELLATION_REQUEST_ACCEPTED` | Unchanged | **MAY** |
+        | `CANCELLATION_REQUEST_DENIED` | Unchanged | **MAY** |
+        | `CANCELLED` | `CANCELLED` | **MUST** after `CANCELLATION_REQUEST_ACCEPTED` |
+
+        **When the handshake is accepted:** Ordering Application MUST emit
+        `CANCELLATION_REQUEST_ACCEPTED` and **then** emit **`CANCELLED`** (and set status
+        `CANCELLED`). Do not skip `CANCELLED` after acceptance. Software Service MUST NOT treat
+        `CANCELLATION_REQUEST_ACCEPTED` alone as final cancellation.
+
+        ### Not this operation
+
+        - Ordering Application **mandatory** cancel does **not** use this endpoint — OA emits
+          `CANCELLED` directly (see [Cancellation](#tag/Cancellation)).
+        - V1 endpoints `acceptCancellation` / `denyCancellation` and event
+          `ORDER_CANCELLATION_REQUEST` are **removed** (they applied only to OA-initiated handshake).
+
+        **Duplicate request behavior:** if the order is already `CANCELLED`, return
+        **`202 Accepted`** with no new transition; the host MAY re-present `CANCELLED`.
+
+
+        ```od-call-flow
+        method: POST
+        from: Software Service
+        fromLabel: Client
+        fromParty: ss
+        to: Ordering Application
+        toLabel: Host
+        toParty: oa
+        ```
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestCancellation'
+            examples:
+              unavailableItem:
+                value:
+                  reason: Item unavailable after confirmation
+                  code: UNAVAILABLE_ITEM
+                  mode: MANUAL
+      responses:
+        '202':
+          description: Cancellation request accepted for asynchronous processing, or already cancelled (idempotent success).
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Invalid state for a cancellation request (not merely “already cancelled”)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Business rule rejected the request payload or policy forbids request at this stage
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+webhooks:
+  orderEvent:
+    post:
+      tags: [Events]
+      operationId: receiveOrderEvent
+      summary: Webhook for order event notification
+      description: |-
+        Optional push path. The **Ordering Application** sends order events to the
+        Software Service webhook URL. Acknowledgment is HTTP `200` or `204` with empty body.
+
+        Signature headers (`X-App-Id`, `X-App-MerchantId`, `X-App-Signature`) **MUST** be
+        verified — see [Authentication](../authentication/).
+
+
+        ```od-call-flow
+        method: POST
+        from: Ordering Application
+        fromLabel: Client
+        fromParty: oa
+        to: Software Service
+        toLabel: Host
+        toParty: ss
+        ```
+
+        Polling and webhook MAY coexist; Discovery declares which modes are supported.
+      parameters:
+        - $ref: '#/components/parameters/XAppId'
+        - $ref: '#/components/parameters/XAppMerchantId'
+        - $ref: '#/components/parameters/XAppSignature'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderEvent'
+            examples:
+              created:
+                summary: CREATED
+                value:
+                  eventId: evt-001
+                  eventType: CREATED
+                  orderId: order-abc123
+                  orderURL: https://api.example.com/od/v2/orders/order-abc123
+                  createdAt: '2026-07-01T14:30:00Z'
+              cancelled:
+                summary: CANCELLED (final — merchant request accepted or OA mandatory)
+                value:
+                  eventId: evt-090
+                  eventType: CANCELLED
+                  orderId: order-abc123
+                  orderURL: https://api.example.com/od/v2/orders/order-abc123
+                  createdAt: '2026-07-01T14:45:00Z'
+                  metadata:
+                    code: UNAVAILABLE_ITEM
+                    reason: Item unavailable
+              cancellationAccepted:
+                summary: CANCELLATION_REQUEST_ACCEPTED (must be followed by CANCELLED)
+                value:
+                  eventId: evt-091
+                  eventType: CANCELLATION_REQUEST_ACCEPTED
+                  orderId: order-abc123
+                  orderURL: https://api.example.com/od/v2/orders/order-abc123
+                  createdAt: '2026-07-01T14:45:30Z'
+                  metadata:
+                    code: UNAVAILABLE_ITEM
+                    reason: Request accepted; cancel will follow
+              cancellationDenied:
+                summary: CANCELLATION_REQUEST_DENIED (merchant request refused)
+                value:
+                  eventId: evt-092
+                  eventType: CANCELLATION_REQUEST_DENIED
+                  orderId: order-abc123
+                  orderURL: https://api.example.com/od/v2/orders/order-abc123
+                  createdAt: '2026-07-01T14:46:00Z'
+                  metadata:
+                    code: OTHER_CANCELLATION_REASON
+                    reason: Consumer did not accept cancellation
+      responses:
+        '200':
+          description: Accepted (V1 compatibility; prefer 204)
+        '204':
+          description: Event received (no body)
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Bearer Token issued via OAuth 2.0. See the [Authentication specification](../authentication/).
+        Preferred scope for this capability: `od.orders`.
+  parameters:
+    OrderId:
+      name: orderId
+      in: path
+      required: true
+      description: Unique order identifier (generated by the Ordering Application)
+      schema: { type: string }
+      example: order-abc123
+    XAppId:
+      in: header
+      name: X-App-Id
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Sender application id (see Authentication)
+    XAppMerchantId:
+      in: header
+      name: X-App-MerchantId
+      required: true
+      schema: { type: string }
+      description: Merchant id associated with the event
+    XAppSignature:
+      in: header
+      name: X-App-Signature
+      required: true
+      schema: { type: string }
+      description: HMAC-SHA256 of the raw body (see Authentication)
+  responses:
+    Unauthorized:
+      description: Missing or invalid credentials
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: Insufficient scope
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Order or event not found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Conflict:
+      description: Invalid state transition for the current order status
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    TooManyRequests:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    InternalServerError:
+      description: Unexpected server error
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+  schemas:
+    OrderEventType:
+      type: string
+      description: |
+        Order event types for V2.
+
+        **Cancellation (two directions):**
+        - Merchant request path: `CANCELLATION_REQUESTED` (MAY) →
+          `CANCELLATION_REQUEST_ACCEPTED` then **`CANCELLED`**, or `CANCELLATION_REQUEST_DENIED`.
+        - After `CANCELLATION_REQUEST_ACCEPTED`, host MUST emit `CANCELLED` (acceptance ≠ final cancel).
+        - Originator mandatory path: `CANCELLED` only (no handshake).
+        - **Removed from V1:** `ORDER_CANCELLATION_REQUEST`, and the accept/deny HTTP pair
+          used when the Ordering Application requested cancel via handshake.
+        - **`PICKED_UP` removed.** Logistics intermediate events are informational.
+      enum:
+        - CREATED
+        - CONFIRMED
+        - PREPARATION_REQUESTED
+        - PREPARING
+        - READY_FOR_PICKUP
+        - PICKUP_ONGOING
+        - RIDER_ARRIVED_AT_STORE
+        - DISPATCHED
+        - ORDER_COLLECTED
+        - DELIVERY_ONGOING
+        - ARRIVED_AT_CUSTOMER
+        - DELIVERED
+        - CANCELLATION_REQUESTED
+        - CANCELLATION_REQUEST_ACCEPTED
+        - CANCELLATION_REQUEST_DENIED
+        - CANCELLED
+        - CONCLUDED
+    OrderStatus:
+      type: string
+      description: Authoritative order status (GET snapshot)
+      enum:
+        - CREATED
+        - CONFIRMED
+        - PREPARING
+        - READY
+        - IN_DELIVERY
+        - DELIVERED
+        - CANCELLED
+        - CONCLUDED
+    OrderEvent:
+      type: object
+      required: [eventId, eventType, orderId, createdAt]
+      properties:
+        eventId:
+          type: string
+          description: Unique event id — consumers MUST deduplicate on this value
+          example: evt-9f3a
+        eventType:
+          $ref: '#/components/schemas/OrderEventType'
+        orderId:
+          type: string
+          description: Order id (Ordering Application)
+          example: order-abc123
+        orderURL:
+          type: string
+          format: uri
+          description: URL to GET full order details
+          example: https://api.example.com/od/v2/orders/order-abc123
+        createdAt:
+          type: string
+          format: date-time
+          description: Event timestamp (UTC, RFC 3339)
+        sourceAppId:
+          type: string
+          format: uuid
+          description: Ordering Application app id (useful for hubs)
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Optional event-specific payload (e.g. cancellation details)
+    RequestCancellation:
+      type: object
+      title: RequestCancellation
+      description: |
+        Body of `POST /orders/{orderId}/requestCancellation` (Software Service → Ordering Application).
+        Aligns with V1 `RequestCancelled` / cancel-request fields.
+      required: [reason, code, mode]
+      properties:
+        reason:
+          type: string
+          description: Open text explaining the cancellation request
+          example: Item unavailable after confirmation
+        code:
+          type: string
+          description: Machine-readable reason for a **merchant** cancellation request
+          enum:
+            - SYSTEMIC_ISSUES
+            - DUPLICATE_APPLICATION
+            - UNAVAILABLE_ITEM
+            - RESTAURANT_WITHOUT_DELIVERY_PERSON
+            - OUTDATED_MENU
+            - ORDER_OUTSIDE_THE_DELIVERY_AREA
+            - BLOCKED_CUSTOMER
+            - OUTSIDE_DELIVERY_HOURS
+            - INTERNAL_DIFFICULTIES_OF_THE_RESTAURANT
+            - RISK_AREA
+            - DELIVERY_PROBLEM
+          example: UNAVAILABLE_ITEM
+        mode:
+          type: string
+          description: Whether the request was produced automatically or by a human operator at the Software Service
+          enum: [AUTO, MANUAL]
+          example: MANUAL
+        outOfStockItems:
+          type: array
+          description: Item ids that are out of stock (when applicable)
+          items:
+            type: string
+          maxItems: 100
+    DeliveryConfirmationCode:
+      type: object
+      description: Delivery confirmation code validation payload.
+      required: [orderId, deliveryCode]
+      properties:
+        orderId:
+          type: string
+          description: Order identifier validated in this operation
+          example: order-abc123
+        deliveryCode:
+          type: string
+          description: Customer-provided delivery confirmation code
+          example: '735194'
+
+    PatchOrderDetails:
+      type: object
+      description: Partial updates for non-lifecycle order fields.
+      properties:
+        preparationStartDateTime:
+          type: string
+          format: date-time
+          description: Updated preparation start timestamp (UTC, RFC 3339)
+        observations:
+          type: string
+          description: Updated order-level remarks
+
+    OrderTracking:
+      type: object
+      description: Merchant-controlled delivery tracking snapshot/update.
+      required: [deliveryTrackingInfo]
+      properties:
+        deliveryTrackingInfo:
+          $ref: '#/components/schemas/DeliveryTrackingInfo'
+
+    DeliveryTrackingInfo:
+      type: object
+      description: Tracking details for a delivery update.
+      properties:
+        event:
+          $ref: '#/components/schemas/DeliveryTrackingEvent'
+        problem:
+          $ref: '#/components/schemas/DeliveryTrackingProblem'
+        vehicle:
+          $ref: '#/components/schemas/DeliveryTrackingVehicle'
+        eta:
+          $ref: '#/components/schemas/DeliveryTrackingEta'
+        deliveryPerson:
+          $ref: '#/components/schemas/DeliveryTrackingPerson'
+        geoLocalization:
+          $ref: '#/components/schemas/DeliveryTrackingGeoLocalization'
+        externalTrackingURL:
+          type: string
+          format: uri
+          description: External real-time tracking URL if available
+
+    DeliveryTrackingEvent:
+      type: object
+      required: [type, datetime]
+      properties:
+        type:
+          type: string
+          enum:
+            - PICKUP_ONGOING
+            - ARRIVED_AT_MERCHANT
+            - ORDER_PICKED
+            - DELIVERY_ONGOING
+            - ARRIVED_AT_CUSTOMER
+            - ORDER_DELIVERED
+            - CANCELLED
+        message:
+          type: string
+          description: Optional free-text event details
+        datetime:
+          type: string
+          format: date-time
+          description: Event timestamp (UTC, RFC 3339)
+
+    DeliveryTrackingProblem:
+      type: object
+      required: [reason, datetime]
+      properties:
+        reason:
+          type: string
+          enum:
+            - DELIVERYPERSON_OCCURRENCE
+            - PAYMENT_PROBLEMS
+            - WRONG_PRODUCT_OR_ITEM
+            - ORDER_DELAYED
+            - ORDER_DAMAGED_OR_VIOLATED
+            - CUSTOMER_DID_NOT_PLACE_ORDER
+            - CUSTOMER_ADDRESS_UNKNOWN
+            - ORDER_MISSING_ITEMS
+            - NOBODY_TO_RECEIVE
+            - DELIVERYPERSON_WAITING_PAYMENT_FOR_ALREADY_PAID_ORDER
+            - ORDER_DELIVERED_WITHOUT_PAYMENT
+            - FRAUD_OR_THEFT
+        message:
+          type: string
+          description: Optional free-text problem details
+        datetime:
+          type: string
+          format: date-time
+          description: Problem timestamp (UTC, RFC 3339)
+
+    DeliveryTrackingVehicle:
+      type: object
+      properties:
+        type:
+          type: array
+          items:
+            type: string
+            enum:
+              - MOTORBIKE_BAG
+              - MOTORBIKE_BOX
+              - CAR
+              - BICYCLE
+              - SCOOTER
+              - VUC
+          maxItems: 10
+        licencePlate:
+          type: string
+          description: Vehicle plate identifier
+
+    DeliveryTrackingEta:
+      type: object
+      properties:
+        pickupEtaInMinutes:
+          type: integer
+        pickupEtaDatetime:
+          type: string
+          format: date-time
+        deliveryEtaInMinutes:
+          type: integer
+        deliveryEtaDatetime:
+          type: string
+          format: date-time
+        maxDeliveryTime:
+          type: string
+          format: date-time
+
+    DeliveryTrackingPerson:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        pictureURL:
+          type: string
+          format: uri
+
+    DeliveryTrackingGeoLocalization:
+      type: object
+      properties:
+        latitude:
+          type: number
+          format: float
+          minimum: -90
+          maximum: 90
+        longitude:
+          type: number
+          format: float
+          minimum: -180
+          maximum: 180
+        lastAddress:
+          type: object
+          description: Last known rider address context
+          properties:
+            country:
+              type: string
+              pattern: '^[A-Z]{2}$'
+            state:
+              type: string
+            city:
+              type: string
+            district:
+              type: string
+            street:
+              type: string
+            postalCode:
+              type: string
+            distanceToPickup:
+              type: string
+            distanceToDelivery:
+              type: string
+            timestamp:
+              type: string
+              format: date-time
+        invalidItems:
+          type: array
+          description: Item ids that are invalid (when applicable)
+          items:
+            type: string
+          maxItems: 100
+    Order:
+      type: object
+      required: [id, displayId, createdAt, orderTiming, status, merchant, items, total, fulfillment]
+      properties:
+        id:
+          type: string
+          description: Unique order identifier (Ordering Application)
+          example: order-abc123
+        displayId:
+          type: string
+          description: Human-readable code shown to merchant and customer
+          example: A123
+        createdAt:
+          type: string
+          format: date-time
+          description: Order creation timestamp (UTC, RFC 3339)
+        orderTiming:
+          type: string
+          enum: [INSTANT, SCHEDULED, ONDEMAND]
+          description: |
+            `INSTANT` — fulfill ASAP.
+            `SCHEDULED` — specific future time (`scheduledFor`).
+            `ONDEMAND` — prepare only after `PREPARATION_REQUESTED`.
+        scheduledFor:
+          type: string
+          format: date-time
+          description: Target fulfillment time for SCHEDULED orders
+        preparationStartDateTime:
+          type: string
+          format: date-time
+          description: Suggested preparation start (UTC)
+        status:
+          $ref: '#/components/schemas/OrderStatus'
+        lastEvent:
+          $ref: '#/components/schemas/OrderEventType'
+          description: Last relevant event type known for this order (debug / sync aid)
+        sourceAppId:
+          type: string
+          format: uuid
+          description: Originating Ordering Application id
+        observations:
+          type: string
+          description: >
+            General order-level remarks, not tied to a specific item (distinct from
+            item-level `observations` and fulfillment-context notes).
+        context:
+          type: object
+          description: Optional informational metadata about the order origin, not required for processing.
+          properties:
+            salesChannel:
+              type: string
+              description: Optional sales channel label
+        merchant:
+          type: object
+          required: [id]
+          properties:
+            id:
+              type: string
+              description: Merchant id owned by the originator (V2)
+            externalCode:
+              type: string
+              description: PDV / Software Service internal merchant code
+            name:
+              type: string
+              description: Public merchant name (debug / display)
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/OrderItem'
+        total:
+          $ref: '#/components/schemas/OrderTotal'
+        customer:
+          $ref: '#/components/schemas/OrderCustomer'
+        payments:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderPayment'
+        fulfillment:
+          $ref: '#/components/schemas/OrderFulfillment'
+        otherFees:
+          type: array
+          description: Additional fees (e.g. minimum order fee)
+          items:
+            type: object
+            properties:
+              name: { type: string }
+              type:
+                type: string
+                description: Fee type token (e.g. MIN_ORDER_FEE, SERVICE_FEE)
+              value: { type: integer, description: Amount in minor units }
+        discounts:
+          type: array
+          description: >
+            Discounts applied to the order. A payment method MUST NOT be represented as a
+            discount — discounts subtract from the order value; to avoid double counting, a
+            value declared here MUST NOT also be declared under `payments`.
+          items:
+            type: object
+            required: [amount, target, sponsorshipValues]
+            properties:
+              amount:
+                type: integer
+                description: Discount amount in minor units
+              target:
+                type: string
+                enum: [CART, DELIVERY_FEE, ITEM]
+              targetId:
+                type: string
+                description: Only mandatory when target is ITEM
+              sponsorshipValues:
+                type: array
+                description: >
+                  Values sponsored by each party. The sum MUST match `amount` above.
+                items:
+                  type: object
+                  required: [name, amount]
+                  properties:
+                    name:
+                      type: string
+                      enum: [MARKETPLACE, MERCHANT, CHAIN]
+                    amount:
+                      type: integer
+                      description: Discount amount given by this sponsor, in minor units
+                    discountCode:
+                      type: string
+                      description: Coupon or marketing campaign identification code
+    OrderItem:
+      type: object
+      required: [id, name, quantity, unity_price, total_price]
+      properties:
+        id:
+          type: string
+          description: Line item identifier within this order
+        externalCode:
+          type: string
+          description: PDV / catalog external code
+        itemOfferId:
+          type: string
+          description: Catalog item offer reference when available
+        name:
+          type: string
+          description: Item name at order time (snapshot)
+          example: Classic Burger
+        quantity:
+          type: number
+          minimum: 0
+          description: Quantity (fractional units allowed for KG/L etc.)
+        unit:
+          type: string
+          enum: [UN, KG, L, OZ, LB, GAL]
+          description: Unit of measure
+          default: UN
+        unity_price:
+          type: integer
+          description: Unit base price in minor units (centavos), without options
+          example: 2500
+        total_price:
+          type: integer
+          description: Line total including options and quantity, minor units
+          example: 5000
+        observations:
+          type: string
+          description: Item-level special instructions
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItemOption'
+    OrderItemOption:
+      type: object
+      required: [id, name, quantity, option_price]
+      properties:
+        id: { type: string }
+        optionGroupId: { type: string }
+        optionGroupName: { type: string }
+        name: { type: string, example: Medium rare }
+        quantity: { type: integer, minimum: 1 }
+        defaultQuantity:
+          type: integer
+          minimum: 0
+          description: >
+            Quantity of this option already included by default in the item (e.g. a free
+            ingredient). Quantity beyond this value is billable. Distinguishes standard
+            (already-included) selections from add-ons.
+        option_price:
+          type: integer
+          description: Additional price per unit of this option in minor units
+          example: 0
+        options:
+          type: array
+          description: Nested options for multi-level customization
+          items:
+            $ref: '#/components/schemas/OrderItemOption'
+    OrderTotal:
+      type: object
+      required: [value, currency]
+      properties:
+        value:
+          type: integer
+          description: Total order value in minor units
+          example: 5500
+        currency:
+          type: string
+          description: ISO 4217 currency code
+          example: BRL
+        subtotal:
+          type: integer
+          description: Items subtotal before fees and discounts
+          example: 5000
+        deliveryFee:
+          type: integer
+          description: Delivery fee in minor units
+          example: 500
+        discount:
+          type: integer
+          description: Total discount in minor units
+          example: 0
+    OrderCustomer:
+      type: object
+      description: |
+        Customer context on the order. Customer capability may exchange orders through
+        its own endpoints later; this shape remains the shared order customer fragment.
+      properties:
+        id: { type: string }
+        name: { type: string }
+        phone: { type: string }
+        email: { type: string }
+        documentNumber: { type: string }
+        ordersCountOnMerchant:
+          type: integer
+          description: Total number of orders this customer has already placed with this merchant.
+        birthDate:
+          type: string
+          format: date
+          description: Optional customer birth date — demographic field requested for CRM/Loyalty segmentation.
+        gender:
+          type: string
+          description: Optional customer gender — demographic field requested for CRM/Loyalty segmentation.
+    OrderPayment:
+      type: object
+      required: [method]
+      properties:
+        method:
+          type: string
+          description: Payment method identifier
+          example: CREDIT_CARD
+        value:
+          type: integer
+          description: Amount in minor units
+        changeFor:
+          type: integer
+          description: Cash change requested (CASH)
+        prepaid:
+          type: boolean
+          description: Whether payment was collected online before fulfillment
+    OrderFulfillment:
+      type: object
+      additionalProperties: false
+      required: [orderType]
+      description: |
+        Fulfillment envelope and order profile selector.
+
+        `orderType` is the single source of truth for the order profile in V2.
+        The selected profile determines which fulfillment context object MUST be
+        present:
+        - `DELIVERY` -> `delivery`
+        - `TAKEOUT` -> `takeout`
+        - `INDOOR` -> `indoor`
+
+        This schema uses `oneOf` to enforce profile/object consistency and to
+        avoid ambiguous payloads with multiple active fulfillment contexts.
+      properties:
+        orderType:
+          type: string
+          enum: [DELIVERY, TAKEOUT, INDOOR]
+          description: |
+            Order profile discriminator within fulfillment.
+
+            Normative rules:
+            - MUST always be provided.
+            - MUST match exactly one fulfillment context object.
+            - MUST be used by consumers to interpret lifecycle/profile-specific rules.
+        delivery:
+          $ref: '#/components/schemas/DeliveryContext'
+          description: |
+            Delivery fulfillment context.
+            MUST be present when `orderType` is `DELIVERY`.
+            MUST NOT be present for other order types.
+        takeout:
+          $ref: '#/components/schemas/TakeoutContext'
+          description: |
+            Takeout fulfillment context.
+            MUST be present when `orderType` is `TAKEOUT`.
+            MUST NOT be present for other order types.
+        indoor:
+          $ref: '#/components/schemas/IndoorContext'
+          description: |
+            Indoor fulfillment context.
+            MUST be present when `orderType` is `INDOOR`.
+            MUST NOT be present for other order types.
+      oneOf:
+        - $ref: '#/components/schemas/OrderFulfillmentDelivery'
+        - $ref: '#/components/schemas/OrderFulfillmentTakeout'
+        - $ref: '#/components/schemas/OrderFulfillmentIndoor'
+    OrderFulfillmentDelivery:
+      title: Delivery
+      description: DELIVERY profile payload
+      type: object
+      required: [orderType, delivery]
+      properties:
+        orderType:
+          type: string
+          enum: [DELIVERY]
+        delivery:
+          $ref: '#/components/schemas/DeliveryContext'
+    OrderFulfillmentTakeout:
+      title: Takeout
+      description: TAKEOUT profile payload
+      type: object
+      required: [orderType, takeout]
+      properties:
+        orderType:
+          type: string
+          enum: [TAKEOUT]
+        takeout:
+          $ref: '#/components/schemas/TakeoutContext'
+    OrderFulfillmentIndoor:
+      title: Indoor
+      description: INDOOR profile payload
+      type: object
+      required: [orderType, indoor]
+      properties:
+        orderType:
+          type: string
+          enum: [INDOOR]
+        indoor:
+          $ref: '#/components/schemas/IndoorContext'
+    DeliveryContext:
+      type: object
+      description: Delivery-specific context (when fulfillment.orderType is DELIVERY)
+      properties:
+        address:
+          type: object
+          properties:
+            street: { type: string }
+            complement: { type: string }
+            neighborhood: { type: string }
+            city: { type: string }
+            state: { type: string }
+            postalCode: { type: string }
+            coordinates:
+              type: object
+              properties:
+                latitude: { type: number, format: double }
+                longitude: { type: number, format: double }
+        observations: { type: string }
+        estimatedDeliveryDateTime:
+          type: string
+          format: date-time
+    TakeoutContext:
+      type: object
+      description: Takeout-specific context (when fulfillment.orderType is TAKEOUT)
+      properties:
+        observations: { type: string }
+        pickupCode: { type: string }
+    IndoorContext:
+      type: object
+      description: |
+        Indoor context on an order with `fulfillment.orderType: INDOOR`.
+        Aligns with the Indoor extension operational key (`operationMode` + `identifier`) and
+        carries operational hints for channel, service, fulfillment, and fiscal behavior.
+
+        Canonical identifiers are English-only in V2:
+        - `operationMode`: `TABLE`, `TAB`, `COUNTER`
+        - `originChannel.type`: `TOTEM`, `QR_CODE`, `CUSTOMER_TABLET`, `WAITER_TABLET`, `FRONT_DESK`, `POS`, `APP`, `WHATSAPP`, `OTHER`
+        - `consumptionType`: `DINE_IN`, `TAKEAWAY`
+
+        Common legacy labels in integrations map to the canonical tokens above (for example:
+        MESA->TABLE, COMANDA->TAB, BALCAO->COUNTER).
+      required: [operationMode, identifier, originChannel, consumptionType]
+      properties:
+        operationMode:
+          allOf:
+            - $ref: '#/components/schemas/IndoorOperationMode'
+          description: Account grouping mode.
+        identifier:
+          type: string
+          description: Table number, tab id, or counter position
+          example: '5'
+        account:
+          type: object
+          description: Existing account reference when already known by the Software Service.
+          required: [id]
+          properties:
+            id:
+              type: string
+              description: Existing account identifier (`account.id` in payload notation).
+        originChannel:
+          allOf:
+            - $ref: '#/components/schemas/IndoorOriginChannel'
+          description: Order origin channel metadata.
+        consumptionType:
+          allOf:
+            - $ref: '#/components/schemas/IndoorConsumptionType'
+          description: Consumption intent for this indoor order.
+        fulfillment:
+          allOf:
+            - $ref: '#/components/schemas/IndoorFulfillmentInfo'
+          description: On-premise handoff strategy (`CALL` or `DISPATCH`).
+        service:
+          allOf:
+            - $ref: '#/components/schemas/IndoorServiceInfo'
+          description: Service metadata such as waiter and party size.
+        notifications:
+          allOf:
+            - $ref: '#/components/schemas/IndoorNotifications'
+          description: Notification channels tied to this order/account.
+        fiscal:
+          allOf:
+            - $ref: '#/components/schemas/IndoorOrderFiscalInfo'
+          description: Fiscal preferences informed at order time.
+    IndoorOperationMode:
+      type: string
+      enum: [TABLE, TAB, COUNTER]
+      description: |
+        Primary operational mode for indoor service.
+        Canonical values replace common legacy labels:
+        - `TABLE` (legacy: MESA)
+        - `TAB` (legacy: COMANDA)
+        - `COUNTER` (legacy: BALCAO)
+    IndoorConsumptionType:
+      type: string
+      enum: [DINE_IN, TAKEAWAY]
+      description: |
+        Consumption intent associated with the indoor order.
+        Canonical values replace common legacy labels:
+        - `DINE_IN` (legacy: CONSUMIR_NO_LOCAL)
+        - `TAKEAWAY` (legacy: LEVAR)
+    IndoorOriginChannel:
+      type: object
+      description: Indoor order origin channel.
+      required: [type]
+      properties:
+        type:
+          type: string
+          enum:
+            - TOTEM
+            - QR_CODE
+            - CUSTOMER_TABLET
+            - WAITER_TABLET
+            - FRONT_DESK
+            - POS
+            - APP
+            - WHATSAPP
+            - OTHER
+          description: |
+            Indoor order origin channel.
+            Canonical values replace common legacy labels such as TABLET_CLIENTE,
+            TABLET_GARCOM, FRENTE_DE_CAIXA, PDV, APLICATIVO, and OUTRO.
+        id:
+          type: string
+          description: Specific channel/device/origin identifier.
+        notes:
+          type: string
+          description: Free-text note about the origin channel.
+    IndoorFulfillmentInfo:
+      type: object
+      description: Order handoff mode for indoor consumption.
+      required: [type]
+      properties:
+        type:
+          type: string
+          enum: [DISPATCH, CALL]
+          description: |
+            Indoor handoff mode.
+            - `DISPATCH`: order is taken to a place/seat/table
+            - `CALL`: customer is called to collect/receive
+        call:
+          allOf:
+            - $ref: '#/components/schemas/IndoorCallInfo'
+          description: Call strategy when `type = CALL`.
+        dispatch:
+          allOf:
+            - $ref: '#/components/schemas/IndoorDispatchInfo'
+          description: Dispatch metadata when `type = DISPATCH`.
+    IndoorCallInfo:
+      type: object
+      description: How the customer is called for pickup/service.
+      properties:
+        notifyOriginator:
+          type: boolean
+          description: Whether the originator should be notified about call progress.
+        type:
+          type: string
+          enum: [TICKET_NUMBER, PAGER, CALL_NAME, WHATSAPP, OTHER]
+          description: |
+            Customer call identifier type.
+            `TICKET_NUMBER` corresponds to legacy "senha" flows.
+        label:
+          type: string
+          description: Visible call label (ticket number, pager label, name, etc).
+    IndoorDispatchInfo:
+      type: object
+      description: Dispatch destination metadata.
+      properties:
+        id:
+          type: string
+          description: Dispatch point/location identifier.
+        label:
+          type: string
+          description: Friendly name of the dispatch point/location.
+        sector:
+          type: string
+          description: Sector, court, or operational area for dispatch.
+        seat:
+          allOf:
+            - $ref: '#/components/schemas/IndoorSeatRef'
+          description: Seat/place/position metadata.
+    IndoorSeatRef:
+      type: object
+      description: Reference to a seat, place, or position.
+      properties:
+        id:
+          type: string
+          description: Seat, place, or position identifier.
+        label:
+          type: string
+          description: Friendly seat/place/position label.
+    IndoorServiceInfo:
+      type: object
+      description: Service metadata associated with the indoor order.
+      properties:
+        waiterCode:
+          type: string
+          description: Code of the responsible waiter/attendant.
+        waiterName:
+          type: string
+          description: Name of the responsible waiter/attendant.
+        peopleCount:
+          type: integer
+          minimum: 0
+          description: Number of people associated with the account/session.
+    IndoorNotifications:
+      type: object
+      description: Notification channels linked to the account or customer.
+      properties:
+        whatsAppId:
+          type: string
+          description: WhatsApp identifier linked to the account or customer.
+    IndoorOrderFiscalInfo:
+      type: object
+      description: Fiscal preferences provided on the indoor order.
+      required: [shouldIssueDocument]
+      properties:
+        shouldIssueDocument:
+          type: boolean
+          description: Whether the order/account should generate a fiscal document.
+        documentStatus:
+          type: string
+          enum: [NOT_ISSUED, ISSUED, PENDING]
+          description: |
+            Known fiscal status at order time.
+            Canonical values replace common legacy labels:
+            - `NOT_ISSUED` (legacy: NAO_EMITIDA)
+            - `ISSUED` (legacy: EMITIDA)
+            - `PENDING` (legacy: PENDENTE)
+        printDocument:
+          type: boolean
+          description: Whether physical document printing is requested.
+        paymentNSURequiredForNFCE:
+          type: boolean
+          description: Whether payment NSU is required for NFC-e issuance.
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: INVALID_ORDER_STATE_TRANSITION
+        message:
+          type: string
+          example: Cannot confirm an order in CANCELLED status
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field: { type: string }
+              issue: { type: string }
