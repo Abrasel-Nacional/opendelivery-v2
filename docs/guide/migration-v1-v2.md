@@ -1,194 +1,349 @@
-# Migração V1 → V2
+# Migracao V1 -> V2
 
-<div class="od-api-callout">
-  <p>Migração V1→V2. Continue a jornada ou abra o contrato técnico.</p>
-  <a href="../protocol/discovery/">Discovery V2 →</a>
-</div>
+Este guia explica como migrar da V1 para a V2 com foco em impacto de implementacao.
+A organizacao abaixo segue por capability para facilitar planejamento tecnico por squad.
 
-Este guia descreve as mudanças entre o Open Delivery Protocol V1 e V2, focando nos breaking changes
-que exigem adaptação de código. Consulte o [Changelog](changelog.md) para a lista completa de novidades.
+Consulte o [Changelog](changelog.md) para historico de release.
 
 !!! info "V1 continua ativa"
-    A V1 permanece ativa durante o período de transição. Não há prazo de descontinuação definido ainda.
-    Novas integrações devem usar V2.
+    A V1 permanece ativa durante a transicao. Novas integracoes devem priorizar V2.
 
 ---
 
-## 1. Autenticação — por aplicação em vez de por loja
+## Como executar a migracao
 
-**V1:** Um par `client_id` / `client_secret` por loja. Cada novo merchant exigia novas credenciais.
+Sequencia recomendada:
 
-**V2:** Um único `client_id` por aplicação, independente de quantas lojas ela integra.
+1. Migrar **Authentication** (modelo de credencial e escopos).
+2. Publicar **Discovery** (manifesto obrigatorio da integracao).
+3. Migrar capabilities de negocio na ordem de prioridade do produto (Merchant, Menu, Orders, Logistics, Customer, Indoor).
+4. Rodar homologacao por capability com criterios de aceite objetivos.
+
+---
+
+## Authentication
+
+### O que muda da V1 para a V2
+
+- **Mudanca recomendada**: credencial por aplicacao (`client_id` unico por software) passa a ser o modelo preferencial para novas integracoes.
+- **Compatibilidade legada**: credencial por merchant (`client_id` por loja) continua suportada para migracao gradual.
+- **Breaking**: escopos passam a ser granulares por dominio (`od.orders`, `od.menu`, `od.logistics`, `od.crm`, `od.all`).
+- **Melhoria**: suporte opcional ao `Authorization Code Flow` para casos que exigem autorizacao delegada de estabelecimento.
+
+### Impacto no codigo
+
+- Priorizar fluxo por aplicacao na camada de autenticacao.
+- Manter fallback por merchant para parceiros ainda em legado.
+- Atualizar emissao de token para incluir escopos adequados por fluxo.
+- Revisar cache de token para uso por aplicacao (nao por loja).
 
 ```diff
-# V1 — token por loja
+# V1
 POST /oauth/token
-- client_id=credencial_da_loja_123
-- client_secret=segredo_da_loja_123
+- client_id=credencial_loja_123
+- client_secret=segredo_loja_123
 
-# V2 — token por aplicação
+# V2
 POST /oauth/token
-+ client_id=credencial_da_aplicacao
-+ client_secret=segredo_da_aplicacao
++ client_id=credencial_aplicacao
++ client_secret=segredo_aplicacao
 + scope=od.orders od.menu
 ```
 
-A lista de lojas autorizadas para a aplicação é obtida via:
+Depois do token, a aplicacao resolve quais merchants estao autorizados via:
 
 ```
 GET /merchants
 Authorization: Bearer {token_da_aplicacao}
 ```
 
-**Compatibilidade V1:** O modelo `by_merchant` (um `client_id` por loja) ainda é suportado na V2 para
-facilitar a migração gradual. Declare `clientIdGeneration: [by_merchant]` no Discovery.
+### Compatibilidade legada (importante)
+
+- O modelo `by_merchant` (um `client_id` por loja) continua suportado na V2 para transicao.
+- O modelo recomendado para novas integracoes e para evolucao gradual de stacks existentes e `by_app`.
+- Se `authorization_code` for suportado, ele tambem deve ser declarado no discovery.
+
+### Campos de Discovery que devem ser preenchidos
+
+| Campo | Tipo | Obrigatorio | Uso na migracao |
+|---|---|---|---|
+| `authentication.supportedGrantTypes` | array[string] | SIM | Declarar `client_credentials` e, quando aplicavel, `authorization_code` |
+| `authentication.clientIdGeneration` | array[string] | SIM | Declarar `by_app` (recomendado) e/ou `by_merchant` (legado) |
+
+### Passo a passo de migracao
+
+1. Criar armazenamento de credencial por aplicacao.
+2. Atualizar cliente OAuth para enviar `scope` explicitamente.
+3. Mapear rotas/acoes internas para escopos minimos.
+4. Trocar fluxo de descoberta de lojas para `GET /merchants` com token da aplicacao.
+5. Validar fallback de compatibilidade quando o parceiro ainda estiver em `by_merchant`.
+
+### Criterios de aceite
+
+- A aplicacao obtém token com escopos corretos.
+- A aplicacao lista merchants autorizados sem usar credenciais por loja.
+- Chamadas sem escopo necessario retornam erro esperado e observavel.
+
+### Armadilhas comuns
+
+- Reutilizar escopo amplo (`od.all`) em tudo e perder principio de menor privilegio.
+- Manter cache de token por merchant sem necessidade.
+- Esquecer renovacao de token para jobs assíncronos de longa duracao.
+
+Referencias: [Protocolo Authentication](../protocol/authentication.md) · [API Authentication](../reference/authentication.md)
 
 ---
 
-## 2. Escopos OAuth
+## Discovery
 
-**V1:** Escopo único `OD.ALL` (ou sem escopo explícito).
+### O que muda da V1 para a V2
 
-**V2:** Escopos granulares por domínio.
+- **Breaking operacional**: `GET /.well-known/opendelivery` passa a ser obrigatorio para iniciar integracao.
+- **Melhoria**: capabilities, versoes, auth models e modos de eventos ficam declarados em um manifesto unico.
 
-| Escopo | Acesso |
-|---|---|
-| `od.orders` | Ciclo de vida de pedidos |
-| `od.menu` | Cardápio e dados do merchant |
-| `od.logistics` | Operações de logística |
-| `od.crm` | Customer, fidelidade e reviews |
-| `od.all` | Todos os domínios (compatibilidade V1) |
+### Campos de Discovery mais criticos na migracao
+
+| Campo | Tipo | Obrigatorio | Por que importa |
+|---|---|---|---|
+| `openDelivery.supportedVersions` | array[string] | SIM | Garante compatibilidade de versao antes da integracao |
+| `authentication.supportedGrantTypes` | array[string] | SIM | Define os fluxos OAuth permitidos |
+| `authentication.clientIdGeneration` | array[string] | SIM | Define se o parceiro esta em `by_app`, `by_merchant` ou ambos |
+| `capabilities.orders.originator.supportedEvents` | array[string] | Condicional | Define quais eventos de pedido sao realmente emitidos |
+| `capabilities.orders.originator.supportsWebhook` | boolean | Condicional | Define se envio de eventos por webhook esta disponivel |
+| `capabilities.orders.originator.supportsPolling` | boolean | Condicional | Define se consumo por polling esta disponivel |
+| `capabilities.orders.receiver.supportedOperations` | array[string] | Condicional | Define quais operacoes de Orders podem ser chamadas |
+| `capabilities.logistics.originator.supportedEvents` | array[string] | Condicional | Define eventos de logistics emitidos |
+| `capabilities.logistics.receiver.supportedOperations` | array[string] | Condicional | Define operacoes de logistics aceitas |
+| `capabilities.customer.maxBatchSize` | integer | Condicional | Controla tamanho de lote para sincronizacao |
+| `capabilities.customer.requestsPerSecond` | integer | Condicional | Controla limite de taxa para consumo seguro |
+
+### Impacto no codigo
+
+- Adicionar cliente de bootstrap da integracao baseado no manifesto.
+- Remover configuracoes fixas hardcoded de capability/baseUrl quando o manifesto estiver disponivel.
+- Validar compatibilidade de versao antes de ativar chamadas de negocio.
+
+### Passo a passo de migracao
+
+1. Publicar endpoint `/.well-known/opendelivery`.
+2. Declarar capabilities realmente suportadas e seus `baseUrl`.
+3. Declarar modelo de autenticacao e modo de emissao/consumo de eventos.
+4. Fazer o consumer carregar e validar o manifesto no onboarding.
+5. Bloquear ativacao quando manifesto estiver ausente ou invalido.
+
+### Criterios de aceite
+
+- Integracao sobe apenas quando discovery retorna contrato valido.
+- Versoes e capabilities lidas no discovery batem com o que a API expõe.
+- Logs de bootstrap mostram capability habilitada/inabilitada de forma rastreavel.
+
+### Armadilhas comuns
+
+- Publicar capability no discovery sem endpoint correspondente implementado.
+- Divergencia entre ambientes (homologacao publica algo diferente de producao).
+- Tratar discovery como opcional e manter onboarding manual.
+
+Referencias: [Protocolo Discovery](../protocol/discovery.md) · [API Discovery](../reference/discovery.md)
 
 ---
 
-## 3. Merchant ID — gerado pelo originador
+## Merchant
 
-**V1:** O PDV gerava o `merchantId` e o comunicava ao originador.
+### Mudancas principais
 
-**V2:** O originador gera o `merchantId`. O PDV mantém seu próprio identificador interno e
-usa o campo `externalCode` para correlacionar os dois sistemas.
+- **Breaking**: `merchantId` passa a ser gerado pelo originador.
+- **Breaking**: `merchantType` removido.
+- **Breaking**: service deixa de ter id proprio e passa a ser identificado por tipo (`DELIVERY`, `TAKEOUT`, `INDOOR`).
 
-```diff
-# V1 — PDV define o ID
-{
--  "merchant": { "id": "id_gerado_pelo_pdv" }
-}
+### O que adaptar
 
-# V2 — originador define o ID; PDV tem seu próprio código
-{
-+  "merchant": {
-+    "id": "id_gerado_pelo_originador",
-+    "externalCode": "codigo_interno_do_pdv"
-+  }
-}
-```
+- Ajustar ownership do identificador em cadastro e sincronizacao.
+- Garantir de/para interno via `externalCode` no Software Service.
+- Atualizar validadores para novo modelo de services por tipo.
 
----
+### Campos de Discovery relevantes
 
-## 4. Cardápio — CRUD granular substituiu webhook monolítico
-
-**V1:** Toda atualização de cardápio era enviada via webhook `merchantUpdate` com o payload completo.
-
-**V2:** Cada entidade tem seu próprio endpoint CRUD. Não existe mais o `merchantUpdate` monolítico.
-
-| Entidade | Endpoints V2 |
-|---|---|
-| Merchant (basic info) | `GET /merchants/{id}` · `PATCH /merchants/{id}` |
-| Services | `GET/PUT/PATCH /merchants/{id}/services/{type}` |
-| Menus | `GET /merchants/{id}/menus` |
-| Categorias | `GET/POST/PUT/DELETE /merchants/{id}/menus/{menuId}/categories` |
-| ItemOffers | `GET/POST/PUT/DELETE /merchants/{id}/menus/{menuId}/item-offers` |
-| OptionGroups | `GET/POST/PUT/DELETE .../item-offers/{id}/option-groups` |
-| Options | `GET/POST/PUT/DELETE .../option-groups/{id}/options` |
-| Snapshot completo | `GET /merchants/{id}/menus/{menuId}/snapshot` |
-| Pausa de serviço | `POST /merchants/{id}/services/{type}/pause` |
-
-### Campos alterados no cardápio
-
-| Campo | V1 | V2 |
+| Campo | Tipo | Uso |
 |---|---|---|
-| `merchantType` | Existia | **Removido** |
-| `subtotal` em opcionais | Existia | **Removido** — use `option_price` |
-| `option_price` | Opcional | **Obrigatório** |
-| `unity_price` | Implícito | **Explícito** |
-| `quantity_available` | Não existia | **Novo** — disponibilidade operacional do item |
-| Service ID | Identificado por ID | **Identificado apenas por tipo** (`DELIVERY`, `TAKEOUT`, `INDOOR`) |
+| `capabilities.merchant.supported` | boolean | Habilita capability Merchant na integracao |
+| `capabilities.merchant.supportsPartialUpdate` | boolean | Define estrategia de atualizacao parcial vs payload completo |
+| `capabilities.merchant.supportsFullGetByOriginator` | boolean | Define se reconciliacao por GET completo esta disponivel |
+
+Referencias: [Protocolo Merchant](../protocol/merchant.md) · [API Merchant](../reference/merchant.md)
 
 ---
 
-## 5. Pedidos — cancelamento e eventos
+## Menu
 
-### Cancelamento simplificado
+### Mudancas principais
 
-**V1:** Handshake de três etapas: `requestCancellation` → `acceptCancellation` / `denyCancellation`.
+- **Breaking**: fim do webhook monolitico `merchantUpdate`.
+- **Breaking**: CRUD granular por entidade de catalogo.
+- **Breaking**: `subtotal` em opcionais removido; `option_price` passa a ser obrigatorio.
+- **Melhoria**: snapshot completo para sincronizacao.
 
-**V2:** Cancelamento direto, sem handshake obrigatório.
+### O que adaptar
+
+- Separar pipeline de atualizacao por entidade (menu, categoria, itemOffer, optionGroup, option).
+- Atualizar validacoes de preco para `option_price` e `unity_price`.
+- Implementar reconciliacao por snapshot quando detectar drift de dados.
+
+Referencias: [Protocolo Menu](../protocol/menu.md)
+
+---
+
+## Orders
+
+### Mudancas principais
+
+- **Breaking**: cancelamento do originador por handshake removido; permanece cancelamento mandatorio via `CANCELLED`.
+- **Breaking**: evento `PICKED_UP` removido.
+- **Breaking**: `Order.type` sai da raiz e vira `Order.fulfillment.orderType`.
+- **Breaking**: `Order.delivery` / `Order.takeout` / `Order.indoor` movem para `Order.fulfillment.*`.
+- **Breaking**: campos de preco de item/opcao passam a ficar agrupados em `pricing` dentro de `Order.items[*]` e `Order.items[*].options[*]`.
+- **Breaking**: formato de preco volta ao modelo da V1 (`Price { value, currency }`) para item, opcao, descontos, taxas e totais.
+- **Breaking**: `subtotalPrice` deixa de existir em item e opcao.
+- **Breaking de consumo**: `Order.status` em `GET /orders/{id}` vira fonte de verdade.
+
+### Regras de migracao essenciais
+
+- Nao implementar `POST /orders` para entrada de pedido.
+- Tratar eventos como notificacao; reconciliar estado via GET.
+- Tratar operacao duplicada ja aplicada com `202` (sem nova transicao).
+
+### Discovery para Orders (ponto critico)
+
+Na V2, os eventos de Orders suportados pela contraparte devem ser lidos no discovery antes de ativar o fluxo.
+
+| Campo | Tipo | Uso |
+|---|---|---|
+| `capabilities.orders.originator.supportedEvents` | array[string] | Lista os eventos que serao emitidos |
+| `capabilities.orders.originator.unsupportedEvents` | array[string] | Lista eventos que nao devem ser esperados |
+| `capabilities.orders.originator.supportsWebhook` | boolean | Define envio push de eventos |
+| `capabilities.orders.originator.supportsPolling` | boolean | Define consumo pull de eventos |
+| `capabilities.orders.receiver.supportedOperations` | array[string] | Lista operacoes de Orders aceitas pelo receiver |
+| `capabilities.orders.receiver.unsupportedOperations` | array[string] | Lista operacoes indisponiveis para evitar chamadas invalidas |
 
 ```diff
-# V1
-POST /v1/orders/{id}/requestCancellation
-POST /v1/orders/{id}/acceptCancellation   # ou denyCancellation
+# Antes
+{
+  "id": "order-123",
+- "type": "DELIVERY",
+  "delivery": { "address": { "city": "Sao Paulo" } }
+}
 
-# V2
-POST /orders/{id}/cancel
+# Depois
+{
+  "id": "order-123",
+  "fulfillment": {
++   "orderType": "DELIVERY",
+    "delivery": { "address": { "city": "Sao Paulo" } }
+  }
+}
 ```
 
-O handshake foi eliminado porque, na prática da V1, o deny nunca era implementado em escala.
-
-### Evento `picked_up` removido
-
-O evento `picked_up` era ambíguo (usado tanto para takeout quanto para coleta logística) e foi removido.
-Use os eventos de logística para rastreamento de coleta.
-
-### Separação status / evento
-
-**V1:** Eventos e status eram frequentemente confundidos.
-
-**V2:** Regra clara:
-- `status` no `GET /orders/{id}` → estado atual do pedido (fonte de verdade)
-- Eventos (webhooks) → informativos; não redefinem o estado
-
-Nunca infira o status de um pedido apenas pelos eventos recebidos. Sempre consulte o GET para reconciliação.
+Referencias: [Protocolo Orders](../protocol/orders.md) · [API Orders](../reference/orders.md) · [Convencoes](../reference/conventions.md#duplicidade-de-operacoes-de-ciclo-de-vida)
 
 ---
 
-## 6. Discovery Well-Known — agora obrigatório
+## Logistics
 
-**V1:** Discovery era opcional e pouco utilizado.
+### Mudancas principais
 
-**V2:** `GET /.well-known/opendelivery` é **obrigatório** antes de qualquer integração.
+- **Melhoria normativa**: consolidacao de semantica async-first com `202 Accepted` nas mutacoes de ciclo de vida.
+- **Melhoria**: alinhamento com discovery para modo de acompanhamento (`push`/`pull`).
 
-Sem o endpoint de Discovery publicado e acessível, a integração não pode ser estabelecida.
+### O que adaptar
 
----
+- Revisar consumidores para nao interpretar `202` como conclusao de estado.
+- Ajustar rastreio para o modo declarado no discovery.
 
-## 7. Módulos novos — não existiam na V1
+### Campos de Discovery relevantes
 
-### Customer / CRM
+| Campo | Tipo | Uso |
+|---|---|---|
+| `capabilities.logistics.originator.supportedEvents` | array[string] | Define eventos de lifecycle emitidos |
+| `capabilities.logistics.originator.supportsWebhook` | boolean | Define envio push |
+| `capabilities.logistics.originator.supportsPolling` | boolean | Define consumo pull |
+| `capabilities.logistics.receiver.supportedOperations` | array[string] | Define operacoes aceitas pelo receiver |
 
-Entidade de cliente com identificação flexível (tipo + valor: CPF, e-mail, telefone).
-Reviews com escalas abertas (estrelas, NPS, like/dislike). Leads com estrutura mínima.
-
-### Fidelidade
-
-Programa de fidelidade como entidade principal. Pontos, cashback, cupons e catálogo de recompensas.
-Múltiplos programas por loja, rede ou franquia.
-
-### Indoor / Salão
-
-Conta como entidade central que agrega pedidos, pagamentos e fiscal. Modos: mesa, comanda, balcão.
-Suporte a pagamento parcial, transferência de itens e fechamento com emissão fiscal assíncrona.
+Referencias: [Protocolo Logistics](../protocol/logistics.md) · [API Logistics](../reference/logistics.md)
 
 ---
 
-## Checklist de migração
+## Customer e Loyalty
 
-- [ ] Atualizar mecanismo de autenticação para `by_app` (ou declarar `by_merchant` para compatibilidade)
-- [ ] Adicionar escopos ao token request
-- [ ] Publicar endpoint `/.well-known/opendelivery` com capabilities corretas
-- [ ] Atualizar geração de `merchantId` (originador passa a gerar)
-- [ ] Substituir `merchantUpdate` pelo CRUD granular de cardápio
-- [ ] Remover lógica de `requestCancellation` / `acceptCancellation` / `denyCancellation`
-- [ ] Remover emissão e consumo do evento `picked_up`
-- [ ] Atualizar campos do cardápio: remover `subtotal`, tornar `option_price` obrigatório
-- [ ] Remover `merchantType` dos payloads
+### Mudancas principais
+
+- **Novo**: capability Customer para dados de cliente, leads e reviews.
+- **Novo**: Loyalty como modulo do dominio de relacionamento.
+
+### O que adaptar
+
+- Planejar onboarding separado por capability (nao assumir dependencia obrigatoria de Orders).
+- Reaproveitar shape de dados de pedido quando aplicavel ao contexto de relacionamento.
+
+### Campos de Discovery relevantes
+
+| Campo | Tipo | Uso |
+|---|---|---|
+| `capabilities.customer.supported` | boolean | Habilita capability Customer |
+| `capabilities.customer.supportsBatchGet` | boolean | Define disponibilidade de GET em lote |
+| `capabilities.customer.supportsBatchPost` | boolean | Define disponibilidade de POST em lote |
+| `capabilities.customer.maxBatchSize` | integer | Define tamanho maximo por lote |
+| `capabilities.customer.maxGetPeriodDays` | integer | Define janela maxima de consulta |
+| `capabilities.customer.requestsPerSecond` | integer | Define limite de taxa |
+
+Referencias: [Protocolo Customer](../protocol/customer.md) · [API Customer](../reference/customer.md) · [Protocolo Loyalty](../protocol/loyalty.md)
+
+---
+
+## Indoor
+
+### Mudancas principais
+
+- **Novo**: capability para operacao de salao (mesa, comanda, balcao) com conta central.
+- **Regra importante**: Indoor depende de Orders para lifecycle de pedido.
+
+### O que adaptar
+
+- Modelar fluxo de conta e pagamento sem criar atalho fora do lifecycle de Orders.
+- Garantir consistencia entre pedido (`fulfillment.orderType: INDOOR`) e estado da conta.
+
+### Campos de Discovery relevantes
+
+| Campo | Tipo | Uso |
+|---|---|---|
+| `capabilities.indoor.supported` | boolean | Habilita capability Indoor |
+| `capabilities.indoor.invoiceIssuer` | string | Define emissor fiscal (`pos`, `app`, `platform`) |
+| `capabilities.indoor.invoiceIssueMoment` | string | Define momento de emissao fiscal |
+| `capabilities.indoor.usesAccountId` | boolean | Define se o fluxo usa identificador de conta |
+
+Referencias: [Protocolo Indoor](../protocol/indoor.md) · [API Indoor](../reference/indoor.md)
+
+---
+
+!!! abstract "Checklist final por capability"
+  | Capability | Item de checklist |
+  |---|---|
+  | Authentication | Migrar para credencial por aplicacao com escopos corretos |
+  | Authentication | Validar compatibilidade legada de autenticacao (`by_merchant`) quando necessario |
+  | Authentication | Declarar Authorization Code no discovery quando suportado |
+  | Discovery | Publicar e validar discovery no onboarding |
+  | Orders + Discovery | Validar eventos e operacoes suportados de Orders a partir do discovery |
+  | Merchant | Ajustar `merchantId` do originador e services por tipo |
+  | Menu | Migrar de `merchantUpdate` para CRUD granular |
+  | Orders | Migrar para `fulfillment.orderType` e status como fonte de verdade |
+  | Logistics | Validar fluxo async-first com `202` |
+  | Customer/Loyalty | Avaliar e planejar conforme roadmap de produto |
+  | Indoor | Integrar com lifecycle de Orders |
+
+<div class="od-related">
+  <p class="od-related__label">Relacionado</p>
+  <ul class="od-related__list">
+    <li><a href="changelog.md">Changelog</a> - historico completo de versoes</li>
+    <li><a href="getting-started.md">Primeiros Passos</a> - caminho minimo V2</li>
+    <li><a href="../protocol/authentication.md">Authentication</a> · <a href="../protocol/discovery.md">Discovery</a></li>
+    <li><a href="../reference/index.md">Referencia da API</a></li>
+  </ul>
+</div>

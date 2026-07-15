@@ -1,9 +1,17 @@
 openapi: 3.0.3
 info:
   title: Open Delivery V2 — Authentication
-  version: 2.0.0-draft
+  version: 2.0.0-rc
   description: |
     Authentication mechanisms for the Open Delivery Protocol V2.
+
+    ## Release Candidate status
+
+    This contract is part of Open Delivery Protocol **V2.0.0-rc** (Release Candidate).
+    It is published for **ecosystem validation**: company review and implementation pilots.
+    Clarifying or corrective changes may still occur based on pilot feedback.
+    A stable release will follow only after validation completes.
+    **V1 remains the production reference** during the transition.
 
     ODP V2 supports three OAuth 2.0 models. The active model MUST be declared in the
     Discovery endpoint and agreed upon explicitly during onboarding.
@@ -164,7 +172,7 @@ components:
             od.orders: Orders capability
             od.menu: Merchant / Menu capability
             od.logistics: Logistics capability
-            od.crm: Customer / CRM capability
+            od.crm: Customer capability (customer data, reviews, loyalty)
             od.all: Full access to all capabilities
         authorizationCode:
           authorizationUrl: /oauth/authorize
@@ -173,7 +181,7 @@ components:
             od.orders: Orders capability
             od.menu: Merchant / Menu capability
             od.logistics: Logistics capability
-            od.crm: Customer / CRM capability
+            od.crm: Customer capability (customer data, reviews, loyalty)
             od.all: Full access to all capabilities
 
     ApiKey:

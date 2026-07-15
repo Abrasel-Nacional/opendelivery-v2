@@ -1,10 +1,5 @@
 # Fluxos de Interação
 
-<div class="od-api-callout">
-  <p>Fluxos de interação. Continue a jornada ou abra o contrato técnico.</p>
-  <a href="../guide/by-role/">Trilhas por papel →</a>
-</div>
-
 Esta seção define sequências de fluxo conceituais independentes de transporte.
 
 ## Fluxo de Publicação de Merchant
@@ -16,16 +11,16 @@ Esta seção define sequências de fluxo conceituais independentes de transporte
 
 ## Fluxo de Coordenação de Pedidos
 
-1. A Ordering Application recebe um sinal de criação de pedido.
-2. A Ordering Application envia o pedido completo ao Software Service.
-3. O Software Service emite fatos de progressão do ciclo de vida.
-4. Os consumidores processam as atualizações no padrão assíncrono escolhido.
+1. A Ordering Application cria o pedido no **seu** sistema (não há `POST /orders` no protocolo).
+2. Emite o evento **`CREATED`** (polling e/ou webhook).
+3. O Software Service faz ACK (se polling) e busca o snapshot com **`GET /orders/{orderId}`**.
+4. A progressão do ciclo de vida ocorre via operações assíncronas (`confirm`, `preparing`, …) no host da Ordering Application; o status autoritativo fica no GET.
 
 ## Fluxo de Cancelamento
 
 O cancelamento no ODP v2 é uma operação direta e unilateral — não há handshake de solicitação/resposta.
 
-1. Um participante executa o cancelamento: `POST /orders/{id}/cancel` com motivo e código.
+1. Cancel do merchant: `POST /orders/{id}/requestCancellation` → se aceito: `CANCELLATION_REQUEST_ACCEPTED` **depois** `CANCELLED`; se recusado: `CANCELLATION_REQUEST_DENIED`. Cancel do originador: evento mandatório `CANCELLED`.
 2. O status do pedido transita para `CANCELLED`.
 3. Todos os participantes recebem o evento de cancelamento de forma assíncrona e convergem para o estado final.
 
@@ -41,24 +36,34 @@ O cancelamento no ODP v2 é uma operação direta e unilateral — não há hand
 5. Problemas e fatos de cancelamento são emitidos quando aplicável.
 6. Os participantes reconciliam condições de entrega e pedido.
 
-## Fluxo de Customer / CRM
+## Fluxo de Customer
 
-1. A Ordering Application ingesta dados de cliente no CRM Software Service.
-2. O CRM Software Service processa e deduplica o cliente por identificadores externos.
-3. Pedidos vinculados ao cliente são ingeridos para análise e fidelidade.
-4. O CRM Software Service emite eventos de ciclo de vida do cliente conforme necessário.
+1. A Ordering Application ingere dados do cliente no host de Customer (em geral um Software CRM).
+2. O host processa e deduplica o cliente por identificadores externos.
+3. Pedidos vinculados ao cliente são ingeridos no contexto de relacionamento (mesmo shape de Orders).
+4. O host emite eventos de relacionamento conforme necessário.
+5. Módulos opcionais: Reviews e/ou Loyalty (podem ser adotados de forma independente).
 
-## Fluxo de Fidelidade
+## Fluxo de Loyalty (módulo de Customer)
 
-1. A Ordering Application notifica o Loyalty Software Service sobre criação de pedido.
-2. O Loyalty Software Service registra pontos pendentes.
-3. Após entrega confirmada, pontos são creditados definitivamente.
+1. A Ordering Application notifica o host de Loyalty sobre fatos de pedido relevantes.
+2. O host registra pontos pendentes.
+3. Após conclusão do pedido, pontos são creditados definitivamente.
 4. O cliente pode resgatar pontos por recompensas e usar cupons no checkout.
 5. Cancelamentos revertem pontos e cancelam cupons afetados.
 
 ## Regra de Padrão Assíncrono
 
-- Polling e push são ambos padrões válidos.
-- O binding de transporte DEVE preservar a semântica de ordenação/tolerância definida pelo protocolo.
-- Consumidores DEVEM implementar deduplicação de eventos por identificador.
-- Consumidores NÃO DEVEM assumir garantias de ordenação de entrega de eventos.
+- Polling e push são ambos padrões válidos, conforme declarado no Discovery e nos especificações da API.
+- Consumidores devem implementar deduplicação de eventos por identificador.
+- Consumidores não devem assumir garantias de ordenação de entrega de eventos, salvo indicação contrária no contrato.
+
+<div class="od-related">
+  <p class="od-related__label">Relacionado</p>
+  <ul class="od-related__list">
+    <li><a href="orders.md">Orders</a></li>
+    <li><a href="logistics.md">Logistics</a></li>
+    <li><a href="../reference/orders.md">Especificação de Orders</a></li>
+    <li><a href="../reference/index.md">Referência da API</a></li>
+  </ul>
+</div>

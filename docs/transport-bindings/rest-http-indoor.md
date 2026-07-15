@@ -1,10 +1,5 @@
 # Indoor Endpoints (REST/HTTP Binding)
 
-<div class="od-api-callout">
-  <p>Binding REST Indoor. Continue a jornada ou abra o contrato técnico.</p>
-  <a href="../reference/indoor/">OpenAPI Indoor →</a>
-</div>
-
 > Protocol specification: [Indoor Extension](../protocol/indoor.md)
 > This document defines the REST/HTTP transport contract for Indoor operations. It does not redefine protocol semantics.
 
@@ -35,7 +30,6 @@ Query operations (`GET`) MUST return `200 OK` with the account snapshot.
 | `Authorization` | YES | `Bearer <token>` with the required operation scope |
 | `Content-Type` | YES (body) | `application/json` |
 | `Accept` | SHOULD | `application/json` |
-| `X-Request-Id` | SHOULD | Correlation identifier for tracing and idempotency |
 
 ## Error Status Codes
 
@@ -60,19 +54,17 @@ POST /v1/orders/indoor HTTP/1.1
 Authorization: Bearer <token>
 Content-Type: application/json
 Accept: application/json
-X-Request-Id: req-001
-
 {
-  "order": {
-    "id": "order-9001",
-    "indoor": {
-      "operationMode": "TABLE",
-      "identifier": "A12",
-      "originChannel": "WAITER_TABLET",
-      "consumptionType": "ON_PREMISE",
-      "notifyOriginator": true
-    }
-  }
+ "order": {
+ "id": "order-9001",
+ "indoor": {
+ "operationMode": "TABLE",
+ "identifier": "A12",
+ "originChannel": "WAITER_TABLET",
+ "consumptionType": "ON_PREMISE",
+ "notifyOriginator": true
+ }
+ }
 }
 ```
 
@@ -81,8 +73,8 @@ HTTP/1.1 202 Accepted
 Content-Type: application/json
 
 {
-  "status": "accepted",
-  "operation": "createOrReceiveIndoorOrder"
+ "status": "accepted",
+ "operation": "createOrReceiveIndoorOrder"
 }
 ```
 
@@ -94,7 +86,6 @@ Content-Type: application/json
 GET /v1/orders/indoor/accounts?operationMode=TABLE&identifier=A12 HTTP/1.1
 Authorization: Bearer <token>
 Accept: application/json
-X-Request-Id: req-002
 ```
 
 ```http
@@ -102,15 +93,15 @@ HTTP/1.1 200 OK
 Content-Type: application/json
 
 {
-  "account": {
-    "operationMode": "TABLE",
-    "identifier": "A12",
-    "accountId": "acc-301",
-    "status": "OPEN",
-    "items": [
-      { "id": "item-1", "name": "Burger", "quantity": 1 }
-    ]
-  }
+ "account": {
+ "operationMode": "TABLE",
+ "identifier": "A12",
+ "accountId": "acc-301",
+ "status": "OPEN",
+ "items": [
+ { "id": "item-1", "name": "Burger", "quantity": 1 }
+ ]
+ }
 }
 ```
 
@@ -123,16 +114,14 @@ PATCH /v1/orders/indoor/accounts HTTP/1.1
 Authorization: Bearer <token>
 Content-Type: application/json
 Accept: application/json
-X-Request-Id: req-003
-
 {
-  "account": {
-    "operationMode": "TABLE",
-    "identifier": "A12",
-    "items": [
-      { "id": "item-2", "name": "Fries", "quantity": 1 }
-    ]
-  }
+ "account": {
+ "operationMode": "TABLE",
+ "identifier": "A12",
+ "items": [
+ { "id": "item-2", "name": "Fries", "quantity": 1 }
+ ]
+ }
 }
 ```
 
@@ -141,8 +130,8 @@ HTTP/1.1 202 Accepted
 Content-Type: application/json
 
 {
-  "status": "accepted",
-  "operation": "updateIndoorAccount"
+ "status": "accepted",
+ "operation": "updateIndoorAccount"
 }
 ```
 
@@ -155,18 +144,16 @@ POST /v1/orders/indoor/accounts/payments HTTP/1.1
 Authorization: Bearer <token>
 Content-Type: application/json
 Accept: application/json
-X-Request-Id: req-004
-
 {
-  "account": {
-    "operationMode": "TABLE",
-    "identifier": "A12"
-  },
-  "payment": {
-    "amount": { "value": 45.00, "currency": "BRL" },
-    "method": "CREDIT_CARD",
-    "items": ["item-1", "item-2"]
-  }
+ "account": {
+ "operationMode": "TABLE",
+ "identifier": "A12"
+ },
+ "payment": {
+ "amount": { "value": 45.00, "currency": "BRL" },
+ "method": "CREDIT_CARD",
+ "items": ["item-1", "item-2"]
+ }
 }
 ```
 
@@ -175,8 +162,8 @@ HTTP/1.1 202 Accepted
 Content-Type: application/json
 
 {
-  "status": "accepted",
-  "operation": "registerPartialPayment"
+ "status": "accepted",
+ "operation": "registerPartialPayment"
 }
 ```
 
@@ -189,13 +176,11 @@ POST /v1/orders/indoor/accounts/close HTTP/1.1
 Authorization: Bearer <token>
 Content-Type: application/json
 Accept: application/json
-X-Request-Id: req-005
-
 {
-  "account": {
-    "operationMode": "TABLE",
-    "identifier": "A12"
-  }
+ "account": {
+ "operationMode": "TABLE",
+ "identifier": "A12"
+ }
 }
 ```
 
@@ -204,8 +189,8 @@ HTTP/1.1 202 Accepted
 Content-Type: application/json
 
 {
-  "status": "accepted",
-  "operation": "closeIndoorAccount"
+ "status": "accepted",
+ "operation": "closeIndoorAccount"
 }
 ```
 
@@ -228,6 +213,6 @@ Content-Type: application/json
 - Send `Content-Type: application/json` on all requests with a body
 - Use `operationMode` + `identifier` as the primary lookup key on initial access
 
-## OpenAPI Artifact
+## especificação da API Artifact
 
 - Download: [indoor.openapi.yaml](../reference/v2/indoor.openapi.yaml)

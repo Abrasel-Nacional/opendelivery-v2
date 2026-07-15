@@ -1,0 +1,33 @@
+Ata de Reunião 15/05/2026
+Comitê Técnico Cardápio e Arquitetura ­ Open Delivery V2.0.0
+Data: 15 de maio de 2026 (sexta - feira) Início: 9:30 Formato: Microsoft Teams
+1) Contexto e objetivo da sessão A sessão teve como objetivo apresentar e validar a evolução do Cardápio na V2 do Open Delivery, com foco no alinhamento técnico com o grupo de arquitetura sobre as decisões estruturais já construídas. O encontro buscou discutir mudanças propostas, validar a manutenção ou revisão de conceitos da V1, levantar dores reais do mercado enfrentadas pelos integradores e alinhar os próximos passos para fechamento do escopo funcional do cardápio ainda em maio, visando a disponibilização de uma versão beta em junho. Foi reforçado que, após o fechamento funcional, o trabalho seguirá para revisão de documentação, textos, descrições de campos e ajustes finos.
+2) Participantes 1. Guilherme Camargo ­ Abrasel Nacional 2. Carlos Eduardo Rodrigues de Almeida ­ 3S Checkout 3. Fernando Rosa ­ SW 4. Evandro Duarte de Castro Filho ­ 3S Checkout 5. Isabelly Vitória Pignatari ­ 3S Checkout 6. Guilherme Xavier ­ 99 Food 7. Bruno Stefano ­ 99 Food 8. Lucas Arruda ­ Keeta 9. Gabriel Haddad ­ Food To Save
+
+10. Murilo Lourenço ­ Keeta 11. Enzo Madalena ­ keeta 12. Adilson Junior ­ Hanzo 13. Hermogenes Alves Domingos ­ Colibri | RS
+3) Comunicados e alinhamentos iniciais · A reunião ocorreu em horário antecipado em relação ao padrão habitual do comitê. · Foi discutida a possibilidade de retorno ao horário das 10h às 11h nas próximas semanas, conforme a complexidade das pautas. · Reforçou-se que o comitê é um espaço aberto para contribuições técnicas e relatos de dores reais do dia a dia das integrações. · Os participantes foram incentivados a trazer sugestões de forma aberta ou privada, inclusive de maneira anônima, para discussão futura no grupo.
+4) Pauta técnica -- principais pontos discutidos · Desacoplamento do Merchant na V2, separando Basic Info, Services e Menu. · Autenticação por aplicação e proposta de endpoint para listagem de merchants autorizados. · Endpoint de consulta de merchant pelo PDV, com dados cadastrados no originador. · Substituição do webhook da V1 por endpoints de PUT/PATCH para Basic Info e Services. · Debate sobre manutenção ou remoção do GET completo versus GET apenas de menu. · Proposta de CRUD completo por entidade do cardápio e envio de menu completo (snapshot).
+
+· Decisão de manter a estrutura hierárquica da V1 para evitar quebra de compatibilidade.
+· Discussões iniciais sobre promoções, duplicação de Item Offer e Merchant ID na V2.
+· Proposta de simplificação de Services utilizando apenas Service Type.
+· Apresentação do conceito de endpoint de Manifesto (Discovery) como passo obrigatório de integração.
+5) Dores e necessidades levantadas
+Guilherme Camargo ­ Abrasel Nacional
+· O webhook da V1 gera confusão, alto custo de backend e dificuldade de entendimento.
+· PDVs não conseguem visualizar dados cadastrados exclusivamente no originador.
+· Promoções geram duplicação excessiva de Item Offer.
+· Falta suporte a múltiplos níveis de opcionais, impactando o cálculo de preço.
+· O conceito de "quantidade disponível" pode ser confundido com integração de estoque.
+· A documentação da V1 mistura regras de protocolo com detalhes técnicos, gerando ambiguidade.
+Carlos Eduardo Rodrigues de Almeida ­ 3S Checkout
+· Existem cenários muito distintos de governança entre originadores e PDVs.
+· A carga inicial e as permissões precisam ser configuráveis, preferencialmente via manifesto.
+· Mesmo com atualização por entidade, a atualização do cardápio completo continua necessária.
+· Falta clareza operacional sobre quem é responsável por atualizar cada tipo de dado.
+
+Fernando Rosa ­ SW · Atualizações acopladas de Basic Info e Services geram mudanças desnecessárias. · Necessidade de personalização de cardápio por aplicativo, incluindo preços e promoções. · O envio do menu completo facilita a adoção por originadores com processos próprios.
+6) Encaminhamentos e acordos · Manter a estrutura hierárquica do cardápio conforme a V1. · Substituir o webhook por endpoints específicos de CRUD. · Manter oficialmente a opção de atualização via menu completo. · Adotar o Merchant ID do originador na V2. · Simplificar Services utilizando apenas Service Type. · Tornar o endpoint de Manifesto obrigatório na V2. · Distribuir a documentação e OpenAPI atualizadas para validação do grupo.
+7) Próximos encontros · Reunião dedicada ao tema múltiplos níveis de opcionais. · Discussão específica sobre quantidade disponível de itens e seus limites. · Avaliação futura sobre retorno ao formato de reuniões com 1 hora de duração.
+
+

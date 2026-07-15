@@ -2,10 +2,9 @@
 template: redoc.html
 openapi_spec: ../v2/discovery.openapi.yaml
 hide:
-  - toc
-  - navigation
+ - toc
+ - navigation
 ---
 
 !!! note "Idioma do contrato"
-    O contrato OpenAPI desta pagina esta **somente em ingles**.
-
+    A especificação da API desta página está **somente em inglês**.

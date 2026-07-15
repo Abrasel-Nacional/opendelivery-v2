@@ -1,19 +1,17 @@
 # Discovery
 
 <p class="od-meta">
-  <span class="od-badge od-badge--core">Infraestrutura</span>
-  <span class="od-badge od-badge--code">discovery</span>
-  <span class="od-badge od-badge--must">Obrigatório</span>
+ <span class="od-badge od-badge--core">Infraestrutura</span>
+ <span class="od-badge od-badge--code">discovery</span>
+ <span class="od-badge od-badge--must">Obrigatório</span>
 </p>
 
-<div class="od-api-callout">
-  <p>First step of any V2 integration. HTTP contract is OpenAPI <strong>in English only</strong>.</p>
-  <a href="../reference/discovery/">Open OpenAPI reference →</a>
-</div>
+!!! note "API Spec"
+    The implementable contract (endpoints, fields, errors, and examples) is in the **[Discovery API Spec](../reference/discovery.md)** — English only.
 
 Before any capability operation can happen, each participant publishes a public, machine-readable document that tells the other side exactly what it supports. That document is the **discovery manifest**, served at a well-known URL.
 
-This page explains what discovery is for, how each side of the integration uses it, and how to read and publish a manifest. Normative rules and the full field reference are in the [Discovery API spec](../reference/discovery.md).
+This page explains what discovery is for, how each side of the integration uses it, and how to read and publish a manifest.
 
 ---
 
@@ -49,19 +47,19 @@ In practice, both sides are usually publishers and consumers — each side has i
 Discovery is always step zero. The sequence looks like this:
 
 ```
-Consumer                                 Publisher
-   |                                         |
-   |  GET /.well-known/opendelivery          |
-   |---------------------------------------->|
-   |                                         |
-   |  200 OK  { manifest }                   |
-   |<----------------------------------------|
-   |                                         |
-   |  [reads capabilities, limits, events]   |
-   |  [configures integration accordingly]   |
-   |                                         |
-   |  POST /orders   (or webhook, etc.)      |
-   |---------------------------------------->|
+Consumer Publisher
+ | |
+ | GET /.well-known/opendelivery |
+ |---------------------------------------->|
+ | |
+ | 200 OK { manifest } |
+ |<----------------------------------------|
+ | |
+ | [reads capabilities, limits, events] |
+ | [configures integration accordingly] |
+ | |
+ | Order events / lifecycle (or webhook, etc.) |
+ |---------------------------------------->|
 ```
 
 The consumer reads the manifest once (or periodically to detect changes) and uses it to decide how to behave. Only after reading the manifest does it begin capability operations.
@@ -78,14 +76,14 @@ The manifest is a single JSON object with five top-level sections. Here is a qui
 
 ```json
 {
-  "appId": "550e8400-e29b-41d4-a716-446655440000",
-  "openDelivery": {
-    "currentVersion": "2.0",
-    "supportedVersions": ["2.0"]
-  },
-  "discovery": {
-    "version": "1.0.0"
-  }
+ "appId": "550e8400-e29b-41d4-a716-446655440000",
+ "openDelivery": {
+ "currentVersion": "2.0",
+ "supportedVersions": ["2.0"]
+ },
+ "discovery": {
+ "version": "1.0.0"
+ }
 }
 ```
 
@@ -101,10 +99,10 @@ The manifest is a single JSON object with five top-level sections. Here is a qui
 
 ```json
 {
-  "authentication": {
-    "supportedGrantTypes": ["client_credentials", "authorization_code"],
-    "clientIdGeneration": ["by_app", "by_merchant"]
-  }
+ "authentication": {
+ "supportedGrantTypes": ["client_credentials", "authorization_code"],
+ "clientIdGeneration": ["by_app", "by_merchant"]
+ }
 }
 ```
 
@@ -129,26 +127,26 @@ Orders and Logistics have two sub-roles that can exist independently:
 
 ```json
 {
-  "capabilities": {
-    "orders": {
-      "version": "1.0.0",
-      "supported": true,
-      "originator": {
-        "supported": true,
-        "supportedEvents": ["ORDER_CREATED", "ORDER_CONFIRMED", "ORDER_CANCELLED", "ORDER_COMPLETED"],
-        "unsupportedEvents": ["ORDER_DISPATCHED"],
-        "supportsWebhook": true,
-        "supportsPolling": false
-      },
-      "receiver": {
-        "supported": true,
-        "supportedOperations": ["createOrder", "confirmOrder", "cancelOrder", "updateOrderStatus"],
-        "unsupportedOperations": ["dispatchOrder"],
-        "supportsWebhook": true,
-        "supportsPolling": true
-      }
-    }
-  }
+ "capabilities": {
+ "orders": {
+ "version": "1.0.0",
+ "supported": true,
+ "originator": {
+ "supported": true,
+ "supportedEvents": ["ORDER_CREATED", "ORDER_CONFIRMED", "ORDER_CANCELLED", "ORDER_COMPLETED"],
+ "unsupportedEvents": ["ORDER_DISPATCHED"],
+ "supportsWebhook": true,
+ "supportsPolling": false
+ },
+ "receiver": {
+ "supported": true,
+ "supportedOperations": ["confirmOrder", "requestCancellation", "getOrder"],
+ "unsupportedOperations": ["dispatchOrder"],
+ "supportsWebhook": true,
+ "supportsPolling": true
+ }
+ }
+ }
 }
 ```
 
@@ -166,14 +164,14 @@ The same structure applies to Logistics.
 
 ```json
 {
-  "capabilities": {
-    "merchant": {
-      "version": "1.0.0",
-      "supported": true,
-      "supportsPartialUpdate": true,
-      "supportsFullGetByOriginator": true
-    }
-  }
+ "capabilities": {
+ "merchant": {
+ "version": "1.0.0",
+ "supported": true,
+ "supportsPartialUpdate": true,
+ "supportsFullGetByOriginator": true
+ }
+ }
 }
 ```
 
@@ -185,15 +183,15 @@ The same structure applies to Logistics.
 
 ```json
 {
-  "capabilities": {
-    "indoor": {
-      "version": "1.0.0",
-      "supported": true,
-      "invoiceIssuer": "pos",
-      "invoiceIssueMoment": "account_closing",
-      "usesAccountId": true
-    }
-  }
+ "capabilities": {
+ "indoor": {
+ "version": "1.0.0",
+ "supported": true,
+ "invoiceIssuer": "pos",
+ "invoiceIssueMoment": "account_closing",
+ "usesAccountId": true
+ }
+ }
 }
 ```
 
@@ -205,19 +203,19 @@ Indoor (table service) has operational characteristics that vary significantly b
 
 ```json
 {
-  "capabilities": {
-    "customer": {
-      "version": "1.0.0",
-      "supported": true,
-      "supportsBatchGet": true,
-      "supportsBatchPost": true,
-      "maxBatchSize": 100,
-      "maxGetPeriodDays": 30,
-      "requestsPerSecond": 10,
-      "maxPayloadSizeKb": 1024,
-      "acceptedGetPeriodicity": "daily"
-    }
-  }
+ "capabilities": {
+ "customer": {
+ "version": "1.0.0",
+ "supported": true,
+ "supportsBatchGet": true,
+ "supportsBatchPost": true,
+ "maxBatchSize": 100,
+ "maxGetPeriodDays": 30,
+ "requestsPerSecond": 10,
+ "maxPayloadSizeKb": 1024,
+ "acceptedGetPeriodicity": "daily"
+ }
+ }
 }
 ```
 
@@ -279,17 +277,12 @@ If you are reading a counterpart's manifest before connecting, here is how to us
     - Treat absent capability keys as unsupported.
     - Plan to re-read the manifest periodically.
 
----
-
-**Full field reference and normative rules:** [Discovery API →](../reference/discovery.md)
-
----
-
-<div class="od-next-step">
-  <div class="od-next-step__label">Próximo passo</div>
-  <div class="od-next-step__links">
-    <a href="../reference/discovery/">Abrir referência OpenAPI</a>
-    <a href="authentication/">Autenticação</a>
-    <a href="../guide/getting-started/">Primeiros Passos</a>
-  </div>
+<div class="od-related">
+  <p class="od-related__label">Related</p>
+  <ul class="od-related__list">
+    <li><a href="../reference/discovery.md">Discovery API Spec</a> — well-known contract</li>
+    <li><a href="authentication.md">Authentication</a> — OAuth and scopes</li>
+    <li><a href="../reference/authentication.md">Authentication API Spec</a></li>
+    <li><a href="../guide/getting-started.md">Getting started</a></li>
+  </ul>
 </div>

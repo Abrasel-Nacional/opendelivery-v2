@@ -1,0 +1,32 @@
+Ata de Reunião 16/04/2026
+Comitê Técnico Arquitetura ­ Open Delivery V2.0.0
+Data: 16 de abril de 2026 (quinta-feira) Início: 10:00 Formato: Microsoft Teams
+1) Contexto e objetivo da sessão A reunião teve como objetivo revisar o fluxo de cancelamento de pedidos do Open Delivery V1 e discutir possíveis simplificações e ajustes para a V2, com foco especial nos cenários de handshake, cancelamento obrigatório, eventos intermediários e clareza de documentação. O grupo buscou alinhar o que é realmente utilizado na prática pelos PDVs e originadores, reduzindo complexidade técnica e ambiguidade de implementação.
+2) Participantes
+· Guilherme Camargo ­ Abrasel Nacional (Líder técnico Open Delivery) · Ana Santos ­ Abrasel Nacional · Carlos Eduardo Rodrigues de Almeida - 3S Checkout · Enzo Madalena ­ Keeta · Leandro ­ Eclética · Isabelly Vitoria Pignatari - - 3S Checkout
+· Felipe Fernandes Reis ­ Demarest Advogados
+3) Comunicados e alinhamentos iniciais
+· Pausa nas reuniões na semana seguinte, em função de feriado. · Reunião do dia 30/04 será conjunta com o grupo de Cardápio. · Tendência de migração das reuniões para sextas-feiras, a partir de maio. · Planejamento de liberação de documentação Alfa da V2 em maio, com
+foco nas mudanças em relação à V1.
+4) Pauta técnica
+
+· Revisão do fluxo de cancelamento de pedidos na V1. · Discussão sobre: · Handshake de cancelamento (request / accept / deny). · Cancelamento obrigatório (forçado). · Eventos duplicados ou ambíguos. · Simplificação da API para V2.
+5) Dores e necessidades levantadas (por quem falou) Carlos Eduardo Rodrigues de Almeida
+· O handshake de cancelamento praticamente não é usado na prática. · Na maioria dos casos, o originador é o dono do pedido e, ao cancelar, o
+PDV apenas acata. · Cancelamento após certo estágio (entrega, fiscal emitido) gera problemas
+de conciliação, mas isso é mais comercial/fiscal do que técnico. · Ambiguidade entre:
+o cancellation_request o cancel o accepted / denied · Necessidade de separar claramente eventos finais de eventos intermediários para evitar confusão de status. Dor principal: Complexidade desnecessária e confusa em um fluxo que, na prática, quase sempre resulta em cancelamento direto.
+Leandro ­ Eclética · Em alguns cenários (pedido já em rota, NFC-e emitida), o sistema não cancela automaticamente, apenas notifica a loja. · Quando a Eclética cancela, não espera resposta do originador -- cancela internamente e segue o fluxo.
+
+· O evento cancel hoje tem dupla função: o Resposta a um cancellation request o Cancelamento obrigatório vindo do originador  Isso gera confusão técnica, exigindo validações extras para entender a origem do evento.
+· Implementação inicial foi feita sem previsão de cancelamento obrigatório, o que exigiu adaptações posteriores.
+Dor principal: Eventos com múltiplos significados e necessidade de lógica adicional para distinguir resposta x cancelamento final.
+Enzo Madalena ­ Keeta · Cancelamento normalmente é acatado automaticamente. · Não há interesse operacional em negociar cancelamento via handshake. · Quanto mais rápido o cancelamento, melhor para resolver fluxos financeiros e operacionais.
+Dor principal: Handshake não agrega valor prático e atrasa fluxos simples.
+Guilherme Camargo ­ Abrasel Nacional · O cancellation_request é o ponto que mais gera dúvidas na documentação e nas integrações. · Muitos integradores acreditam que o request já é o cancelamento, quando na verdade não é. · Poucos PDVs implementam de fato o deny, o que indica baixo uso do modelo atual. · Necessidade de: o Simplificar o modelo
+
+o Reduzir eventos intermediários o Tornar explícito o que é evento final · Risco de manter complexidade "teórica" para cenários que não acontecem na prática. Dor principal: Alto custo cognitivo e de documentação para sustentar um fluxo pouco utilizado.
+6) Encaminhamentos e acordos · Consenso inicial de que a simplificação do cancelamento na V2 é desejável. · Avaliação de: o Remover ou tornar opcional o handshake do lado do originador. o Manter:  Cancelamento direto (obrigatório).  Request de cancelamento apenas quando realmente necessário. · Decisão de documentar claramente na V2: o O que muda da V1 para a V2. o Quais fluxos deixam de existir ou passam a ser opcionais. · Tema de campos de motivo de cancelamento será retomado com o grupo de Cardápio.
+7) Próximos encontros · 30/04/2026 ­ 10h: Reunião conjunta Arquitetura + Cardápio. · Definição final do dia/horário fixo das reuniões de maio. · Continuidade da revisão da documentação da V2.
+
+

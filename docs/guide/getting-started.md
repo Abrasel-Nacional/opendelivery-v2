@@ -1,13 +1,15 @@
 # Primeiros Passos
 
+!!! warning "Release Candidate (V2.0.0-rc)"
+    Esta documentação está em **Release Candidate**. O conteúdo foi consolidado nos comitês técnicos e agora passa por um período de **validação com o ecossistema**: revisão por empresas e **pilotos de implementação**.
+
+    Durante essa fase a especificação ainda pode receber ajustes com base no feedback. A versão **estável (release)** será publicada somente após a conclusão da validação. A **V1 permanece ativa** e é a referência em produção na transição.
+
+    Envie feedback pelo [repositório no GitHub](https://github.com/Abrasel-Nacional/opendelivery-v2/issues). Detalhes no [changelog](changelog.md).
+
 O Open Delivery é um **protocolo aberto**, não um produto. Ele define como sistemas independentes do ecossistema de food tech — aplicações de pedido, sistemas de gestão de restaurantes, operadores de logística e plataformas de CRM — se comunicam de forma interoperável, sem integrações bilaterais customizadas.
 
 Este guia cobre o mínimo necessário para começar uma integração.
-
-<div class="od-api-callout">
-  <p>Prefere um caminho por tipo de produto? Use as trilhas por papel.</p>
-  <a href="by-role/">Abrir trilhas por papel →</a>
-</div>
 
 ---
 
@@ -20,7 +22,7 @@ O protocolo define quatro papéis. Um sistema pode desempenhar mais de um.
 | **Originador** | Aplicação de pedido, marketplace, totem | Cria o pedido; recebe atualizações de ciclo de vida |
 | **Software Service (PDV)** | Sistema de gestão do restaurante | Aceita pedidos; gerencia cardápio, conta, fiscal |
 | **Logística** | Operador de entrega, frota própria | Executa a entrega; emite eventos de rastreamento |
-| **CRM** | Plataforma de fidelidade, dados de cliente | Consome dados de pedidos e clientes; gerencia programas de fidelidade |
+| **Software CRM** | Plataforma de dados do cliente / fidelidade | Consome a capability **Customer** (e módulos Reviews/Loyalty); não altera o ciclo operacional do pedido |
 
 Antes de qualquer coisa, identifique qual papel — ou quais papéis — seu sistema desempenha. Isso define quais capabilities você precisa implementar.
 
@@ -75,19 +77,19 @@ Exemplo mínimo de resposta:
 
 ```json
 {
-  "appId": "550e8400-e29b-41d4-a716-446655440000",
-  "openDelivery": {
-    "currentVersion": "2.0",
-    "supportedVersions": ["2.0"]
-  },
-  "discovery": { "version": "1.0.0" },
-  "authentication": {
-    "supportedGrantTypes": ["client_credentials"],
-    "clientIdGeneration": ["by_app"]
-  },
-  "capabilities": {
-    "orders": { "endpoint": "https://api.suaempresa.com/v2" }
-  }
+ "appId": "550e8400-e29b-41d4-a716-446655440000",
+ "openDelivery": {
+ "currentVersion": "2.0",
+ "supportedVersions": ["2.0"]
+ },
+ "discovery": { "version": "1.0.0" },
+ "authentication": {
+ "supportedGrantTypes": ["client_credentials"],
+ "clientIdGeneration": ["by_app"]
+ },
+ "capabilities": {
+ "orders": { "endpoint": "https://api.suaempresa.com/v2" }
+ }
 }
 ```
 
@@ -100,36 +102,34 @@ Para mais detalhes, consulte a [documentação de Discovery](../protocol/discove
 Dependendo do seu papel:
 
 === "Originador"
-    1. **Discovery** — publique seu endpoint Well-Known
-    2. **Orders** — crie pedidos e consuma eventos de ciclo de vida
-    3. **Merchant** — consulte cardápio e status das lojas
+ 1. **Discovery** — publique seu endpoint Well-Known
+ 2. **Orders** — crie pedidos e consuma eventos de ciclo de vida
+ 3. **Merchant** — consulte cardápio e status das lojas
 
 === "Software Service (PDV)"
-    1. **Discovery** — publique seu endpoint Well-Known
-    2. **Merchant** — exponha cardápio, horários e pausas
-    3. **Orders** — aceite e processe pedidos recebidos
-    4. **Indoor** — se suportar salão/comanda/totem
+ 1. **Discovery** — publique seu endpoint Well-Known
+ 2. **Merchant** — exponha cardápio, horários e pausas
+ 3. **Orders** — aceite e processe pedidos recebidos
+ 4. **Indoor** — se suportar salão/comanda/totem
 
 === "Logística"
-    1. **Discovery** — publique seu endpoint Well-Known
-    2. **Logistics** — receba solicitações de entrega e emita eventos de rastreamento
+ 1. **Discovery** — publique seu endpoint Well-Known
+ 2. **Logistics** — receba solicitações de entrega e emita eventos de rastreamento
 
-=== "CRM"
-    1. **Discovery** — publique seu endpoint Well-Known
-    2. **Customer** — gerencie dados de clientes
-    3. **Loyalty** — gerencie programas de fidelidade e resgate
+=== "Software CRM"
+ 1. **Discovery** — publique seu endpoint Well-Known
+ 2. **Customer** — capability de dados do cliente (módulos Reviews e/ou Loyalty conforme necessidade)
+ 3. **Loyalty** (módulo) — programas de fidelidade e resgate, se aplicável
 
 ---
 
-## 5. Referências
-
-| Documento | Descrição |
-|---|---|
-| [Conceitos](../documentation/core-concepts.md) | Arquitetura, entidades e modelo de interação |
-| [Papéis e Responsabilidades](../protocol/roles-and-responsibilities.md) | Obrigações de cada papel no protocolo |
-| [Autenticação](../protocol/authentication.md) | Modelos OAuth 2.0 e escopos |
-| [Discovery](../protocol/discovery.md) | Endpoint Well-Known e estrutura do manifesto |
-| [Guidelines](../protocol/guidelines.md) | Convenções de datas, paginação, idempotência |
-| [Tratamento de Erros](../protocol/error-handling.md) | Formato padrão de erros e códigos HTTP |
-| [Migração V1→V2](migration-v1-v2.md) | Breaking changes e guia de migração |
-| [Referência da API](../reference/index.md) | OpenAPI specs interativas |
+<div class="od-related">
+  <p class="od-related__label">Relacionado</p>
+  <ul class="od-related__list">
+    <li><a href="by-role.md">Trilhas por papel</a> — o que implementar conforme o produto</li>
+    <li><a href="../documentation/core-concepts.md">Conceitos</a> — arquitetura e entidades</li>
+    <li><a href="../protocol/discovery.md">Discovery</a> · <a href="../protocol/authentication.md">Autenticação</a></li>
+    <li><a href="../reference/conventions.md">Regras gerais</a> · <a href="../reference/error-handling.md">Tratamento de Erros</a></li>
+    <li><a href="migration-v1-v2.md">Migração V1→V2</a> · <a href="../reference/index.md">Referência da API</a></li>
+  </ul>
+</div>

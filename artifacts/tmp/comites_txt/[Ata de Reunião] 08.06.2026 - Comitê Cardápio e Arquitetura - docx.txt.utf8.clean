@@ -1,0 +1,26 @@
+Ata de Reunião 08/06/2026
+Comitê Técnico Cardápio e Arquitetura ­ Open Delivery V2.0.0
+Data: 08 de junho de 2026 (segunda - feira) Início: 9:30 Formato: Reunião Microsoft Teams
+1) Contexto e objetivo da sessão A reunião teve como objetivo principal fechar a definição de múltiplos níveis no cardápio e pedido dentro da V2 do Open Delivery, além de iniciar decisões sobre estrutura de preços. Também foi reforçado o prazo apertado para conclusão da V2, com previsão de lançamento na primeira semana de julho, e o plano de seguir com reuniões focadas em revisão completa dos endpoints (cardápio, pedidos, segurança e logística).
+2) Participantes
+· Guilherme Camargo ­ Abrasel Nacional · Rogério Gomes ­ MenuQ · Enzo Madalena ­ Keeta · Carlos Eduardo Rodrigues de Almeida · Lucas Arruda
+3) Comunicados e alinhamentos iniciais
+· Confirmação do cronograma: poucas semanas restantes para finalização da V2.
+· Plano de revisão detalhada nas próximas reuniões (endpoint por endpoint).
+· Prioridade atual: fechamento definitivo do tema múltiplos níveis.
+4) Pauta técnica
+
+· Múltiplos níveis (cardápio e pedido): · Definição do uso de estrutura recursiva com option groups e options · Mantida a modelagem atual, com inclusão de:
+o default quantity o suporte a subníveis via referência entre option groups · No pedido, a estrutura passa a espelhar a hierarquia do cardápio, permitindo múltiplos níveis de customização · Estrutura de preços: · Discussão sobre simplificação dos campos (reduzir redundância) · Propostas: o agrupar preços em um objeto único (price/prices) o remover campos pouco úteis (ex: subtotal) o manter option price para garantir clareza no cálculo · Necessidade de deixar explícito que: o unity price = preço base do item (sem opcionais)
+5) Dores e necessidades levantadas
+Carlos Eduardo Rodrigues de Almeida · Problemas recorrentes de inconsistência de cálculo entre sistemas o soma de opções nem sempre bate com total · Necessidade de manter clareza estrutural para evitar erros de integração · Preocupação com: o mudança na estrutura do unity price o quebra de padrão de dados (value + currency) · Importância de manter campos explícitos para evitar dúvidas
+
+Guilherme Camargo ­ Abrasel Nacional · Complexidade excessiva na modelagem de múltiplos níveis · Dificuldade em equilibrar: o reaproveitamento de dados vs simplicidade · Estrutura de preços atual considerada confusa e redundante · Necessidade de: o simplificar payload o evitar ambiguidade no cálculo de preços · Risco de erro quando option price não é enviado · Falta de consenso claro sobre melhor modelagem de preços
+Rogério Gomes · Preferência por modelos mais enxutos e reutilizáveis · Dificuldade com excesso de declaração duplicada (ex: options repetidos em contextos diferentes
+Enzo Madalena · Necessidade de manter alguns campos (como option price) para: o validação/homologação o conferência com PDVs · Campos não usados no dia a dia (como subtotal) podem ser removidos · Importância de transparência no payload para debugging
+6) Encaminhamentos e acordos · Manter estrutura atual de option dentro de option group, com melhorias
+
+· Implementar múltiplos níveis via recursão · Estruturar pedido refletindo hierarquia do cardápio · Tornar option price obrigatório · Remover campo subtotal (proposto) · Avaliar agrupamento de preços em objeto único · Definir claramente regra do unity price (sem opcionais) · Revisão final será feita nas próximas reuniões
+7) Próximos encontros · Revisão detalhada: 1. Cardápio 2. Pedido 3. Segurança (autenticação) 4. Logística · Previsão de lançamento: início de julho (aprox. 06/07/2026)
+
+

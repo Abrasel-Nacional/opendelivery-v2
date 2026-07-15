@@ -1,479 +1,465 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/PROTOCOL_VS_BINDING/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/overview/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/PROTOCOL_VS_BINDING/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/PROTOCOL_VS_BINDING/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/overview/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/overview/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/overview/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/documentation/core-concepts/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/overview/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/overview/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/documentation/core-concepts/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/documentation/core-concepts/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/documentation/core-concepts/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/documentation/roadmap/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/documentation/core-concepts/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/documentation/core-concepts/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/documentation/roadmap/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/documentation/roadmap/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/documentation/roadmap/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/guide/by-role/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/documentation/roadmap/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/documentation/roadmap/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/guide/by-role/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/guide/by-role/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/extensions/loyalty/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/guide/changelog/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/extensions/loyalty/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/extensions/loyalty/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/guide/changelog/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/guide/changelog/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/extensions/reviews/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/guide/getting-started/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/extensions/reviews/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/extensions/reviews/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/guide/getting-started/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/guide/getting-started/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/guide/by-role/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/guide/migration-v1-v2/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/guide/by-role/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/guide/by-role/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/guide/migration-v1-v2/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/guide/migration-v1-v2/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/guide/changelog/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/protocol/authentication/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/guide/changelog/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/guide/changelog/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/protocol/authentication/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/protocol/authentication/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/guide/getting-started/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/protocol/customer/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/guide/getting-started/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/guide/getting-started/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/protocol/customer/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/protocol/customer/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/guide/migration-v1-v2/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/protocol/discovery/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/guide/migration-v1-v2/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/guide/migration-v1-v2/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/protocol/discovery/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/protocol/discovery/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/protocol/authentication/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/protocol/evolution/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/authentication/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/authentication/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/protocol/evolution/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/protocol/evolution/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/protocol/customer/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/protocol/flows/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/customer/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/customer/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/protocol/flows/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/protocol/flows/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/protocol/discovery/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/protocol/indoor/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/discovery/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/discovery/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/protocol/indoor/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/protocol/indoor/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/protocol/error-handling/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/protocol/logistics/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/error-handling/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/error-handling/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/protocol/logistics/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/protocol/logistics/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/protocol/evolution/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/protocol/loyalty/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/evolution/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/evolution/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/protocol/loyalty/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/protocol/loyalty/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/protocol/flows/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/protocol/menu/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/flows/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/flows/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/protocol/menu/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/protocol/menu/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/protocol/guidelines/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/protocol/merchant-store/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/guidelines/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/guidelines/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/protocol/merchant-store/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/protocol/merchant-store/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/protocol/indoor/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/protocol/merchant/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/indoor/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/indoor/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/protocol/merchant/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/protocol/merchant/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/protocol/logistics/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/protocol/orders/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/logistics/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/logistics/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/protocol/orders/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/protocol/orders/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/protocol/menu/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/protocol/principles/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/menu/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/menu/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/protocol/principles/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/protocol/principles/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/protocol/merchant-store/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/protocol/reviews/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/merchant-store/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/merchant-store/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/protocol/reviews/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/protocol/reviews/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/protocol/merchant/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/protocol/roles-and-responsibilities/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/merchant/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/merchant/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/protocol/roles-and-responsibilities/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/protocol/roles-and-responsibilities/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/protocol/orders/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/reference/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/orders/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/orders/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/reference/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/reference/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/protocol/principles/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/reference/authentication/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/principles/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/principles/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/reference/authentication/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/reference/authentication/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/protocol/roles-and-responsibilities/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/reference/conventions/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/roles-and-responsibilities/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/roles-and-responsibilities/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/reference/conventions/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/reference/conventions/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/reference/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/reference/customer/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/reference/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/reference/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/reference/customer/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/reference/customer/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/reference/authentication/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/reference/discovery/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/reference/authentication/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/reference/authentication/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/reference/discovery/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/reference/discovery/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/reference/customer/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/reference/error-handling/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/reference/customer/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/reference/customer/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/reference/error-handling/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/reference/error-handling/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/reference/discovery/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/reference/indoor/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/reference/discovery/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/reference/discovery/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/reference/indoor/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/reference/indoor/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/reference/indoor/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/reference/logistics/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/reference/indoor/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/reference/indoor/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/reference/logistics/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/reference/logistics/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/reference/logistics/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/reference/merchant/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/reference/logistics/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/reference/logistics/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/reference/merchant/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/reference/merchant/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/reference/merchant/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/reference/orders/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/reference/merchant/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/reference/merchant/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/reference/orders/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/reference/orders/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/reference/orders/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/reference/orders/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/reference/orders/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/overview/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/overview/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/overview/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/PROTOCOL_VS_BINDING/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/documentation/core-concepts/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/PROTOCOL_VS_BINDING/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/PROTOCOL_VS_BINDING/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/documentation/core-concepts/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/documentation/core-concepts/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/overview/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/documentation/roadmap/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/overview/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/overview/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/documentation/roadmap/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/documentation/roadmap/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/documentation/core-concepts/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/guide/by-role/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/documentation/core-concepts/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/documentation/core-concepts/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/guide/by-role/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/guide/by-role/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/documentation/roadmap/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/guide/changelog/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/documentation/roadmap/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/documentation/roadmap/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/guide/changelog/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/guide/changelog/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/extensions/loyalty/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/guide/getting-started/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/extensions/loyalty/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/extensions/loyalty/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/guide/getting-started/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/guide/getting-started/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/extensions/reviews/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/guide/migration-v1-v2/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/extensions/reviews/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/extensions/reviews/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/guide/migration-v1-v2/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/guide/migration-v1-v2/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/guide/by-role/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/protocol/authentication/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/guide/by-role/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/guide/by-role/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/protocol/authentication/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/protocol/authentication/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/guide/changelog/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/protocol/customer/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/guide/changelog/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/guide/changelog/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/protocol/customer/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/protocol/customer/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/guide/getting-started/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/protocol/discovery/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/guide/getting-started/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/guide/getting-started/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/protocol/discovery/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/protocol/discovery/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/guide/migration-v1-v2/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/protocol/evolution/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/guide/migration-v1-v2/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/guide/migration-v1-v2/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/protocol/evolution/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/protocol/evolution/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/authentication/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/protocol/flows/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/authentication/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/authentication/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/protocol/flows/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/protocol/flows/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/customer/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/protocol/indoor/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/customer/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/customer/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/protocol/indoor/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/protocol/indoor/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/discovery/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/protocol/logistics/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/discovery/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/discovery/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/protocol/logistics/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/protocol/logistics/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/error-handling/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/protocol/loyalty/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/error-handling/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/error-handling/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/protocol/loyalty/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/protocol/loyalty/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/evolution/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/protocol/menu/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/evolution/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/evolution/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/protocol/menu/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/protocol/menu/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/flows/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/protocol/merchant-store/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/flows/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/flows/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/protocol/merchant-store/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/protocol/merchant-store/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/guidelines/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/protocol/merchant/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/guidelines/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/guidelines/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/protocol/merchant/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/protocol/merchant/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/indoor/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/protocol/orders/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/indoor/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/indoor/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/protocol/orders/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/protocol/orders/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/logistics/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/protocol/principles/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/logistics/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/logistics/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/protocol/principles/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/protocol/principles/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/menu/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/protocol/reviews/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/menu/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/menu/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/protocol/reviews/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/protocol/reviews/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/merchant-store/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/protocol/roles-and-responsibilities/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/merchant-store/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/merchant-store/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/protocol/roles-and-responsibilities/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/protocol/roles-and-responsibilities/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/merchant/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/reference/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/merchant/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/merchant/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/reference/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/reference/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/orders/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/reference/authentication/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/orders/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/orders/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/reference/authentication/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/reference/authentication/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/principles/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/reference/conventions/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/principles/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/principles/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/reference/conventions/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/reference/conventions/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/roles-and-responsibilities/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/reference/customer/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/roles-and-responsibilities/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/protocol/roles-and-responsibilities/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/reference/customer/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/reference/customer/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/reference/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/reference/discovery/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/reference/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/reference/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/reference/discovery/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/reference/discovery/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/reference/authentication/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/reference/error-handling/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/reference/authentication/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/reference/authentication/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/reference/error-handling/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/reference/error-handling/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/reference/customer/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/reference/indoor/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/reference/customer/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/reference/customer/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/reference/indoor/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/reference/indoor/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/reference/discovery/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/reference/logistics/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/reference/discovery/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/reference/discovery/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/reference/logistics/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/reference/logistics/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/reference/indoor/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/reference/merchant/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/reference/indoor/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/reference/indoor/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/reference/merchant/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/reference/merchant/"/>
     </url>
     <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/reference/logistics/</loc>
-        <lastmod>2026-07-10</lastmod>
+        <loc>https://docs.opendelivery.com.br/en/reference/orders/</loc>
+        <lastmod>2026-07-15</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/reference/logistics/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/reference/logistics/"/>
-    </url>
-    <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/reference/merchant/</loc>
-        <lastmod>2026-07-10</lastmod>
-        <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/reference/merchant/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/reference/merchant/"/>
-    </url>
-    <url>
-        <loc>https://abrasel-nacional.github.io/opendelivery-v2/en/reference/orders/</loc>
-        <lastmod>2026-07-10</lastmod>
-        <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://abrasel-nacional.github.io/opendelivery-v2/en/reference/orders/"/>
-        <xhtml:link rel="alternate" hreflang="pt" href="https://abrasel-nacional.github.io/opendelivery-v2/reference/orders/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.opendelivery.com.br/en/reference/orders/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://docs.opendelivery.com.br/reference/orders/"/>
     </url>
 </urlset>

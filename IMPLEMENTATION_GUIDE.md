@@ -9,10 +9,10 @@ This guide helps implementers who are familiar with Open Delivery v1 understand 
 ### v1 Thinking
 "I need to implement these REST endpoints and handle events for order management."
 
-### v2 Thinking  
-"I need to coordinate order state and events with other systems according to the protocol, regardless of how I transport that coordination."
+### v2 Thinking
+"I need to coordinate order state and events with other systems according to the Open Delivery domain model, implementing the published API Specs."
 
-The protocol (what to coordinate) is separate from the binding (how to carry it).
+Domain narrative lives under Protocol; the implementable contract is API Spec (REST/HTTP).
 
 ---
 
@@ -29,7 +29,7 @@ The protocol (what to coordinate) is separate from the binding (how to carry it)
 2. **Handle all three profiles**: DELIVERY, PICKUP, ON_PREMISE (not just one)
 3. **Emit normative events**: CONFIRMED, READY_FOR_PICKUP, DISPATCHED, DELIVERED (as applicable)
 4. **Track state**, not workflow: The order state is truth, not your internal steps
-5. **Choose transport**: Then implement REST/HTTP binding OR event stream OR custom
+5. **Implement the API Spec**: REST/HTTP as published in the API reference
 
 ### How Events Change
 
@@ -60,7 +60,7 @@ The protocol (what to coordinate) is separate from the binding (how to carry it)
 - [ ] Map your current endpoints to Orders Capability lifecycle
 - [ ] Identify which order profiles you support (DELIVERY? PICKUP? ON_PREMISE?)
 - [ ] Implement normative events for your profiles
-- [ ] Choose REST/HTTP binding (easiest for existing REST implementers)
+- [ ] Implement the Orders (and related) API Specs
 - [ ] Implement order state tracking (not just events)
 - [ ] Test with multiple order profiles
 - [ ] Review Principles (especially "tolerance and resilience")
@@ -83,7 +83,7 @@ The protocol (what to coordinate) is separate from the binding (how to carry it)
 4. **Receive normative events**: Understand which are mandatory vs. optional
 5. **Create webhooks for merchant**: Send notification, receive updates
 6. **Define order profiles**: Specify DELIVERY, PICKUP, or ON_PREMISE
-7. **Choose transport**: Implement REST/HTTP binding OR propose alternative
+7. **Implement the API Spec**: Follow the published REST/HTTP contracts
 
 ### How Order Creation Changes
 
@@ -91,9 +91,9 @@ The protocol (what to coordinate) is separate from the binding (how to carry it)
 ```
 POST /orders
 {
-  "merchant": {...},
-  "items": [...],
-  "delivery": {...}
+ "merchant": {...},
+ "items": [...],
+ "delivery": {...}
 }
 → Server responds with order ID
 ```
@@ -102,13 +102,12 @@ POST /orders
 ```
 Same structure, but:
 - MUST include "profile": "DELIVERY" | "PICKUP" | "ON_PREMISE"
-- Order is created locally, transmitted to merchant
-- Transport binding defines HOW it's transmitted
+- Order is created and exchanged per the Orders API Spec contract
 ```
 
 ### How Event Consumption Changes
 
-**v1:** 
+**v1:**
 ```
 GET /v1/events:polling → array of events
 - Events may be incomplete
@@ -122,7 +121,7 @@ Still get order events, but:
 - Normative events are GUARANTEED for your profile
 - Optional events MAY be present
 - State is source of truth (not just events)
-- You can poll OR use webhooks (binding choice)
+- You can poll OR use webhooks as declared in Discovery / API Spec
 ```
 
 ### Migration Checklist
@@ -134,7 +133,7 @@ Still get order events, but:
 - [ ] Update merchant query to understand support declarations
 - [ ] Handle normative events per profile
 - [ ] Implement cancellation with reason codes
-- [ ] Choose REST/HTTP binding
+- [ ] Implement webhook / callback endpoints per the API Spec
 - [ ] Implement webhook endpoint for merchant system updates
 
 ---
@@ -162,9 +161,9 @@ Still get order events, but:
 ```
 POST /v1/logistics/delivery
 {
-  "orderId": "...",
-  "pickup": {...},
-  "delivery": {...}
+ "orderId": "...",
+ "pickup": {...},
+ "delivery": {...}
 }
 → Logistics provider accepts/declines
 ```
@@ -245,30 +244,30 @@ Hubs may implement BOTH roles simultaneously:
 
 ```
 Ordering App (REST client)
-        ↓ POST /orders (with profile)
-    Your Merchant System
-        ↓ Implement
-        ├── Accept/reject (emit CONFIRMED/REJECTED)
-        ├── Track prep (emit PREPARING)
-        ├── Ready event (emit READY_FOR_PICKUP)
-        └── Dispatch event (emit DISPATCHED or DELIVERED)
-        ↓ Webhook back to App
-    Ordering App (receives events)
+ ↓ POST /orders (with profile)
+ Your Merchant System
+ ↓ Implement
+ ├── Accept/reject (emit CONFIRMED/REJECTED)
+ ├── Track prep (emit PREPARING)
+ ├── Ready event (emit READY_FOR_PICKUP)
+ └── Dispatch event (emit DISPATCHED or DELIVERED)
+ ↓ Webhook back to App
+ Ordering App (receives events)
 ```
 
 ### Pattern 2: Logistics Provider (Mixed Binding)
 
 ```
 Merchant (REST)
-    ↓ POST /logistics/delivery (REST binding)
+ ↓ POST /logistics/delivery (REST binding)
 Your Logistics
-    ↓ Implement
-    ├── Accept/store delivery
-    ├── Update via events (Event Stream binding)
-    ├── Emit PICKED_UP event
-    ├── Stream TRACKING_UPDATED events
-    └── Emit DELIVERED event
-    ↓ Webhooks or Event topics
+ ↓ Implement
+ ├── Accept/store delivery
+ ├── Update via events (Event Stream binding)
+ ├── Emit PICKED_UP event
+ ├── Stream TRACKING_UPDATED events
+ └── Emit DELIVERED event
+ ↓ Webhooks or Event topics
 Merchant + App (receive delivery updates)
 ```
 
@@ -276,15 +275,15 @@ Merchant + App (receive delivery updates)
 
 ```
 Merchants (Event Stream)
-    ↓ Topic: orders/created
+ ↓ Topic: orders/created
 Your Ordering App
-    ↓ Implement
-    ├── Consume order created
-    ├── Send to merchant system (REST or Events)
-    ├── Consume merchant responses (REST webhooks or Events)
-    ├── Emit order status updates (Events)
-    └── Handle cancellations
-    ↓ Events or webhooks
+ ↓ Implement
+ ├── Consume order created
+ ├── Send to merchant system (REST or Events)
+ ├── Consume merchant responses (REST webhooks or Events)
+ ├── Emit order status updates (Events)
+ └── Handle cancellations
+ ↓ Events or webhooks
 Customers (receive updates)
 ```
 
@@ -304,11 +303,11 @@ Customers (receive updates)
 - [ ] Add "state" tracking (not just events)
 - [ ] Identify normative events for your profile
 
-### Phase 3: Implement Transport Binding
-- [ ] Choose REST/HTTP (easiest for v1 users)
+### Phase 3: Implement API Specs
+- [ ] Follow capability API Specs (API reference)
 - [ ] Map endpoints to capability concepts
 - [ ] Implement all normative events
-- [ ] Implement error handling
+- [ ] Implement error handling per conventions
 
 ### Phase 4: Handle Edge Cases
 - [ ] Duplicate event handling
@@ -330,7 +329,7 @@ Customers (receive updates)
 **A:** No. The capability concepts align with v1. You're adding structure (profiles, normative events) but the data is similar.
 
 ### Q: Can I still use REST APIs?
-**A:** Yes. REST/HTTP binding exists specifically for this. Your current endpoints can be mapped to the protocol.
+**A:** Yes. The V2 implementable contract **is** API Spec over REST/HTTP. Map your current endpoints to the published specs.
 
 ### Q: What if my order doesn't fit the three profiles?
 **A:** The v2 design favors flexibility within profiles. If truly unique, consider:
@@ -339,21 +338,20 @@ Customers (receive updates)
 3. Using custom metadata
 
 ### Q: Do events have to be real-time?
-**A:** No. Polling is fine. Events represent facts; the transport is flexible.
+**A:** No. Polling is fine when declared. Events represent facts; delivery mode (webhook vs poll) follows Discovery/API Spec.
 
 ### Q: How do I handle failure cases?
-**A:** The Principles section covers "Tolerance and Resilience"—expect failures, handle idempotently, eventually reconcile via state.
+**A:** Principles cover tolerance and resilience—expect failures, handle idempotently, reconcile via state. See also API error conventions.
 
 ### Q: What about security/authentication?
-**A:** Authentication is transport-binding concern, not protocol. REST/HTTP binding covers OAuth2 and API keys.
+**A:** See the Authentication API Spec and Protocol authentication pages (OAuth2, scopes, webhook signing).
 
 ---
 
 ## Getting Help
 
-- **Protocol Questions**: Review Principles and relevant Domain spec
-- **REST/HTTP Implementation**: Consult REST/HTTP Transport Binding
-- **Specific Concept**: Search Terminology section
+- **Domain / roles**: Protocol tab (Principles, capability pages)
+- **Implementation**: API reference (API Spec)
 - **Use Case Not Covered**: Open issue in GitHub repository
 
 ---

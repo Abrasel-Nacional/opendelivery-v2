@@ -1,100 +1,141 @@
 # Merchant
 
 <p class="od-meta">
-  <span class="od-badge od-badge--code">merchant</span>
+ <span class="od-badge od-badge--core">Capability</span>
+ <span class="od-badge od-badge--code">merchant</span>
 </p>
 
-<div class="od-api-callout">
-  <p>Conceito da capability. Detalhes de loja e catálogo nas páginas filhas.</p>
-  <a href="../reference/merchant/">Abrir referência OpenAPI →</a>
-</div>
+!!! note "Especificação da API"
+    O contrato implementável (endpoints, campos, erros e exemplos) está na **[especificação de Merchant](../reference/merchant.md)** — somente em inglês.
 
-## O que é
+Esta página é a **visão geral** da capability: o que muda na V2, papéis e como a documentação se divide. Detalhe de loja e cardápio está nas páginas filhas.
 
-A capability **Merchant** define como o ecossistema troca informações sobre o **estabelecimento** e o que ele oferece: identidade da loja, contextos de serviço (delivery, takeout, indoor) e **catálogo**.
+---
 
-É a fonte de verdade para dados estáticos e operacionais do merchant no Open Delivery — sem cobrir pedidos, logística ou CRM.
+## Para que serve
+
+A capability **Merchant** define como o ecossistema troca o **estabelecimento** e o que ele oferece: identidade da loja, contextos de serviço (delivery, takeout, indoor) e **catálogo**.
+
+É a fonte de verdade para dados estáticos e operacionais do merchant no Open Delivery — **sem** cobrir pedidos, logística ou CRM.
+
+Merchant **não exige** Orders. Pode ser implementada sozinha (só loja/cardápio). O stack completo costuma combinar Merchant + Orders; **Indoor** exige Orders à parte.
+
+---
+
+## O que muda da V1 para a V2
+
+!!! important "Breaking — leia antes de migrar"
+    Este é o domínio com **mais mudanças** em relação à V1. Detalhe também no [guia de migração](../guide/migration-v1-v2.md).
+
+| Tema | V1 | V2 |
+|---|---|---|
+| **Merchant ID** | Gerado pelo PDV | Gerado pela **Ordering Application**; PDV usa `externalCode` |
+| **Cardápio** | Webhook monolítico `merchantUpdate` | **CRUD por entidade** + snapshot |
+| **Service** | Identificado por id de serviço | Identificado por **tipo** (`DELIVERY` / `TAKEOUT` / `INDOOR`) |
+| **`merchantType`** | Presente | **Removido** |
+| **Preços de opção** | `option_price` opcional; `subtotal` confuso | **`option_price` obrigatório** (0 se grátis); sem `subtotal` |
+| **`unity_price`** | Implícito | **Explícito** (unidades menores) |
+| **Disponibilidade** | Não padronizada | **`quantity_available`** (sinal operacional) |
+| **Pausa** | Ad-hoc | **`POST …/services/{type}/pause`** sem reescrever horários |
+
+---
 
 ## Como a documentação se organiza
 
-A capability `merchant` no Discovery é **uma só**. Na documentação ela se divide em páginas para facilitar a leitura:
+A capability `merchant` no Discovery é **uma só**. Na documentação ela se divide para leitura:
 
 | Página | Conteúdo |
 |---|---|
-| **Merchant** (esta) | Conceito, papéis, mapa do domínio, discovery e autorização |
+| **Merchant** (esta) | Conceito, V1→V2, papéis, discovery, mapa de ops |
 | **[Dados da Loja](merchant-store.md)** | Merchant ID, identidade, `Service`, horários, área, pause |
-| **[Menus](menu.md)** | Hierarquia de cardápio, ItemOffer, opcionais, snapshot, sincronismo |
+| **[Menus](menu.md)** | Hierarquia, ItemOffer, opcionais, snapshot, sync |
 
 ```
 Merchant (capability)
-├── Dados da Loja     → identidade + services
-└── Menus             → catálogo (CRUD + snapshot)
+├── Dados da Loja → identidade + services
+└── Menus → catálogo (CRUD + snapshot)
 ```
 
 !!! note "Não são extensões do protocolo"
-    **Dados da Loja** e **Menus** são módulos de documentação. Extensões formais (ex.: Indoor, Loyalty) se declaram no Discovery; o cardápio **não** — ele faz parte de `merchant`.
+    **Dados da Loja** e **Menus** são módulos de documentação. A extensão formal **Indoor** se declara no Discovery junto de Orders; o cardápio **não** — faz parte de `merchant`.
+
+---
 
 ## Papéis
 
 | Papel | Responsabilidade |
 |---|---|
-| **Software Service** | Fonte de verdade do estabelecimento e, em muitos fluxos, do catálogo. Expõe interfaces de leitura e escrita. |
-| **Ordering Application** | Consome loja e catálogo para montar a experiência de pedido. Na V2 **gera** o `merchantId`. |
-| **Delivery Platform** (opcional) | Consome contexto de serviço e disponibilidade para decisões logísticas. |
+| **Software Service** | Fonte operacional da loja e, em geral, **host** do catálogo e dos services. |
+| **Ordering Application** | **Gera** o `merchantId`, consome loja/catálogo, monta a experiência de pedido. |
+| **Delivery Platform** (opcional) | Consome disponibilidade / área de entrega quando necessário. |
 
-## O que a capability cobre
+Em integrações típicas, a Ordering Application é **cliente** e o Software Service é **servidor** dos endpoints desta capability.
 
-- Identidade e dados descritivos da loja → [Dados da Loja](merchant-store.md)
-- Serviços (`DELIVERY` / `TAKEOUT` / `INDOOR`), horários e pause → [Dados da Loja](merchant-store.md)
-- Catálogo: menus, categorias, item-offers, option-groups, opções → [Menus](menu.md)
-- Snapshot e sincronismo incremental do cardápio → [Menus](menu.md)
+---
 
-## O que não cobre
+## Mapa: objetivo → página → operação
 
-- Ciclo de vida de pedidos → [Orders](orders.md)
-- Coordenação de entrega → [Logistics](logistics.md)
-- Cliente, reviews e fidelidade → [Customer](customer.md)
+| Objetivo | Página | Operação (spec) |
+|---|---|---|
+| Listar lojas do app | — | `listMerchants` |
+| Ler / atualizar dados da loja | [Dados da Loja](merchant-store.md) | `getMerchant` · `updateMerchant` |
+| Configurar service / pause | [Dados da Loja](merchant-store.md) | `getService` · `replaceService` · `updateService` · `pauseService` |
+| Bootstrap do cardápio | [Menus](menu.md) | `getMenuSnapshot` |
+| CRUD de item / opção | [Menus](menu.md) | `createItemOffer` · `createOption` · … |
+
+Contrato completo: [especificação Merchant](../reference/merchant.md).
+
+---
 
 ## Discovery
-
-Participantes que expõem Merchant DEVEM declarar `merchant` no well-known:
 
 ```json
 "capabilities": {
   "merchant": {
-    "baseUrl": "https://api.example.com",
-    "operations": ["read", "write", "snapshot"]
+    "endpoint": "https://api.example.com/od/v2",
+    "supportedOperations": ["getMerchant", "getMenuSnapshot", "pauseService"]
   }
 }
 ```
 
-Loja e menus entram na **mesma** capability — sem chave `extension` para catálogo.
-
-## Autorização
-
-Operações Merchant exigem Bearer (OAuth 2.0). Escopos mínimos recomendados:
-
-| Escopo | Operações |
-|---|---|
-| `merchant.read` | Leitura de loja e catálogo |
-| `merchant.write` | Criação e atualização |
-| `merchant.events.write` | Emissão de eventos de mudança |
-
-(Em alguns bindings legados o catálogo também aparece como `od.menu` — ver [Autenticação](authentication.md).)
-
-## Por onde seguir
-
-1. Entenda [Dados da Loja](merchant-store.md) (ID + services)  
-2. Implemente [Menus](menu.md) (catálogo e sync)  
-3. Consulte o [OpenAPI Merchant](../reference/merchant.md)
+Loja e menus na **mesma** capability — sem chave de extensão para catálogo. Guia: [Discovery](discovery.md).
 
 ---
 
-<div class="od-next-step">
-  <div class="od-next-step__label">Próximo passo</div>
-  <div class="od-next-step__links">
-    <a href="merchant-store/">Dados da Loja</a>
-    <a href="menu/">Menus</a>
-    <a href="../reference/merchant/">OpenAPI Merchant</a>
-  </div>
+## Autorização
+
+Bearer OAuth 2.0. Escopo preferido: `od.menu` (ou escopos equivalentes declarados no manifesto). Ver [Autenticação](authentication.md).
+
+---
+
+## O que não cobre
+
+| Tema | Onde |
+|---|---|
+| Ciclo de vida de pedidos | [Orders](orders.md) |
+| Conta de salão | [Indoor](indoor.md) (exige Orders) |
+| Entrega | [Logistics](logistics.md) |
+| Dados do cliente (Customer) | [Customer](customer.md) |
+
+---
+
+## Fora do MVP
+
+| Tema | Status |
+|---|---|
+| Webhook de delta de cardápio (substituto fino do `merchantUpdate`) | Não normativo no core V2 — use snapshot + CRUD |
+| Custom fields / key-value livres no merchant | Fora do MVP (comitê) |
+| Estoque multi-canal | Fora de escopo; `quantity_available` é só sinal operacional |
+
+---
+
+<div class="od-related">
+  <p class="od-related__label">Relacionado</p>
+  <ul class="od-related__list">
+    <li><a href="../reference/merchant.md">Especificação de Merchant</a></li>
+    <li><a href="merchant-store.md">Dados da Loja</a></li>
+    <li><a href="menu.md">Menus</a></li>
+    <li><a href="../guide/migration-v1-v2.md">Migração V1→V2</a></li>
+    <li><a href="discovery.md">Discovery</a></li>
+  </ul>
 </div>

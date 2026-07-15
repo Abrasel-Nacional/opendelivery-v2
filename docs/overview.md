@@ -1,10 +1,5 @@
 # Protocol Overview
 
-<div class="od-api-callout">
-  <p>Visão conceitual do protocolo. Continue a jornada ou abra o contrato técnico.</p>
-  <a href="guide/getting-started/">Primeiros Passos →</a>
-</div>
-
 This section provides a high‑level overview of the Open Delivery Protocol v2, describing its actors, responsibilities, interaction model, and capability architecture.
 
 The goal of this overview is to establish a shared mental model for implementers before introducing capability-specific specifications.
@@ -168,16 +163,13 @@ Consumers MUST NOT rely on optional events for protocol correctness and MUST tre
 
 ---
 
-## Transport Independence
+## Implementation contract (API Spec)
 
-Open Delivery is **transport‑agnostic**.
+Open Delivery V2 is implemented through the published **API Specs** (REST/HTTP + JSON) under [API reference](reference/index.md).
 
-The protocol does not mandate:
-- HTTP, messaging, or streaming technologies
-- Payload serialization formats
-- Authentication mechanisms
+There is no separate “transport binding” layer and no parallel official bindings. Domain explanation lives under **Protocol**; implementable obligations live in **API Spec**.
 
-Transport bindings may be defined separately to support different integration styles.
+Shared HTTP conventions: [General rules](reference/conventions.md) · [Error handling](reference/error-handling.md).
 
 ---
 
@@ -186,12 +178,13 @@ Transport bindings may be defined separately to support different integration st
 The protocol assumes authentication at the **software** level rather than per-merchant credentials.
 
 Core security directives:
-- Authentication MUST be associated with the integrating software/system.
-- Access MUST be scoped by functional service area (e.g., orders, menus, logistics).
-- Request signing SHOULD be supported as an additional integrity mechanism.
-- Authorization between software and merchant MUST be explicit, but the authorization flow itself is implementation-specific and not standardized by the protocol.
 
-These rules are expressed in protocol terms and are implemented via transport bindings.
+- Authentication is associated with the integrating software/system.
+- Access is scoped by functional service area (e.g., orders, menus, logistics).
+- Request / webhook signing is used as an integrity mechanism where declared.
+- Authorization between software and merchant is explicit; onboarding details may be bilateral, while Discovery declares supported models.
+
+Normative auth operations and headers are defined in the [Authentication API Spec](reference/authentication.md).
 
 ---
 
@@ -201,7 +194,7 @@ Open Delivery v2 is governed through transparent, ongoing review.
 
 - GitHub is the canonical source for issues, decisions, and change tracking.
 - The specification is under continuous weekly review by the technical committees.
-- Documentation tooling (e.g., Redoc) is an implementation detail and may change without affecting the protocol.
+- Documentation presentation tooling is an implementation detail and may change without affecting the protocol.
 
 ---
 
@@ -220,10 +213,10 @@ From a specification perspective, v2 starts from the functional baseline establi
 
 The main change is not a wholesale behavioral reset, but a reorganization of the standard into:
 
-- protocol concepts instead of endpoint-first description
+- clear documentation layers: Guide · Protocol · API Spec
 - protocol capabilities and extensions instead of a monolithic API surface
 - explicit state and event semantics
-- transport bindings separated from protocol rules
+- a single implementable contract: API Spec (REST/HTTP)
 
 Migration documentation should therefore focus on differences, additions, and changed obligations, rather than reproducing the full legacy reference inside the v2 specification.
 
@@ -263,4 +256,14 @@ At a high level, Open Delivery v2:
 - Supports multiple business models
 - Prioritizes clarity and long‑term stability
 
-Subsequent sections of this specification build on this overview, progressively introducing normative rules and capability-specific definitions.
+Subsequent sections expand this overview: Protocol pages for domain narrative, and API Spec for the implementable contract.
+
+<div class="od-related">
+  <p class="od-related__label">Related</p>
+  <ul class="od-related__list">
+    <li><a href="guide/getting-started.md">Getting started</a> — minimum integration path</li>
+    <li><a href="protocol/principles.md">Design principles</a> — how the domain is organized</li>
+    <li><a href="documentation/core-concepts.md">Core concepts</a> — capabilities and extensions</li>
+    <li><a href="reference/index.md">API reference</a> — implementable contracts</li>
+  </ul>
+</div>

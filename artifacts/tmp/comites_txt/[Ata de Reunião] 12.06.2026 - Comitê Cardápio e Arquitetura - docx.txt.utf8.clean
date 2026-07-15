@@ -1,0 +1,50 @@
+Ata de Reunião 12/06/2026
+Comitê Técnico Cardápio e Arquitetura ­ Open Delivery V2.0.0
+Data: 12 de junho de 2026 (sexta - feira) Formato: Reunião Microsoft Teams
+1) Contexto e objetivo da sessão A reunião ocorreu na fase final do desenvolvimento do Open Delivery V2, com foco no módulo de Cardápio. O objetivo foi:
+· Realizar ajustes finais na documentação · Discutir novas demandas levantadas nas reuniões individuais · Validar mudanças estruturais na documentação · Tratar casos reais de operação (ex: pedidos grandes e divisão de
+entregas) · Levantar temas adicionais como autenticação e segurança Foi reforçado que o projeto está na reta final, com poucas reuniões restantes antes do lançamento.
+2) Participantes
+· Guilherme Camargo ­ Abrasel Nacional (Líder técnico Open Delivery)
+· Bruno Stefano ­ 99Food · Carlos Eduardo Rodrigues de Almeida · Enzo Madalena ­ Keeta · Lucas (Keeta) · Lucas Picoloto ­ iFood/Magalu (implementador recente) · Adilson ­ Hanzo
+3) Comunicados e alinhamentos iniciais · Projeto entrou na fase final, com cerca de 3 a 4 reuniões restantes
+
+· Foco principal do momento: o Revisão da documentação o Ajustes finais
+· Possibilidade de inclusão de novos pontos ainda antes do fechamento · Indicação de que o grupo de cardápio está um dos mais avançados, mas
+ainda surgem demandas reais de operação
+4) Pauta técnica · Revisão da proposta de nova estrutura de documentação, migrando de modelo API (Swagger) para modelo mais protocolar · Discussão sobre manter: o Modelo atual (mais simples para desenvolvedores) o Novo modelo (mais conceitual e estruturado) · Discussão técnica sobre: o Separação entre regras e endpoints o Uso de modelos híbridos (protocolo + API) · Caso de uso crítico: o Divisão de pedidos grandes em múltiplas entregas (split) · Possíveis soluções discutidas: o Quebra do pedido em múltiplos pedidos o Uso de array de deliveries o Uso de flags e referências · Debate sobre autenticação (OAuth2): o Uso atual de client credentials o Proposta de uso de authorization code flow · Avaliação de impacto das mudanças na integração com PDVs
+
+5) Dores e necessidades levantadas
+Carlos Eduardo Rodrigues de Almeida ] Dores:
+· Problemas de entendimento na V1 (ex: polling, webhook, regras pouco claras)
+· Complexidade de implementar soluções que impactam PDVs · Risco alto de adoção quando exige mudança estrutural (como split de
+pedidos) · Dificuldade de garantir consistência operacional com soluções complexas · Complexidade de gerenciar múltiplos fluxos de autenticação Necessidades: · Modelo híbrido (Swagger + protocolo) · Regras mais explícitas e separadas · Soluções simples para PDVs (ex: dividir pedidos ao invés de
+complexificar payload) · Minimizar esforço de implementação
+Guilherme Camargo ­ Abrasel Nacional Dores:
+· Documentação atual faz parecer que o Open Delivery é um produto e não um protocolo
+· Mistura de regras com endpoints dificulta entendimento · Dificuldade em equilibrar:
+o documentação técnica (API) o documentação conceitual (protocolo) · Risco de mudança brusca prejudicar adoção · Limitação do modelo atual (Swagger) para explicar regras complexas
+
+· Dificuldade de criar padrão que funcione para todos (PDVs e originadores)
+Necessidades: · Separar regras da API · Criar documentação mais clara e escalável · Validar formato com os participantes · Manter flexibilidade sem romper com o modelo atual
+Lucas Picoloto ­ Magalu/Ifood Dores:
+· Mudança de documentação pode gerar fricção desnecessária · Documentação atual já funciona bem para desenvolvedores · Problemas de segurança com client credentials · Limitações do modelo atual de autenticação · Complexidade de lidar com múltiplos modelos na prática Necessidades: · Manter simplicidade e clareza · Evoluir autenticação para modelos mais seguros · Flexibilidade no protocolo para diferentes implementações · Padronização que não prejudique quem já implementou
+Enzo Madalena Dores:
+· Falta de suporte a pedidos grandes com múltiplos entregadores · Dificuldade de representar divisão de pedidos no padrão atual
+
+· Problemas práticos de operação (ex: Copa do Mundo, pedidos volumosos)
+· Limitação de comunicação com restaurantes via PDV · Inconsistência no tracking e controle de status Necessidades: · Representar múltiplos entregadores no pedido · Melhorar comunicação com restaurantes · Manter visão única do pedido (experiência do usuário) · Solução viável sem depender da mudança total dos PDVs
+Lucas - Keeta Dores:
+· Dificuldade de rastreamento quando pedido é dividido · Limitações no fluxo atual para lidar com múltiplos entregadores · Problemas de UX ao fragmentar pedidos no app · Dependência de ferramentas próprias (gestor Keeta) Necessidades: · Solução que preserve experiência do usuário · Evitar fragmentação excessiva · Melhor controle de tracking · Comunicação clara com restaurante via PDV
+Adilson ­ Hanzo Dores:
+· Complexidade de suportar múltiplos modelos de autenticação · Impacto operacional para equipes e integrações · Necessidade de adaptação a diferentes parceiros · Desafios de implementação e manutenção
+Necessidades:
+
+· Clareza sobre modelo de autenticação · Padronização mínima viável · Redução de complexidade operacional
+Dores Gerais: · Complexidade crescente do protocolo · Dificuldade de adoção por parceiros · Problemas práticos não cobertos pelo padrão atual · Impacto das decisões nos PDVs · Necessidade de equilibrar flexibilidade e padronização
+6) Encaminhamentos e acordos · Adotar abordagem híbrida na documentação (protocolo + API) · Manter Swagger/OpenAPI como apoio para implementação · Estudar solução via: o divisão de pedidos o ou uso de flags (para pedidos grandes) · Evitar mudanças que impactem diretamente fluxo dos PDVs · Avaliar inclusão de múltiplos modelos de autenticação · Revisar autenticação na próxima reunião com proposta consolidada · Permitir extensões sem quebrar o funcionamento atual
+7) Próximos encontros · Próxima reunião focada em: o Autenticação e segurança · Sequência: o Finalização do cardápio o Revisão de pedidos o Revisão de logística
+
+· Avaliação contínua do cronograma e necessidade de reuniões extras
+
+

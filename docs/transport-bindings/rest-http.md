@@ -1,10 +1,5 @@
 # REST/HTTP Binding
 
-<div class="od-api-callout">
-  <p>Binding REST/HTTP. Continue a jornada ou abra o contrato técnico.</p>
-  <a href="../reference/">Referência OpenAPI →</a>
-</div>
-
 This section defines how ODP protocol concepts are implemented over REST/HTTP.
 
 Normative source for protocol behavior remains in Specification pages.
@@ -19,7 +14,7 @@ This binding specifies HTTP-level concerns only:
 - Headers and content types
 - HTTP status codes
 - Security transport requirements (HTTPS/TLS)
-- OpenAPI artifact conventions
+- especificação da API artifact conventions
 
 This binding does not redefine capability semantics, states, events, or role obligations.
 
@@ -29,15 +24,15 @@ Use this model to avoid duplication while keeping implementation clear:
 
 1. Protocol Specification defines WHAT is required (`MUST`, `SHOULD`, `MAY`).
 2. REST/HTTP Binding defines HOW to express those requirements over HTTP.
-3. OpenAPI defines executable API contracts for implementers and tooling (Swagger UI, codegen, validation).
+3. especificação da API defines executable API contracts for implementers and tooling (Swagger UI, codegen, validation).
 
 ## Binding Pages
 
 - Discovery endpoint binding: [REST/HTTP Discovery Binding](rest-http-discovery.md)
 
-## OpenAPI Artifacts
+## especificação da API Artifacts
 
-- OpenAPI specs: [Referência da API](../reference/index.md)
+- especificação da API specs: [Referência da API](../reference/index.md)
 
 ## Conformance Mapping Pattern
 

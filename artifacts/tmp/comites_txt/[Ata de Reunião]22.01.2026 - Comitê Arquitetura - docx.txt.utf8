@@ -1,0 +1,84 @@
+,0100 {}?´;p., gfvcx,Ata de Reunião 22/01/2026
+Comitê Técnico Arquitetura ­ Open Delivery V2.0.0
+Data: 22 de janeiro de 2026 (quinta-feira) Início: 10:00 Formato: Microsoft Teams
+1) Contexto e objetivo da sessão
+A reunião marcou a abertura dos trabalhos do Comitê Técnico de Arquitetura da V2 do Open Delivery, com o objetivo de:
+· Revisar e aprimorar o padrão atual, que já possui 5 anos de existência. · Identificar pontos de melhoria técnica, campos obsoletos, fluxos confusos
+e necessidades que surgiram no mercado. · Reorganizar padrões envolvendo pedidos, logística, segurança, cardápio
+e integrações complementares. · Garantir que o novo padrão seja mais simples, claro, interoperável e
+alinhado às práticas reais das empresas.
+O comitê é técnico, colaborativo e democrático -- nenhuma empresa tem poder de decisão isolada, e todas as soluções devem ser construídas coletivamente.
+2) Participantes
+1. Guilherme Camargo ­ Abrasel Nacional (Líder técnico do Open Delivery) 2. Ana Santos ­ Abrasel Nacional (Líder de Operações Open Delivery) 3. Felipe Fernandes Reis ­ Demarest Advogados (Compliance, LGPD,
+Concorrencial) 4. Carlos Eduardo Rodrigues de Almeida ­ 3S Checkout (Coordenação
+Comitê de Aquitetura) 5. Isabelly Vitoria Pignatari ­ E- Deploy - 3S Checkout 6. Flavio Silva ­ RS | Colibri 7. Rogério Gomes ­ MenuQ 8. Gabriel ­ Keeta 9. Adilson (Hanzo) 10. Julio Zampieri ­ Keeta 11. read.ai meeting notes 12. Murilo - Keeta
+
+13. Adilson ­ Hanzo 14. Daniel Docki | DeliveryVip 15. Juliano's AI Notetaker (tldv.io) (Não verificado) 16. Gustavo Zonzin - Netcontroll (Xmenu) 17. Leandro - Ecletica (Não verificado)
+3) Comunicados e alinhamentos iniciais
+· Coordenadores atuam apenas como facilitadores; não definem pautas ou decisões.
+· Reuniões gravadas e materiais (ata, apresentações, gravações) serão sempre disponibilizados nas comunidades de WhatsApp.
+· Calendário:
+o Semana 1 de fevereiro -- sem reuniões (evento Abrasel). o Semana do Carnaval -- pausada. o Demais datas serão confirmadas conforme andamento.
+· Backlog da V2 será centralizado em um repositório Git público.
+· Reforço da necessidade de cada participante incluir o nome da empresa no Teams.
+4) Pauta técnica -- cenário atual do Cardápio (V1) e pontos de melhoria
+Histórico e fundamentos do padrão
+Padrão original foi construído em 2021 com forte referência a:
+o iFood o Uber Eats o Rappi o Google Assistant (para estrutura de pedido)
+Razões: já eram padrões consolidados no mercado e facilitavam adoção pelos softwares que já integravam com esses players.
+A versão 2.0 tem liberdade para reavaliar tudo, mantendo o que funciona e revisando o que gera ruído.
+Escopo do comitê de arquitetura
+· Diferente dos outros comitês, este não trata de um único tema.
+
+· É responsável por integrar e revisar Todos os padrões (pedidos, logística, cardápio, segurança, etc.).
+Receberá insumos dos demais comitês para garantir coerência geral do ecossistema.
+5) Dores e necessidades levantadas
+5.1 Autenticação e segurança
+Carlos Eduardo (3S Checkout)
+· Defendeu necessidade de implementar autorização por software, permitindo que o merchan desautorize apps quando quiser.
+· Apontou risco de credenciais antigas continuarem válidas caso o restaurante troque de PDV.
+· Sugeriu integrar mecanismos de criptografia de dados sensíveis (nome do cliente, endereço etc.).
+Adilson (Hanzo)
+· Reforçou a dor de precisar acessar várias lojas com a mesma credencial, tanto para pedidos quanto para cardápio.
+· Endossou a necessidade de autenticação centralizada por software, não por merchan individual.
+5.2 Sincronismo de cardápio
+Carlos Eduardo (3S Checkout)
+· Alertou que o fluxo atual é totalmente síncrono e sem visibilidade.
+· Solicitou criação de status, mecanismos de retry e confirmações de ambos os lados.
+Adilson (Hanzo)
+· Trouxe a dor de integrar diversas lojas com o mesmo cardápio.
+· No modelo atual, cada loja acaba tendo um cardápio próprio, dificultando compartilhamento de IDs, categorias e estrutura.
+
+5.3 Pedidos
+Gabriel (Keeta)
+· Solicitou inclusão de campo de remarks/comentários no nível do pedido, e não apenas nos itens.
+· Explicou que integrações atuais exigem essa camada superior de observações.
+5.4 Comunicação: Polling vs Webhook
+Julio Zampieri (Keeta)
+· Pontuou que muitos PDVs reclamam da alta dependência de polling, que gera custo e instabilidade.
+· Comentou que webhook é possível, porém muitos players ainda não adotam.
+Rogério (MenuQ)
+· Defendeu que o modelo ideal seria adoção de filas (message queues).
+· Comentou que filas são mais robustas, mas precisam de mais recursos e devem ser avaliadas com cautela.
+Guilherme explicou que:
+· Na V1, polling foi mantido porque 70% dos softwares não suportavam webhook.
+· Na logística, apenas webhook existe -- o que pode orientar decisões futuras.
+5.5 Integração com outros comites
+Flavio (Cardápio) e Guilherme reforçaram que:
+· Mudanças estruturais do Cardápio V2 vão influenciar diretamente este comitê.
+
+· Revisão futura dos padrões de CRM e Salão também pode impactar segurança, pedidos e fluxos.
+5.6 Inteligência Artificial
+Guilherme (Abrasel) levantou o tema:
+· Sugeriu início da reflexão sobre padrões compatíveis com agentes de IA, inspirado em iniciativas do Google + Shopify.
+· Não será pauta imediata, mas pode originar um comitê próprio no segundo semestre.
+· Tema não prioritário agora, mas importante para roadmap futuro.
+6) Encaminhamentos e acordos
+· Próxima reunião será focada em segurança e autenticação por software, já iniciando propostas técnicas.
+· Participantes devem levantar internamente as principais dores para trazer às próximas discussões.
+· Estrutura de revisão será:
+1. Segurança 2. Pedido 3. Logística 4. Temas integrados dos demais comitês
+7) Próximos encontros
+· Próxima semana: início da pauta estruturada. · Primeira semana de fevereiro: não haverá reunião. · Semana do Carnaval: pausa geral. · Reuniões semanais retomam após o período.
+
+

@@ -1,6 +1,6 @@
 site_name: Open Delivery Protocol
 site_description: Open standard for ordering, fulfillment, and delivery interoperability
-site_url: https://abrasel-nacional.github.io/opendelivery-v2/
+site_url: https://docs.opendelivery.com.br/
 
 repo_name: ODP on GitHub
 repo_url: https://github.com/Abrasel-Nacional/opendelivery-v2
@@ -21,7 +21,6 @@ nav:
     - Trilhas por papel: guide/by-role.md
     - Conceitos: documentation/core-concepts.md
     - Visão Geral do Protocolo: overview.md
-    - Protocolo vs Binding: PROTOCOL_VS_BINDING.md
     - Papéis e Responsabilidades: protocol/roles-and-responsibilities.md
     - Migração e Histórico:
       - Changelog: guide/changelog.md
@@ -30,38 +29,39 @@ nav:
   - Protocolo:
     - Fundamentos:
       - Princípios: protocol/principles.md
-      - Regras Gerais: protocol/guidelines.md
-      - Tratamento de Erros: protocol/error-handling.md
       - Fluxos: protocol/flows.md
       - Evolução: protocol/evolution.md
     - Infraestrutura:
       - Discovery: protocol/discovery.md
       - Autenticação: protocol/authentication.md
     - Capabilities:
+      - Orders / Pedidos:
+        - Visão geral: protocol/orders.md
+        - Indoor / Salão: protocol/indoor.md
       - Merchant:
         - Visão geral: protocol/merchant.md
         - Dados da Loja: protocol/merchant-store.md
         - Menus: protocol/menu.md
-      - Orders / Pedidos:
-        - Visão geral: protocol/orders.md
-        - Indoor / Salão: protocol/indoor.md
       - Logística: protocol/logistics.md
-      - Customer / CRM:
+      - Customer:
         - Visão geral: protocol/customer.md
-        - Reviews: extensions/reviews.md
-        - Fidelidade: extensions/loyalty.md
+        - Reviews: protocol/reviews.md
+        - Loyalty: protocol/loyalty.md
   - Referência da API:
-    - Visão Geral: reference/index.md
+    - Convenções:
+      - Visão Geral: reference/index.md
+      - Regras gerais: reference/conventions.md
+      - Tratamento de Erros: reference/error-handling.md
     - Infraestrutura:
       - Discovery: reference/discovery.md
       - Autenticação: reference/authentication.md
     - Capabilities:
-      - Merchant: reference/merchant.md
       - Pedidos:
         - Visão geral: reference/orders.md
         - Indoor: reference/indoor.md
+      - Merchant: reference/merchant.md
       - Logística: reference/logistics.md
-      - Customer & Fidelidade: reference/customer.md
+      - Customer: reference/customer.md
 
 plugins:
   - search
@@ -88,7 +88,6 @@ plugins:
             Trilhas por papel: Paths by role
             Conceitos: Concepts
             Visão Geral do Protocolo: Protocol overview
-            Protocolo vs Binding: Protocol vs binding
             Papéis e Responsabilidades: Roles and responsibilities
             Migração e Histórico: Migration and history
             Changelog: Changelog
@@ -97,10 +96,13 @@ plugins:
             Protocolo: Protocol
             Fundamentos: Fundamentals
             Princípios: Principles
-            Regras Gerais: General rules
-            Tratamento de Erros: Error handling
             Fluxos: Flows
             Evolução: Evolution
+            Referência da API: API reference
+            Visão Geral: Overview
+            Convenções: Conventions
+            Regras gerais: General rules
+            Tratamento de Erros: Error handling
             Infraestrutura: Infrastructure
             Discovery: Discovery
             Autenticação: Authentication
@@ -112,12 +114,11 @@ plugins:
             Orders / Pedidos: Orders
             Indoor / Salão: Indoor
             Logística: Logistics
-            Customer / CRM: Customer / CRM
+            Customer: Customer
             Reviews: Reviews
-            Fidelidade: Loyalty
+            Loyalty: Loyalty
             Referência da API: API reference
             Pedidos: Orders
-            Customer & Fidelidade: Customer & Loyalty
 
 theme:
   name: material
@@ -142,18 +143,14 @@ theme:
     # vira o link do título da tab e some do menu lateral — deixando Guia e
     # Referência com markup diferente de Protocolo. Sem indexes, o nome da
     # tab fica só como label e Início/Visão Geral aparecem como itens normais.
-    - navigation.footer
     # navigation.instant desativado: incompatível com o language switcher do mkdocs-static-i18n
     - content.code.copy
     - content.tooltips
     - content.tabs.link
-    - content.action.edit
     - toc.follow
     - search.suggest
     - search.highlight
     - search.share
-
-edit_uri: edit/main/docs/
 
 extra:
   generator: false

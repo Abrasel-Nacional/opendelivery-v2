@@ -1,127 +1,349 @@
-# Migration V1 → V2
+# Migration V1 -> V2
 
-<div class="od-api-callout">
-  <p>V1→V2 migration. Continue with Discovery V2 when ready.</p>
-  <a href="../protocol/discovery/">Discovery V2 →</a>
-</div>
+This guide explains how to migrate from V1 to V2 with a focus on implementation impact.
+The structure below is capability-based so each squad can plan and deliver migration in slices.
 
-This guide describes changes between Open Delivery Protocol V1 and V2, focusing on breaking changes that require code changes. See the [Changelog](changelog.md) for the full list of novelties.
+See [Changelog](changelog.md) for release history.
 
 !!! info "V1 remains active"
-    V1 stays active during the transition. There is no decommission date yet.
-    New integrations SHOULD use V2.
+    V1 remains active during transition. New integrations should prioritize V2.
 
 ---
 
-## 1. Authentication — by application instead of by store
+## Recommended migration flow
 
-**V1:** One `client_id` / `client_secret` pair per store. Each new merchant required new credentials.
+Recommended sequence:
 
-**V2:** A single `client_id` per application, regardless of how many stores it integrates.
+1. Migrate **Authentication** (credential model and scopes).
+2. Publish **Discovery** (mandatory integration manifest).
+3. Migrate business capabilities in product-priority order (Merchant, Menu, Orders, Logistics, Customer, Indoor).
+4. Run capability-by-capability certification with objective acceptance criteria.
+
+---
+
+## Authentication
+
+### What changes from V1 to V2
+
+- **Recommended change**: move to per-application credentials (single software `client_id`) for new integrations.
+- **Legacy compatibility**: per-merchant credentials (`client_id` per store) remain supported for gradual migration.
+- **Breaking**: scopes become domain-granular (`od.orders`, `od.menu`, `od.logistics`, `od.crm`, `od.all`).
+- **Improvement**: optional `Authorization Code Flow` for delegated merchant authorization use cases.
+
+### Code impact
+
+- Prioritize app-level auth flow.
+- Keep per-merchant fallback for partners still on legacy model.
+- Update token request to include explicit scopes.
+- Review token cache strategy to be per-application (not per store).
 
 ```diff
-# V1 — token per store
+# V1
 POST /oauth/token
 - client_id=store_credential_123
 - client_secret=store_secret_123
 
-# V2 — token per application
+# V2
 POST /oauth/token
 + client_id=application_credential
 + client_secret=application_secret
 + scope=od.orders od.menu
 ```
 
-Authorized stores for the application are listed via:
+After token issuance, application-authorized merchants are resolved via:
 
 ```
 GET /merchants
 Authorization: Bearer {application_token}
 ```
 
-**V1 compatibility:** The `by_merchant` model (one `client_id` per store) is still supported in V2 for gradual migration. Declare `clientIdGeneration: [by_merchant]` in Discovery.
+### Legacy compatibility (important)
+
+- The `by_merchant` model (one `client_id` per store) is still supported in V2 for transition.
+- The recommended model for new integrations and gradual upgrades is `by_app`.
+- If `authorization_code` is supported, it must also be declared in discovery.
+
+### Discovery fields that must be populated
+
+| Field | Type | Required | Migration use |
+|---|---|---|---|
+| `authentication.supportedGrantTypes` | array[string] | YES | Declare `client_credentials` and, when applicable, `authorization_code` |
+| `authentication.clientIdGeneration` | array[string] | YES | Declare `by_app` (recommended) and/or `by_merchant` (legacy) |
+
+### Migration steps
+
+1. Introduce application-level credential storage.
+2. Update OAuth client to always send `scope`.
+3. Map internal actions to minimum required scopes.
+4. Replace store discovery flow with `GET /merchants` under app token.
+5. Validate compatibility fallback when partner still runs `by_merchant`.
+
+### Acceptance criteria
+
+- App gets tokens with correct scopes.
+- App lists authorized merchants without store-specific credentials.
+- Missing-scope calls fail with expected, observable errors.
+
+### Common pitfalls
+
+- Overusing `od.all` and losing least-privilege discipline.
+- Keeping unnecessary per-merchant token caches.
+- Forgetting token refresh in long-running async workers.
+
+References: [Authentication Protocol](../protocol/authentication.md) · [Authentication API Spec](../reference/authentication.md)
 
 ---
 
-## 2. OAuth scopes
+## Discovery
 
-**V1:** Single scope `OD.ALL` (or no explicit scope).
+### What changes from V1 to V2
 
-**V2:** Domain scopes.
+- **Operational breaking change**: `GET /.well-known/opendelivery` becomes mandatory to start integration.
+- **Improvement**: capabilities, versions, auth models, and event modes are declared in one manifest.
 
-| Scope | Access |
-|---|---|
-| `od.orders` | Order lifecycle |
-| `od.menu` | Menu and merchant data |
-| `od.logistics` | Logistics operations |
-| `od.crm` | Customer, loyalty, and reviews |
-| `od.all` | All domains (V1 compatibility) |
+### Most critical discovery fields during migration
+
+| Field | Type | Required | Why it matters |
+|---|---|---|---|
+| `openDelivery.supportedVersions` | array[string] | YES | Ensures version compatibility before activation |
+| `authentication.supportedGrantTypes` | array[string] | YES | Defines allowed OAuth flows |
+| `authentication.clientIdGeneration` | array[string] | YES | Shows whether partner is `by_app`, `by_merchant`, or both |
+| `capabilities.orders.originator.supportedEvents` | array[string] | Conditional | Defines which order events are actually emitted |
+| `capabilities.orders.originator.supportsWebhook` | boolean | Conditional | Defines push delivery availability |
+| `capabilities.orders.originator.supportsPolling` | boolean | Conditional | Defines pull delivery availability |
+| `capabilities.orders.receiver.supportedOperations` | array[string] | Conditional | Defines callable Orders operations |
+| `capabilities.logistics.originator.supportedEvents` | array[string] | Conditional | Defines emitted logistics events |
+| `capabilities.logistics.receiver.supportedOperations` | array[string] | Conditional | Defines accepted logistics operations |
+| `capabilities.customer.maxBatchSize` | integer | Conditional | Controls sync batch size |
+| `capabilities.customer.requestsPerSecond` | integer | Conditional | Controls safe rate limit |
+
+### Code impact
+
+- Add a bootstrap integration client driven by manifest data.
+- Remove hardcoded capability/baseUrl config where manifest is available.
+- Validate version compatibility before enabling business calls.
+
+### Migration steps
+
+1. Publish `/.well-known/opendelivery`.
+2. Declare actually supported capabilities and `baseUrl`.
+3. Declare auth model and event producer/consumer expectations.
+4. Make consumer load and validate manifest during onboarding.
+5. Block activation when manifest is missing or invalid.
+
+### Acceptance criteria
+
+- Integration activates only when discovery returns a valid contract.
+- Discovery versions and capabilities match exposed API behavior.
+- Bootstrap logs clearly show enabled/disabled capabilities.
+
+### Common pitfalls
+
+- Declaring a capability in discovery without implementing its endpoints.
+- Environment drift (staging manifest differs from production).
+- Treating discovery as optional and keeping manual onboarding.
+
+References: [Discovery Protocol](../protocol/discovery.md) · [Discovery API Spec](../reference/discovery.md)
 
 ---
 
-## 3. Merchant ID — generated by the originator
+## Merchant
 
-**V1:** `merchantId` generated by the Software Service (POS).
+### Main changes
 
-**V2:** `merchantId` generated by the **Ordering Application**. The POS keeps an `externalCode` / mapping for internal correlation.
+- **Breaking**: `merchantId` is generated by the originator.
+- **Breaking**: `merchantType` removed.
+- **Breaking**: service identifiers move to type-only (`DELIVERY`, `TAKEOUT`, `INDOOR`) without separate service id.
 
-Both sides **MUST** use the same identifier on all subsequent operations.
+### What to adapt
+
+- Update id ownership in registration and synchronization flows.
+- Preserve internal POS mapping through `externalCode`.
+- Update validators for type-based service model.
+
+### Relevant discovery fields
+
+| Field | Type | Use |
+|---|---|---|
+| `capabilities.merchant.supported` | boolean | Enables Merchant capability |
+| `capabilities.merchant.supportsPartialUpdate` | boolean | Defines partial update vs full payload strategy |
+| `capabilities.merchant.supportsFullGetByOriginator` | boolean | Defines whether full GET reconciliation is available |
+
+References: [Merchant Protocol](../protocol/merchant.md) · [Merchant API Spec](../reference/merchant.md)
 
 ---
 
-## 4. Menu — granular CRUD instead of monolithic webhook
+## Menu
 
-**V1:** Monolithic `merchantUpdate` webhook with a large payload.
+### Main changes
 
-**V2:** Independent entities (Basic Info, Services, Menu, categories, `ItemOffer`, option groups) with explicit CRUD and optional **snapshot**:
+- **Breaking**: end of monolithic `merchantUpdate` webhook.
+- **Breaking**: granular CRUD by catalog entity.
+- **Breaking**: option `subtotal` removed; `option_price` becomes required.
+- **Improvement**: full snapshot support for reconciliation.
 
+### What to adapt
+
+- Split catalog update pipeline by entity (menu, category, itemOffer, optionGroup, option).
+- Update price validations for `option_price` and `unity_price`.
+- Add snapshot-based reconciliation when drift is detected.
+
+References: [Menu Protocol](../protocol/menu.md)
+
+---
+
+## Orders
+
+### Main changes
+
+- **Breaking**: originator cancellation handshake removed; only mandatory `CANCELLED` remains.
+- **Breaking**: `PICKED_UP` event removed.
+- **Breaking**: `Order.type` leaves root and becomes `Order.fulfillment.orderType`.
+- **Breaking**: `Order.delivery` / `Order.takeout` / `Order.indoor` move under `Order.fulfillment.*`.
+- **Breaking**: item/option pricing fields move under `pricing` in `Order.items[*]` and `Order.items[*].options[*]`.
+- **Breaking**: price format returns to the V1 model (`Price { value, currency }`) for item, option, discounts, fees, and totals.
+- **Breaking**: `subtotalPrice` no longer exists for item and option pricing.
+- **Consumer breaking change**: `Order.status` in `GET /orders/{id}` becomes source of truth.
+
+### Essential migration rules
+
+- Do not implement `POST /orders` for order entry.
+- Treat events as notifications; reconcile lifecycle state via GET.
+- Return `202` for already-applied duplicate lifecycle calls (no new transition).
+
+### Discovery for Orders (critical migration point)
+
+In V2, supported Orders events must be read from discovery before activating the flow.
+
+| Field | Type | Use |
+|---|---|---|
+| `capabilities.orders.originator.supportedEvents` | array[string] | Lists events that will be emitted |
+| `capabilities.orders.originator.unsupportedEvents` | array[string] | Lists events that should not be expected |
+| `capabilities.orders.originator.supportsWebhook` | boolean | Defines push event delivery |
+| `capabilities.orders.originator.supportsPolling` | boolean | Defines pull event delivery |
+| `capabilities.orders.receiver.supportedOperations` | array[string] | Lists accepted Orders operations |
+| `capabilities.orders.receiver.unsupportedOperations` | array[string] | Lists unavailable operations to avoid invalid calls |
+
+```diff
+# Before
+{
+  "id": "order-123",
+- "type": "DELIVERY",
+  "delivery": { "address": { "city": "Sao Paulo" } }
+}
+
+# After
+{
+  "id": "order-123",
+  "fulfillment": {
++   "orderType": "DELIVERY",
+    "delivery": { "address": { "city": "Sao Paulo" } }
+  }
+}
 ```
-GET /merchants/{merchantId}/menus/{menuId}/snapshot
-```
 
-Services are identified by **type** (`DELIVERY`, `TAKEOUT`, `INDOOR`) without a separate service ID.
+References: [Orders Protocol](../protocol/orders.md) · [Orders API Spec](../reference/orders.md) · [Conventions](../reference/conventions.md#duplicate-lifecycle-operations)
 
 ---
 
-## 5. Orders — status ≠ events; simplified cancellation
+## Logistics
 
-**V1:** `lastEvent` often treated as order state; cancellation used a bilateral handshake.
+### Main changes
 
-**V2:**
+- **Normative improvement**: async-first semantics consolidated with `202 Accepted` on lifecycle mutations.
+- **Improvement**: alignment with discovery-declared tracking mode (`push`/`pull`).
 
-- Explicit **`status`** on order GET
-- **Events** are notifications (may be informational without changing status)
-- **Direct cancellation** (`POST /orders/{id}/cancel`) without request/accept/deny handshake
-- Event `picked_up` removed (ambiguous between takeout and logistics pickup)
+### What to adapt
 
----
+- Ensure consumers do not treat `202` as terminal state.
+- Adapt tracking orchestration to discovery mode.
 
-## 6. Discovery mandatory
+### Relevant discovery fields
 
-**V1:** No standard well-known discovery.
+| Field | Type | Use |
+|---|---|---|
+| `capabilities.logistics.originator.supportedEvents` | array[string] | Defines emitted lifecycle events |
+| `capabilities.logistics.originator.supportsWebhook` | boolean | Defines push delivery |
+| `capabilities.logistics.originator.supportsPolling` | boolean | Defines pull delivery |
+| `capabilities.logistics.receiver.supportedOperations` | array[string] | Defines accepted receiver operations |
 
-**V2:** `GET /.well-known/opendelivery` is the first integration step — declares versions, capabilities, auth models, and event expectations.
-
----
-
-## 7. New domains in V2
-
-| Domain | Notes |
-|---|---|
-| **Customer** | Customers, leads, CRM-context orders |
-| **Reviews** | Extension of Customer |
-| **Loyalty** | Extension of Customer |
-| **Indoor** | Extension of Orders (Account, payments, fiscal) |
+References: [Logistics Protocol](../protocol/logistics.md) · [Logistics API Spec](../reference/logistics.md)
 
 ---
 
-## Migration checklist
+## Customer and Loyalty
 
-1. Map auth: store credentials → application `client_id` + `GET /merchants`
-2. Generate/consume `merchantId` as originator-owned; keep POS de/para
-3. Replace menu webhooks with CRUD + snapshot
-4. Update order client for `status` field and simplified cancel
-5. Publish Discovery well-known
-6. Plan optional adoption of Customer / Indoor / Loyalty
+### Main changes
 
-See [Getting started](getting-started.md) and the [Changelog](changelog.md).
+- **New**: Customer capability for customer data, leads, and reviews.
+- **New**: Loyalty module in the relationship domain.
+
+### What to adapt
+
+- Plan onboarding per capability (do not assume mandatory Orders dependency).
+- Reuse Order data shape where relationship flows require order context.
+
+### Relevant discovery fields
+
+| Field | Type | Use |
+|---|---|---|
+| `capabilities.customer.supported` | boolean | Enables Customer capability |
+| `capabilities.customer.supportsBatchGet` | boolean | Declares batch GET availability |
+| `capabilities.customer.supportsBatchPost` | boolean | Declares batch POST availability |
+| `capabilities.customer.maxBatchSize` | integer | Defines max items per batch |
+| `capabilities.customer.maxGetPeriodDays` | integer | Defines max query window |
+| `capabilities.customer.requestsPerSecond` | integer | Defines rate limit |
+
+References: [Customer Protocol](../protocol/customer.md) · [Customer API Spec](../reference/customer.md) · [Loyalty Protocol](../protocol/loyalty.md)
+
+---
+
+## Indoor
+
+### Main changes
+
+- **New**: in-store capability (table, tab, counter) with central account model.
+- **Important rule**: Indoor depends on Orders lifecycle.
+
+### What to adapt
+
+- Model account and payment flows without bypassing Orders lifecycle.
+- Ensure consistency between order (`fulfillment.orderType: INDOOR`) and account state.
+
+### Relevant discovery fields
+
+| Field | Type | Use |
+|---|---|---|
+| `capabilities.indoor.supported` | boolean | Enables Indoor capability |
+| `capabilities.indoor.invoiceIssuer` | string | Defines invoice issuer (`pos`, `app`, `platform`) |
+| `capabilities.indoor.invoiceIssueMoment` | string | Defines invoice issuance moment |
+| `capabilities.indoor.usesAccountId` | boolean | Defines whether account id is used |
+
+References: [Indoor Protocol](../protocol/indoor.md) · [Indoor API Spec](../reference/indoor.md)
+
+---
+
+!!! abstract "Final capability checklist"
+  | Capability | Checklist item |
+  |---|---|
+  | Authentication | Migrate to app-level credentials and proper scopes |
+  | Authentication | Validate legacy auth compatibility (`by_merchant`) when needed |
+  | Authentication | Declare Authorization Code in discovery when supported |
+  | Discovery | Publish and validate discovery at onboarding |
+  | Orders + Discovery | Validate supported Orders events and operations from discovery |
+  | Merchant | Update to originator-owned `merchantId` and type-based services |
+  | Menu | Migrate from `merchantUpdate` to granular CRUD |
+  | Orders | Migrate to `fulfillment.orderType` and status-as-source-of-truth |
+  | Logistics | Validate async-first `202` behavior |
+  | Customer/Loyalty | Evaluate and plan according to product roadmap |
+  | Indoor | Integrate with Orders lifecycle |
+
+<div class="od-related">
+  <p class="od-related__label">Related</p>
+  <ul class="od-related__list">
+    <li><a href="changelog.md">Changelog</a> - full version history</li>
+    <li><a href="getting-started.md">Getting started</a> - minimum V2 path</li>
+    <li><a href="../protocol/authentication.md">Authentication</a> · <a href="../protocol/discovery.md">Discovery</a></li>
+    <li><a href="../reference/index.md">API reference</a></li>
+  </ul>
+</div>

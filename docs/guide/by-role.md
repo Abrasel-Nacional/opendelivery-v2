@@ -13,7 +13,7 @@ Use esta página para montar um caminho de leitura e implementação alinhado ao
 | **Originador** | App de pedidos, marketplace, totem | Orders, Merchant (consumo), Auth, Discovery | [Trilha Originador](#originador) |
 | **Software Service (PDV)** | Gestão do restaurante / POS | Merchant, Orders, Indoor, Auth, Discovery | [Trilha PDV](#pdv) |
 | **Logística** | Operador de entrega, frota | Logistics (+ Orders contexto), Auth, Discovery | [Trilha Logística](#logistica) |
-| **CRM / Loyalty** | CRM, fidelidade, reviews | Customer, Reviews, Loyalty, Auth, Discovery | [Trilha CRM](#crm) |
+| **Software CRM / Loyalty** | Dados do cliente, fidelidade, reviews | Customer (módulos Reviews e Loyalty), Auth, Discovery | [Trilha Customer](#customer) |
 
 Um mesmo produto pode combinar papéis (ex.: marketplace com frota própria = Originador + Logística).
 
@@ -40,14 +40,6 @@ Você **cria pedidos** e, em muitos fluxos, é dono do **Merchant ID** e do card
 | API | [Referência Orders](../reference/orders.md) · [Merchant](../reference/merchant.md) |
 | Migração | [V1→V2](migration-v1-v2.md) |
 
-<div class="od-next-step">
-  <div class="od-next-step__label">Próximo passo — Originador</div>
-  <div class="od-next-step__links">
-    <a href="../protocol/discovery/">Publicar Discovery</a>
-    <a href="../reference/orders/">OpenAPI Orders</a>
-  </div>
-</div>
-
 ---
 
 ## Software Service (PDV) {#pdv}
@@ -70,16 +62,6 @@ Você é a **fonte operacional** da loja: confirma pedidos, envia cardápio, é 
 | API | [Merchant](../reference/merchant.md) · [Orders](../reference/orders.md) · [Indoor](../reference/indoor.md) |
 | Matrizes | [Eventos por perfil (Orders)](../protocol/orders.md#matrizes-de-eventos-por-perfil) |
 
-<div class="od-next-step">
-  <div class="od-next-step__label">Próximo passo — PDV</div>
-  <div class="od-next-step__links">
-    <a href="../protocol/merchant/">Merchant</a>
-    <a href="../protocol/merchant-store/">Dados da Loja</a>
-    <a href="../protocol/menu/">Menus</a>
-    <a href="../reference/merchant/">OpenAPI Merchant</a>
-  </div>
-</div>
-
 ---
 
 ## Logística {#logistica}
@@ -99,42 +81,26 @@ Você executa ou orquestra a **entrega** e emite eventos de tracking informativo
 | Protocolo | [Logistics](../protocol/logistics.md) · [Orders — status × eventos](../protocol/orders.md#ciclo-de-vida-status) |
 | API | [Logistics](../reference/logistics.md) |
 
-<div class="od-next-step">
-  <div class="od-next-step__label">Próximo passo — Logística</div>
-  <div class="od-next-step__links">
-    <a href="../protocol/logistics/">Protocolo Logistics</a>
-    <a href="../reference/logistics/">OpenAPI Logistics</a>
-  </div>
-</div>
-
 ---
 
-## CRM / Loyalty / Reviews {#crm}
+## Software CRM / Customer {#customer}
 
-Você cuida do **relacionamento**: cliente, leads, avaliações e programas de fidelidade. Não altera o ciclo operacional do pedido na cozinha.
+Você cuida do **relacionamento** (dados do cliente): cadastro, leads, avaliações e programas de fidelidade. O produto costuma ser um **Software CRM** ou motor de fidelidade — a capability do protocolo é **Customer** (nunca “CRM”). Não altera o ciclo operacional do pedido na cozinha.
 
 ### O que implementar
 
 1. [Discovery](../protocol/discovery.md) + [Auth](../protocol/authentication.md) (escopo `od.crm`)
-2. [Customer](../protocol/customer.md) — capability base (obrigatória para as extensões)
-3. Extensões opcionais:
-   - [Reviews](../extensions/reviews.md)
-   - [Loyalty](../extensions/loyalty.md)
+2. [Customer](../protocol/customer.md) — capability `customer` (declare as operações dos módulos ativos)
+3. Módulos opcionais da mesma capability (não são extensões):
+ - [Reviews](../protocol/reviews.md) — pode ser implementado sozinho entre os módulos
+ - [Loyalty](../protocol/loyalty.md) — pode ser implementado sozinho entre os módulos
 
 ### Leituras
 
 | Tipo | Link |
 |---|---|
-| Protocolo | [Customer](../protocol/customer.md) · [Reviews](../extensions/reviews.md) · [Loyalty](../extensions/loyalty.md) |
-| API | [Customer & Fidelidade](../reference/customer.md) |
-
-<div class="od-next-step">
-  <div class="od-next-step__label">Próximo passo — CRM</div>
-  <div class="od-next-step__links">
-    <a href="../protocol/customer/">Protocolo Customer</a>
-    <a href="../reference/customer/">OpenAPI Customer</a>
-  </div>
-</div>
+| Protocolo | [Customer](../protocol/customer.md) · [Reviews](../protocol/reviews.md) · [Loyalty](../protocol/loyalty.md) |
+| API | [Customer](../reference/customer.md) |
 
 ---
 
@@ -147,7 +113,7 @@ Se o seu produto é **totem, QR de mesa, tablet de garçom ou PDV de salão**, t
 | **Software Service** | Hospeda Account, pagamentos, fiscal, eventos |
 | **Ordering Application** | Envia pedidos INDOOR, consome webhooks, UI de conta |
 
-→ [Protocolo Indoor](../protocol/indoor.md) · [OpenAPI Indoor](../reference/indoor.md) · [Matriz de eventos de conta](../protocol/indoor.md#matriz-de-eventos-da-conta)
+→ [Protocolo Indoor](../protocol/indoor.md) · [especificação Indoor](../reference/indoor.md) · [Matriz de eventos de conta](../protocol/indoor.md#matriz-de-eventos-da-conta)
 
 ---
 
@@ -160,3 +126,13 @@ Se o seu produto é **totem, QR de mesa, tablet de garçom ou PDV de salão**, t
 5. Separar **status** (verdade no GET) de **eventos** (notificações)
 
 Para o fluxo mínimo genérico, veja [Primeiros Passos](getting-started.md).
+
+<div class="od-related">
+  <p class="od-related__label">Relacionado</p>
+  <ul class="od-related__list">
+    <li><a href="getting-started.md">Primeiros Passos</a> — fluxo mínimo de integração</li>
+    <li><a href="../protocol/roles-and-responsibilities.md">Papéis e responsabilidades</a> — modelo de Provider/Consumer</li>
+    <li><a href="../documentation/core-concepts.md">Conceitos</a> — capabilities e extensões</li>
+    <li><a href="../reference/index.md">Referência da API</a> — contratos por capability</li>
+  </ul>
+</div>

@@ -1,10 +1,5 @@
 # Discovery Endpoint
 
-<div class="od-api-callout">
-  <p>Binding REST Discovery. Continue a jornada ou abra o contrato técnico.</p>
-  <a href="../reference/discovery/">OpenAPI Discovery →</a>
-</div>
-
 Normative source: [Discovery and Well-Known](../protocol/discovery.md).
 
 This page defines the REST/HTTP transport contract for the ODP discovery endpoint.
@@ -74,28 +69,28 @@ Accept: application/json
 
 ```json
 {
-  "discovery": {
-    "participantId": "software-service-123",
-    "protocolVersion": "v2.0.0-draft",
-    "capabilities": [
-      {
-        "name": "merchant",
-        "role": "ORIGINATOR",
-        "operations": ["publishMerchant", "notifyMerchantUpdate"]
-      },
-      {
-        "name": "orders",
-        "role": "RECEIVER",
-        "operations": ["receiveOrder", "acknowledgeOrderEvent", "resolveCancellation"]
-      },
-      {
-        "name": "logistics",
-        "role": "BOTH",
-        "operations": ["quoteDelivery", "createDelivery", "publishDeliveryEvent"]
-      }
-    ],
-    "compatibility": "backward-compatible"
-  }
+ "discovery": {
+ "participantId": "software-service-123",
+ "protocolVersion": "v2.0.0-draft",
+ "capabilities": [
+ {
+ "name": "merchant",
+ "role": "ORIGINATOR",
+ "operations": ["publishMerchant", "notifyMerchantUpdate"]
+ },
+ {
+ "name": "orders",
+ "role": "RECEIVER",
+ "operations": ["receiveOrder", "acknowledgeOrderEvent", "resolveCancellation"]
+ },
+ {
+ "name": "logistics",
+ "role": "BOTH",
+ "operations": ["quoteDelivery", "createDelivery", "publishDeliveryEvent"]
+ }
+ ],
+ "compatibility": "backward-compatible"
+ }
 }
 ```
 
@@ -120,6 +115,6 @@ Error payloads SHOULD follow the [Error Model](../protocol/error-handling.md).
     - Full URL MUST be communicated to partner before operations.
     - Payload MUST include all required fields and MUST NOT declare unsupported behaviors.
 
-## OpenAPI Artifact
+## especificação da API Artifact
 
 - Download: [discovery.openapi.yaml](../reference/v2/discovery.openapi.yaml)

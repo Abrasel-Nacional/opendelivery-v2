@@ -1,100 +1,147 @@
 # Dados da Loja
 
 <p class="od-meta">
-  <span class="od-badge od-badge--code">merchant</span>
-  <span class="od-badge">Merchant · identidade e services</span>
+ <span class="od-badge od-badge--core">Capability</span>
+ <span class="od-badge od-badge--code">merchant</span>
+ <span class="od-badge">Merchant · identidade e services</span>
 </p>
 
-<div class="od-api-callout">
-  <p>Merchant ID, Basic Info e Service. O catálogo fica em <strong>Menus</strong>.</p>
-  <a href="menu/">Ir para Menus →</a>
-</div>
+!!! note "Especificação da API"
+    O contrato implementável está na **[especificação de Merchant](../reference/merchant.md)** — somente em inglês.
 
-Esta página cobre os **dados da loja** dentro da capability [Merchant](merchant.md):
-
-- Identidade e informações descritivas do estabelecimento
-- Serviços operacionais (`Service`: delivery, takeout, indoor)
-- Horários, área de entrega e pausa operacional
-
-O **cardápio** (itens, categorias, opcionais) está em [Menus](menu.md).
+Parte da capability [Merchant](merchant.md). O **cardápio** está em [Menus](menu.md).
 
 ---
 
 ## Merchant ID — gerado pelo originador
 
-!!! important "Quebra de comportamento em relação à V1"
-    Na V1, o `merchantId` era gerado pelo Software Service (POS). Na V2, o `merchantId` é **gerado pela Ordering Application** no momento do cadastro do estabelecimento.
+!!! important "Quebra em relação à V1"
+    Na V1 o `merchantId` vinha do Software Service (PDV). Na V2 o `merchantId` é **gerado pela Ordering Application** no cadastro. O PDV guarda o próprio código em **`externalCode`**.
 
-    Isso inverte quem tem a chave de referência: a plataforma de pedidos escolhe o ID e o POS o registra. Os dois lados DEVEM usar exatamente o mesmo identificador em todas as operações subsequentes.
+```mermaid
+sequenceDiagram
+ participant OA as Ordering Application
+ participant SS as Software Service
 
-Essa decisão foi tomada para:
+ OA->>OA: gera merchantId
+ OA->>SS: cadastro / integração com id + externalCode
+ Note over OA,SS: mesmo merchantId em todas as ops
+ SS->>OA: GET /merchants/{merchantId} (ou OA consome catálogo)
+```
 
-- Eliminar a dependência de um round-trip de cadastro antes de enviar pedidos
-- Permitir que a Ordering Application referencie o merchant de forma determinista desde a criação
-- Simplificar reconciliações em cenários multi-plataforma
+Motivos: eliminar round-trip só para obter ID; referência determinística desde a criação; reconciliação multi-plataforma mais simples.
 
-O `merchantId` DEVE ser único por Ordering Application. O formato DEVE ser uma string opaca (UUID v4 recomendado).
+O `merchantId` DEVE ser único no escopo da Ordering Application (UUID v4 recomendado).
+
+---
+
+## Identidade e basic info
+
+Campos descritivos (nome, endereço, contatos, logo, etc.) via:
+
+| Objetivo | Operação |
+|---|---|
+| Ler loja | `GET /merchants/{merchantId}` |
+| Atualizar parcial | `PATCH /merchants/{merchantId}` |
+| Listar lojas do token | `GET /merchants` |
+
+`merchantType` da V1 **não existe** na V2.
 
 ---
 
 ## Serviço (`Service`) {#serviço-service}
 
-Cada estabelecimento pode ter múltiplos serviços. Um serviço é identificado pelo seu **tipo** — não há Service ID separado.
+Cada estabelecimento pode ter múltiplos services. O identificador é o **tipo** — não há service id separado.
 
-| Campo | Tipo | Obrigatório | Descrição |
-|---|---|---|---|
-| `type` | string (enum) | SIM | `DELIVERY`, `TAKEOUT` ou `INDOOR` |
-| `status` | string (enum) | SIM | `OPEN`, `CLOSED` ou `PAUSED` |
-| `operatingHours` | array[object] | SIM | Horários de funcionamento por dia da semana |
-| `deliveryArea` | object | NÃO | Raio ou polígono de cobertura (somente `DELIVERY`) |
-| `menuId` | string | NÃO | Referência ao menu ativo deste serviço — ver [Menus](menu.md) |
+| Campo | Obrigatório | Descrição |
+|---|---|---|
+| `type` | SIM | `DELIVERY`, `TAKEOUT` ou `INDOOR` |
+| `status` | SIM | `OPEN`, `CLOSED` ou `PAUSED` |
+| `operatingHours` | SIM (quando aplicável) | Horários por dia da semana |
+| `deliveryArea` | NÃO | Raio ou polígono (`DELIVERY`) |
+| `menuId` | NÃO | Menu ativo — ver [Menus](menu.md) |
+| `pauseUntil` | NÃO | Retomada automática se `PAUSED` |
 
-### Pausa de serviço
+```
+GET|PUT|PATCH /merchants/{merchantId}/services/{serviceType}
+```
 
-Para pausas operacionais (ex.: cozinha sobrecarregada, falta de entregadores):
+### Estados
+
+```mermaid
+stateDiagram-v2
+ [*] --> OPEN
+ OPEN --> PAUSED: POST …/pause
+ PAUSED --> OPEN: fim da duração ou PATCH OPEN
+ OPEN --> CLOSED: horário / operador
+ CLOSED --> OPEN: horário / operador
+```
+
+| Status | Significado |
+|---|---|
+| `OPEN` | Aceitando pedidos naquele service |
+| `CLOSED` | Fora de horário ou offline do service |
+| `PAUSED` | Pausa operacional temporária |
+
+### Pausa
 
 ```
 POST /merchants/{merchantId}/services/{serviceType}/pause
 ```
 
-A pausa produz resposta `202 Accepted`. O serviço permanece em `PAUSED` até ser reativado via `PATCH /merchants/{merchantId}/services/{serviceType}` com `status: OPEN`.
+Body: `durationMinutes` (obrigatório), `reason` (opcional). Resposta **`202`**.  
+**Não** reescreve `operatingHours`. Retomada: expiração ou `PATCH` com `status: OPEN`.
+
+```mermaid
+sequenceDiagram
+ participant OA as Ordering Application
+ participant SS as Software Service
+
+ OA->>SS: POST …/services/DELIVERY/pause { durationMinutes: 30 }
+ SS-->>OA: 202 Accepted
+ Note over SS: status PAUSED, pauseUntil set
+ OA->>SS: PATCH …/services/DELIVERY { status: OPEN }
+ SS-->>OA: 202 Accepted
+```
 
 ---
 
-## Relação com Menus
+## Mapa de operações (loja)
 
-Cada service pode apontar para um menu via `menuId`. A hierarquia de catálogo, snapshot e sincronismo estão em:
-
-**[Menus →](menu.md)**
-
----
-
-## Regras normativas (loja)
-
-**O Software Service DEVE:**
-
-- Expor `merchantId` como identificador único e estável gerado pela Ordering Application
-- Respeitar os estados de service (`OPEN`, `CLOSED`, `PAUSED`) de forma consistente
-
-**A Ordering Application DEVE:**
-
-- Gerar o `merchantId` antes do cadastro e mantê-lo estável
-
-**Ambos DEVEM:**
-
-- Declarar a capability `merchant` no [Discovery](discovery.md) antes de iniciar operações
+| Objetivo | operationId |
+|---|---|
+| Listar merchants | `listMerchants` |
+| Detalhe da loja | `getMerchant` |
+| Atualizar basic info | `updateMerchant` |
+| Ler service | `getService` |
+| Substituir service | `replaceService` |
+| Atualizar service | `updateService` |
+| Pausar | `pauseService` |
 
 ---
 
-**Contrato REST completo:** [Referência da API — Merchant →](../reference/merchant.md)
+## Checklists
+
+!!! tip "Checklist — Ordering Application"
+    - [ ] Gera e mantém `merchantId` estável  
+    - [ ] Correlação com PDV via `externalCode`  
+    - [ ] Consome services por **tipo**  
+    - [ ] Trata pause sem confundir com horário de funcionamento  
+
+!!! tip "Checklist — Software Service"
+    - [ ] Hospeda GET/PATCH de loja e services  
+    - [ ] Aceita `merchantId` do originador  
+    - [ ] `POST …/pause` → `PAUSED` + `pauseUntil`  
+    - [ ] Não usa `merchantType`  
 
 ---
 
-<div class="od-next-step">
-  <div class="od-next-step__label">Próximo passo</div>
-  <div class="od-next-step__links">
-    <a href="merchant/">Visão geral Merchant</a>
-    <a href="menu/">Menus</a>
-    <a href="../reference/merchant/">OpenAPI Merchant</a>
-  </div>
+<div class="od-related">
+  <p class="od-related__label">Relacionado</p>
+  <ul class="od-related__list">
+    <li><a href="../reference/merchant.md">Especificação de Merchant</a></li>
+    <li><a href="menu.md">Menus</a></li>
+    <li><a href="merchant.md">Merchant — visão geral</a></li>
+    <li><a href="indoor.md">Indoor</a> — service type INDOOR + conta (exige Orders)</li>
+  </ul>
 </div>

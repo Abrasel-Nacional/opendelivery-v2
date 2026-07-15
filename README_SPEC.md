@@ -1,306 +1,92 @@
-# Open Delivery v2 – Complete Specification Structure
+# Open Delivery v2 – Documentation map
 
-A protocol-first redesign of Open Delivery, enabling interoperable food service systems.
+Open Delivery V2 is an interoperability protocol with a single implementable contract: **API Spec (REST/HTTP)**.
 
-The specification should be read as the new canonical documentation for Open Delivery v2, starting from the behavior already established in v1 and evolving through explicit changes, additions, and migration guidance.
+Documentation layers:
 
----
+| Layer | Role |
+|-------|------|
+| **Guide** | Onboarding, migration, roles |
+| **Protocol** | Domain narrative (concepts, flows) — not field-level norm |
+| **API reference** | Normative API Spec |
 
-## 📋 Documentation Index
-
-### Foundation (Read First)
-- [README.md](../README.md) – Project overview and status
-- [docs/index.md](index.md) – Specification introduction
-- [docs/overview.md](overview.md) – High-level protocol description
-- [docs/principles.md](principles.md) – ⭐ Normative design principles
-- [docs/scope.md](scope.md) – In/out of scope
-- [docs/terminology.md](terminology.md) – Normative definitions
-
-### Core Protocol Capabilities (Read by Role)
-- **Orders Capability** [docs/domains/orders/](domains/orders/index.md) – ⭐ PRIMARY
-  - Order lifecycle, states, events, profiles, cancellation
-  - **Read this first** if implementing any participant
-
-- **Merchant Capability** [docs/domains/merchant/](domains/merchant/index.md)
-  - Merchant overview, menu modeling, synchronization, and open questions
-  - **Read this** to understand merchant data model
-
-- **Logistics Capability** [docs/domains/logistics/](domains/logistics/index.md)
-  - Delivery lifecycle, tracking, availability, problem handling
-  - **Read this** if handling `DELIVERY` profile orders
-
-### Extensions
-- **Indoor Extension** – extends Orders for on-premise order context
-- **Loyalty Extension** – planned extension of CRM for rewards coordination
-
-### Transport & Implementation
-- [docs/QUICK_REFERENCE.md](QUICK_REFERENCE.md) – ⭐ **START HERE if asking "how do I map protocol to endpoints?"**
-- [docs/PROTOCOL_VS_BINDING.md](PROTOCOL_VS_BINDING.md) – How protocol and bindings relate (detailed explanation)
-- [docs/REST_BINDING_OUTLINE.md](REST_BINDING_OUTLINE.md) – REST/HTTP binding with all endpoints and examples
-- [docs/transport-bindings.md](transport-bindings.md) – Transport binding patterns and design
-- [IMPLEMENTATION_GUIDE.md](../IMPLEMENTATION_GUIDE.md) – v1→v2 transition guide
-- [STRUCTURE.md](../STRUCTURE.md) – Visual specification structure
-- [docs/domains/ENDPOINT_MAPPING.md](domains/ENDPOINT_MAPPING.md) – v1 endpoints → v2 concepts
+There is **no transport-binding layer**. Canonical layout: [STRUCTURE.md](STRUCTURE.md) · [AGENTS.md](AGENTS.md).
 
 ---
 
-## 🎯 Quick Start by Role
+## 📋 Published site (start here)
 
-### I'm a Merchant System Developer
-1. Read: [Principles](principles.md) (especially "Protocol-First")
-2. Read: [Orders Capability](domains/orders/index.md) – Understand your responsibilities
-3. Read: [Merchant Capability](domains/merchant/index.md) – Understand merchant data
-4. Consult: [REST/HTTP Binding](transport-bindings.md) (when choosing REST)
-5. Reference: [Endpoint Mapping](domains/ENDPOINT_MAPPING.md) – Map v1 to v2
+### Guide
+- [docs/index.md](docs/index.md) – Landing
+- [docs/guide/getting-started.md](docs/guide/getting-started.md) – Getting started
+- [docs/overview.md](docs/overview.md) – High-level overview
+- [docs/documentation/core-concepts.md](docs/documentation/core-concepts.md) – Core concepts
+- [docs/guide/migration-v1-v2.md](docs/guide/migration-v1-v2.md) – V1→V2 migration
+- [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md) – Implementer notes (v1→v2)
 
-### I'm an Ordering Application Developer
-1. Read: [Principles](principles.md)
-2. Read: [Orders Capability](domains/orders/index.md) – Learn order lifecycle
-3. Read: [Merchant Capability](domains/merchant/index.md) – Learn to query merchant data
-4. Understand: [Order Profiles](domains/orders/index.md#order-profiles) – DELIVERY, PICKUP, ON_PREMISE
-5. Consult: [REST/HTTP Binding](transport-bindings.md)
+### Protocol
+- [docs/protocol/principles.md](docs/protocol/principles.md) – Design principles
+- [docs/protocol/orders.md](docs/protocol/orders.md) – Orders domain
+- [docs/protocol/merchant.md](docs/protocol/merchant.md) – Merchant domain
+- [docs/protocol/logistics.md](docs/protocol/logistics.md) – Logistics domain
+- Capability pages under `docs/protocol/` (Customer modules: reviews, loyalty; Indoor under protocol as Orders extension)
 
-### I'm a Logistics Provider Developer
-1. Read: [Principles](principles.md)
-2. Read: [Logistics Capability](domains/logistics/index.md) – Core responsibility
-3. Read: [Orders Capability](domains/orders/index.md) – Understand DELIVERY profile
-4. Understand: Delivery lifecycle and events
-5. Consult: [REST/HTTP Binding](transport-bindings.md)
+### API reference (normative)
+- [docs/reference/index.md](docs/reference/index.md) – API overview
+- [docs/reference/conventions.md](docs/reference/conventions.md) – Shared conventions
+- [docs/reference/error-handling.md](docs/reference/error-handling.md) – Error model
+- API Spec YAML: `docs/reference/v2/*.openapi.yaml` (API reference shells in `docs/reference/*.md`)
 
-### I'm an Architect Designing Integration
-1. Read: [Overview](overview.md) + [Principles](principles.md)
-2. Read: [Protocol Capabilities Overview](domains/index.md) – Understand modular structure
-3. Review: All three capabilities (Orders, Merchant, Logistics)
-4. Study: [Transport Bindings](transport-bindings.md) – Choose implementation approach
-5. Consider: [STRUCTURE.md](../STRUCTURE.md) – Dependency and versioning strategy
+### Legacy (not published)
+- `docs/transport-bindings/**` – legacy REST notes; excluded from the site
 
-### I'm Coming from v1
-1. **Essential**: [IMPLEMENTATION_GUIDE.md](../IMPLEMENTATION_GUIDE.md)
-2. **Reference**: [Endpoint Mapping](domains/ENDPOINT_MAPPING.md)
-3. Then follow your role above
+---
+
+## 🎯 Quick start by role
+
+### Merchant / POS
+1. [Principles](docs/protocol/principles.md)
+2. [Orders](docs/protocol/orders.md) + [Orders API Spec](docs/reference/orders.md)
+3. [Merchant](docs/protocol/merchant.md) + [Merchant API Spec](docs/reference/merchant.md)
+
+### Ordering application
+1. [Getting started](docs/guide/getting-started.md)
+2. [Orders](docs/protocol/orders.md) + API Spec
+3. [Discovery](docs/protocol/discovery.md) + [Auth](docs/protocol/authentication.md)
+
+### Logistics
+1. [Logistics](docs/protocol/logistics.md) + API Spec
+2. [Orders](docs/protocol/orders.md) (DELIVERY profile)
+
+### Coming from v1
+1. [Migration V1→V2](docs/guide/migration-v1-v2.md)
+2. [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md)
+3. capability API Spec under `docs/reference/`
 
 The migration path is based on reading the v2 spec as the authoritative target and using migration documents only to understand differences from the legacy v1 model.
 
 ---
 
-## 🔑 Key Concepts at a Glance
+## Key concepts (short)
 
-### Core Protocol Constructs
+- **Capabilities:** Merchant, Orders, Logistics, Customer (+ Indoor, Reviews, Loyalty extensions)
+- **Actors:** Ordering Application, Software Service (POS), Logistics, CRM
+- **Contract:** API Spec REST/HTTP under `docs/reference/v2/`
+- **Status:** V2.0.0-rc — ecosystem validation (see changelog)
 
-**Orders Capability** (PRIMARY)
-- ⭐ Central coordination entity
-- Order → CONFIRMED → PREPARING → READY → DISPATCHED → DELIVERED
-- Three profiles: DELIVERY, PICKUP, ON_PREMISE
-- Events: Normative, Conditional, Optional (profile-scoped)
-- Cancellation as coordinated process
+## Reading path
 
-**Merchant Capability**
-- Merchant as the principal entity, with Services and Menus as sub-entities
-- Service types: DELIVERY, TAKEOUT, INDOOR
-- Menu modeling trade-offs and synchronization concerns
-- Open questions remain explicit while the committee converges
+1. [Landing](docs/index.md) → [Getting started](docs/guide/getting-started.md)
+2. [Principles](docs/protocol/principles.md) → capability Protocol pages
+3. API Spec for the capability you implement
 
-**Logistics Capability**
-- Delivery lifecycle parallel to order (for DELIVERY profile)
-- States: PENDING → ACCEPTED → PICKED_UP → IN_TRANSIT → DELIVERED
-- Tracking, availability, pricing, problem handling
-- Coordinates with Orders Capability
+Coming from v1: [Migration](docs/guide/migration-v1-v2.md) · [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md)
 
-**Extensions**
-- Indoor Extension augments Orders for on-premise execution
-- Loyalty Extension augments CRM for rewards coordination
+## Contributing
 
-### The Three Actors
+- Prefer issues on the [GitHub repository](https://github.com/Abrasel-Nacional/opendelivery-v2)
+- Follow [AGENTS.md](AGENTS.md) language rules and [STRUCTURE.md](STRUCTURE.md) capability checklist
+- Do not reintroduce transport-binding language
 
-**Originator**
-- Creates order, provides customer context
-- Receives order updates, manages customer communication
-
-**Merchant System**
-- Receives order, accepts/rejects, fulfills
-- Emits order status updates
-- Selects delivery partner (if delivery order)
-
-**Logistics Provider**
-- Receives delivery assignment
-- Executes delivery, provides tracking
-- Handles delivery exceptions
-
-### Transport Agnosticism
-
-- Protocol ≠ HTTP, ≠ JSON, ≠ OAuth2
-- Multiple bindings possible: REST, Events, gRPC, GraphQL, Custom
-- Implementation details, not protocol spec
-
----
-
-## 📚 Reading Patterns
-
-### Deep Dive (Implementer)
-Start with [Principles](principles.md) → [Terminology](terminology.md) → Your Capability → [Implementation Guide](../IMPLEMENTATION_GUIDE.md)
-
-### High Level (Architect)
-[Overview](overview.md) → [Principles](principles.md) → [Protocol Capabilities Overview](domains/index.md) → [Transport Bindings](transport-bindings.md)
-
-### Migration from v1
-[Endpoint Mapping](domains/ENDPOINT_MAPPING.md) → [Implementation Guide](../IMPLEMENTATION_GUIDE.md) → Your Service Spec
-
-### Specific Concept
-[Terminology](terminology.md) → Relevant Capability → [Endpoint Mapping](domains/ENDPOINT_MAPPING.md)
-
----
-
-## 🗂️ File Structure
-
-```
-opendelivery-v2/
-├── README.md                               # Project intro
-├── STRUCTURE.md                            # Visual overview (this repo)
-├── IMPLEMENTATION_GUIDE.md                 # v1→v2 transition
-├── docs/
-│   ├── index.md                           # Spec introduction
-│   ├── overview.md                        # High-level description
-│   ├── principles.md                      # Design principles ⭐ NORMATIVE
-│   ├── scope.md                           # In/out of scope
-│   ├── terminology.md                     # Key definitions
-│   ├── transport-bindings.md              # How to carry protocol
-   └── domains/
-│       ├── index.md                       # Protocol capabilities overview
-│       ├── orders/
-│       │   └── index.md                   # Orders Capability ⭐ PRIMARY
-│       ├── merchant/
-│       │   ├── index.md                   # Merchant Capability overview
-│       │   ├── entities/
-│       │   │   ├── index.md               # Entities overview
-│       │   │   ├── merchant-basic-info.md # Merchant identity and ownership context
-│       │   │   ├── services.md            # Service contexts and constraints
-│       │   │   ├── items.md               # Item entity baseline
-│       │   │   ├── relationship.md        # Relationship
-│       │   │   └── menus/
-│       │   │       └── index.md           # Menu + categories/offers/options/availability sections
-│       │   └── synchronization.md         # Synchronization alternatives
-│       ├── logistics/
-│       │   └── index.md                   # Logistics Capability
-│       ├── crm/                           # Planned
-│       ├── loyalty/                       # Planned
-│       └── ENDPOINT_MAPPING.md            # v1→v2 reference
-└── .github/
-  └── copilot-instructions.md            # Capability-specific guidance
-```
-
----
-
-## 🔄 Workflow: v1 API → v2 Protocol
-
-```
-Your v1 REST Endpoints:
-
-GET /v1/merchant
-  ↓ Maps to → Merchant Capability (Information Exchange)
-
-POST /v1/orders/{id}/confirm
-  ↓ Maps to → Orders Capability (State: CONFIRMED event)
-
-POST /v1/logistics/delivery
-  ↓ Maps to → Logistics Capability (Delivery creation)
-
-+
-
-Transport Binding (REST/HTTP):
-  └─ How above concepts are carried in HTTP request/response
-
-= v2 Compliance
-```
-
----
-
-## ✅ Specification Status
-
-- **Foundation** ✅ Introduced + Terminology
-- **Orders Capability** ✅ Complete with all profiles
-- **Merchant Capability** 🔄 In active refinement
-- **Logistics Capability** ✅ Complete
-- **REST/HTTP Binding** 🔄 In development
-- **Event Stream Binding** 📋 Proposed for v2.1
-- **CRM Service** 📋 Planned for v2.1
-- **Loyalty Service** 📋 Planned for v2.1
-- **gRPC Binding** 📋 Planned for v2.2
-- **GraphQL Binding** 📋 Planned for v2.2
-
----
-
-## 🚀Next Steps
-
-### For Specification Development
-- [ ] REST/HTTP Transport Binding (detailed)
-- [ ] CRM Capability specification
-- [ ] Loyalty Extension specification
-- [ ] Event Stream Transport Binding
-- [ ] Security/authentication details
-
-### For Implementation
-- [ ] Sandbox with v2 support
-- [ ] Reference implementations (minimal)
-- [ ] Testing tools and validators
-- [ ] Migration guides for v1 platforms
-
-### For Community
-- [ ] Community feedback on protocol capabilities
-- [ ] Use case validation
-- [ ] Real-world implementation feedback
-- [ ] Binding proposals
-
----
-
-## 📖 How to Use This Documentation
-
-**For Reading (Linear → Understanding)**
-1. Start at [README](../README.md)
-2. Then [Overview](overview.md) and [Principles](principles.md)
-3. Then [Terminology](terminology.md)
-4. Then your relevant capability
-
-**For Reference (Non-linear → Looking up)**
-- Need a term? → [Terminology](terminology.md)
-- Want to understand endpoint? → [Endpoint Mapping](domains/ENDPOINT_MAPPING.md)
-- Need transport details? → [Transport Bindings](transport-bindings.md)
-- Coming from v1? → [Implementation Guide](../IMPLEMENTATION_GUIDE.md)
-
-**For Governance**
-- Is it normative? → [Principles](principles.md)
-- Scope details? → [Scope](scope.md)
-- Capability versioning? → [Protocol Capabilities Overview](domains/index.md)
-
----
-
-## 🤝 Contributing
-
-This specification is under active development. Contributions welcome!
-
-- Questions? Open an issue
-- Feedback? Discussions section
-- Proposals? Create a detailed proposal
-
-Key guidelines:
-- All changes must align with [Principles](principles.md)
-- Backward compatibility is a goal
-- Transport neutrality required
-- Clear normative vs. informative
-
----
-
-## 📜 License
-
-(See LICENSE file in repository)
-
----
-
-**Version:** 2.0 (In Development)  
-**Last Updated:** March 2026  
-**Status:** Active Development
-
-🔗 **Links**
-- GitHub: https://github.com/Abrasel-Nacional/opendelivery-v2
-- Discussions: (repository discussions)
-- Issues: (repository issues)
+**Version:** 2.0.0-rc · **Status:** Release Candidate
 

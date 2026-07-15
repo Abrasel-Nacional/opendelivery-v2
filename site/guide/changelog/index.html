@@ -10,7 +10,7 @@
       
       
       
-        <link rel="canonical" href="https://abrasel-nacional.github.io/opendelivery-v2/guide/changelog/">
+        <link rel="canonical" href="https://docs.opendelivery.com.br/guide/changelog/">
       
       
         <link rel="prev" href="../../protocol/roles-and-responsibilities/">
@@ -27,7 +27,7 @@
       
       
       <link rel="icon" href="../../assets/images/opendelivery-logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
     
     
       
@@ -606,6 +606,13 @@
   
     
     
+      
+  
+  
+  
+  
+    
+    
       <li class="md-tabs__item">
         <a href="../../reference/" class="md-tabs__link">
           
@@ -615,6 +622,9 @@
 
         </a>
       </li>
+    
+  
+
     
   
 
@@ -873,34 +883,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../PROTOCOL_VS_BINDING/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Protocolo vs Binding
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../protocol/roles-and-responsibilities/" class="md-nav__link">
         
   
@@ -947,10 +929,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_8" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_7" checked>
         
           
-          <label class="md-nav__link" for="__nav_1_8" id="__nav_1_8_label" tabindex="">
+          <label class="md-nav__link" for="__nav_1_7" id="__nav_1_7_label" tabindex="">
             
   
   
@@ -968,8 +950,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_8_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_1_8">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_1_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1046,10 +1028,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#o-que-mudou-na-v2" class="md-nav__link">
+  <a href="#como-ler-este-changelog" class="md-nav__link">
     <span class="md-ellipsis">
       
-        O que mudou na V2
+        Como ler este changelog
       
     </span>
   </a>
@@ -1060,19 +1042,19 @@
   <a href="#v200-rc-julho-2026" class="md-nav__link">
     <span class="md-ellipsis">
       
-        V2.0.0-rc — Julho 2026
+        V2.0.0-rc - Julho 2026
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="V2.0.0-rc — Julho 2026">
+    <nav class="md-nav" aria-label="V2.0.0-rc - Julho 2026">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#breaking-changes" class="md-nav__link">
+  <a href="#status-validacao-com-o-ecossistema" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Breaking Changes
+        Status: validacao com o ecossistema
       
     </span>
   </a>
@@ -1080,10 +1062,22 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#novos-modulos" class="md-nav__link">
+  <a href="#mudancas-por-capability" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Novos módulos
+        Mudancas por capability
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Mudancas por capability">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#discovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discovery
       
     </span>
   </a>
@@ -1091,10 +1085,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#melhorias-e-novidades" class="md-nav__link">
+  <a href="#authentication" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Melhorias e novidades
+        Authentication
       
     </span>
   </a>
@@ -1102,10 +1096,92 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#indisponivel-no-rc-previsto-para-v21" class="md-nav__link">
+  <a href="#merchant" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Indisponível no RC (previsto para V2.1)
+        Merchant
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#menu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Menu
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#orders" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Orders
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logistics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logistics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#customer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Customer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loyalty" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Loyalty
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#indoor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Indoor
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mudancas-transversais" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mudancas transversais
       
     </span>
   </a>
@@ -1327,62 +1403,6 @@
     
   
     Princípios
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../protocol/guidelines/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Regras Gerais
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../protocol/error-handling/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Tratamento de Erros
   
 
     
@@ -1658,7 +1678,7 @@
   <span class="md-ellipsis">
     
   
-    Merchant
+    Orders / Pedidos
   
 
     
@@ -1671,6 +1691,122 @@
         
         <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_1_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2_3_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Orders / Pedidos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../protocol/orders/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visão geral
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../protocol/indoor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Indoor / Salão
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3_2" id="__nav_2_3_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Merchant
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3_2">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1778,122 +1914,6 @@
   
   
   
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3_2" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_3_2" id="__nav_2_3_2_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Orders / Pedidos
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_3_2">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Orders / Pedidos
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../protocol/orders/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Visão geral
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../protocol/indoor/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Indoor / Salão
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
     <li class="md-nav__item">
       <a href="../../protocol/logistics/" class="md-nav__link">
         
@@ -1946,7 +1966,7 @@
   <span class="md-ellipsis">
     
   
-    Customer / CRM
+    Customer
   
 
     
@@ -1962,7 +1982,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Customer / CRM
+    Customer
   
 
           </label>
@@ -2003,7 +2023,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../extensions/reviews/" class="md-nav__link">
+      <a href="../../protocol/reviews/" class="md-nav__link">
         
   
   
@@ -2031,14 +2051,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../extensions/loyalty/" class="md-nav__link">
+      <a href="../../protocol/loyalty/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Fidelidade
+    Loyalty
   
 
     
@@ -2133,6 +2153,58 @@
   
   
   
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Convenções
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Convenções
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
     <li class="md-nav__item">
       <a href="../../reference/" class="md-nav__link">
         
@@ -2150,6 +2222,70 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/conventions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Regras gerais
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/error-handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tratamento de Erros
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -2329,34 +2465,6 @@
   
   
   
-    <li class="md-nav__item">
-      <a href="../../reference/merchant/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Merchant
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
     
     
     
@@ -2371,10 +2479,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3_1" >
         
           
-          <label class="md-nav__link" for="__nav_3_3_2" id="__nav_3_3_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_3_1" id="__nav_3_3_1_label" tabindex="0">
             
   
   
@@ -2392,8 +2500,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_3_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_3_2">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_3_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3_1">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2474,6 +2582,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../reference/merchant/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Merchant
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../reference/logistics/" class="md-nav__link">
         
   
@@ -2509,7 +2645,7 @@
   <span class="md-ellipsis">
     
   
-    Customer & Fidelidade
+    Customer
   
 
     
@@ -2565,10 +2701,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#o-que-mudou-na-v2" class="md-nav__link">
+  <a href="#como-ler-este-changelog" class="md-nav__link">
     <span class="md-ellipsis">
       
-        O que mudou na V2
+        Como ler este changelog
       
     </span>
   </a>
@@ -2579,19 +2715,19 @@
   <a href="#v200-rc-julho-2026" class="md-nav__link">
     <span class="md-ellipsis">
       
-        V2.0.0-rc — Julho 2026
+        V2.0.0-rc - Julho 2026
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="V2.0.0-rc — Julho 2026">
+    <nav class="md-nav" aria-label="V2.0.0-rc - Julho 2026">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#breaking-changes" class="md-nav__link">
+  <a href="#status-validacao-com-o-ecossistema" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Breaking Changes
+        Status: validacao com o ecossistema
       
     </span>
   </a>
@@ -2599,10 +2735,22 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#novos-modulos" class="md-nav__link">
+  <a href="#mudancas-por-capability" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Novos módulos
+        Mudancas por capability
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Mudancas por capability">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#discovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discovery
       
     </span>
   </a>
@@ -2610,10 +2758,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#melhorias-e-novidades" class="md-nav__link">
+  <a href="#authentication" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Melhorias e novidades
+        Authentication
       
     </span>
   </a>
@@ -2621,10 +2769,92 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#indisponivel-no-rc-previsto-para-v21" class="md-nav__link">
+  <a href="#merchant" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Indisponível no RC (previsto para V2.1)
+        Merchant
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#menu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Menu
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#orders" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Orders
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logistics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logistics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#customer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Customer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loyalty" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Loyalty
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#indoor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Indoor
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mudancas-transversais" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mudancas transversais
       
     </span>
   </a>
@@ -2664,177 +2894,117 @@
 
 
   
-    <a href="https://github.com/Abrasel-Nacional/opendelivery-v2/edit/main/docs/guide/changelog.md" title="Editar esta página" class="md-content__button md-icon" rel="edit">
-      
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
-    </a>
-  
   
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
-<p>Histórico de versões do Open Delivery Protocol.</p>
+<p>Historico de versoes do Open Delivery Protocol.</p>
 <div class="od-version-banner">
-  <span class="od-version-banner__ver">V2.0.0-rc</span>
-  <span class="od-version-banner__meta">Release Candidate · Julho 2026 · V1 permanece ativa na transição</span>
+ <span class="od-version-banner__ver">V2.0.0-rc</span>
+ <span class="od-version-banner__meta">Release Candidate · Julho 2026 · V1 permanece ativa na transicao</span>
 </div>
 
-<h2 id="o-que-mudou-na-v2">O que mudou na V2<a class="headerlink" href="#o-que-mudou-na-v2" title="Permanent link">&para;</a></h2>
-<div class="od-whats-new">
-  <p class="od-whats-new__intro">
-    Resumo visual das mudanças principais. Detalhes de migração no
-    <a href="migration-v1-v2/">guia V1→V2</a>.
-  </p>
-
-  <div class="od-whats-new__grid">
-
-    <a class="od-wn-card" href="../protocol/authentication/">
-      <span class="od-wn-card__tag od-wn-card__tag--break">Breaking</span>
-      <span class="od-wn-card__title">Auth por aplicação</span>
-      <p>Um <code>client_id</code> por software, não por loja. Lista de merchants via <code>GET /merchants</code>.</p>
-    </a>
-
-    <a class="od-wn-card" href="../protocol/merchant-store/">
-      <span class="od-wn-card__tag od-wn-card__tag--break">Breaking</span>
-      <span class="od-wn-card__title">Merchant ID do originador</span>
-      <p>ID gerado pela Ordering Application; PDV correlaciona com <code>externalCode</code>.</p>
-    </a>
-
-    <a class="od-wn-card" href="../protocol/menu/">
-      <span class="od-wn-card__tag od-wn-card__tag--break">Breaking</span>
-      <span class="od-wn-card__title">Cardápio com CRUD</span>
-      <p>Fim do webhook monolítico <code>merchantUpdate</code>. Snapshot + endpoints por entidade.</p>
-    </a>
-
-    <a class="od-wn-card" href="../protocol/orders/">
-      <span class="od-wn-card__tag od-wn-card__tag--break">Breaking</span>
-      <span class="od-wn-card__title">Cancelamento simplificado</span>
-      <p>Sem handshake request/accept/deny. Cancelamento direto com motivo.</p>
-    </a>
-
-    <a class="od-wn-card" href="../protocol/customer/">
-      <span class="od-wn-card__tag od-wn-card__tag--new">Novo</span>
-      <span class="od-wn-card__title">Customer / CRM</span>
-      <p>Cliente, leads e eventos de relacionamento — novo domínio na V2.</p>
-    </a>
-
-    <a class="od-wn-card" href="../extensions/loyalty/">
-      <span class="od-wn-card__tag od-wn-card__tag--new">Novo</span>
-      <span class="od-wn-card__title">Fidelidade</span>
-      <p>Pontos, cashback, cupons e catálogo de recompensas.</p>
-    </a>
-
-    <a class="od-wn-card" href="../protocol/indoor/">
-      <span class="od-wn-card__tag od-wn-card__tag--new">Novo</span>
-      <span class="od-wn-card__title">Indoor / Salão</span>
-      <p>Conta de mesa/comanda/balcão, pagamentos e fiscal assíncrono.</p>
-    </a>
-
-    <a class="od-wn-card" href="../protocol/discovery/">
-      <span class="od-wn-card__tag od-wn-card__tag--improve">Melhoria</span>
-      <span class="od-wn-card__title">Discovery obrigatório</span>
-      <p>Well-known declara capabilities, versões e modos de integração.</p>
-    </a>
-
-    <a class="od-wn-card" href="../protocol/orders/#ciclo-de-vida-status">
-      <span class="od-wn-card__tag od-wn-card__tag--improve">Melhoria</span>
-      <span class="od-wn-card__title">Status ≠ eventos</span>
-      <p>Status consultável no GET; eventos são notificações (podem ser informativos).</p>
-    </a>
-
-  </div>
-</div>
-
-<hr />
-<h2 id="v200-rc-julho-2026">V2.0.0-rc — Julho 2026<a class="headerlink" href="#v200-rc-julho-2026" title="Permanent link">&para;</a></h2>
-<p>Primeira versão Release Candidate do Open Delivery Protocol V2. Resultado de seis meses de trabalho
-colaborativo em comitês técnicos com mais de dez empresas do ecossistema brasileiro de food tech.</p>
-<h3 id="breaking-changes">Breaking Changes<a class="headerlink" href="#breaking-changes" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Área</th>
-<th>Mudança</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Autenticação</strong></td>
-<td>Autenticação por aplicação — um único <code>client_id</code> para todas as lojas do software, em vez de um por loja</td>
-</tr>
-<tr>
-<td><strong>Merchant ID</strong></td>
-<td>Gerado pelo originador (não mais pelo PDV). O PDV usa <code>externalCode</code> para correlação interna</td>
-</tr>
-<tr>
-<td><strong>Cardápio</strong></td>
-<td>CRUD granular por entidade substitui o webhook monolítico <code>merchantUpdate</code> da V1</td>
-</tr>
-<tr>
-<td><strong>Cancelamento</strong></td>
-<td>Handshake obrigatório (request/accept/deny) eliminado. Cancelamento direto e simplificado</td>
-</tr>
-<tr>
-<td><strong>Evento <code>picked_up</code></strong></td>
-<td>Removido — era ambíguo entre takeout e coleta logística</td>
-</tr>
-<tr>
-<td><strong>Service ID</strong></td>
-<td>Serviços identificados por tipo (<code>DELIVERY</code>, <code>TAKEOUT</code>, <code>INDOOR</code>), sem ID separado</td>
-</tr>
-<tr>
-<td><strong><code>merchantType</code></strong></td>
-<td>Campo removido</td>
-</tr>
-<tr>
-<td><strong><code>subtotal</code> em opcionais</strong></td>
-<td>Campo removido. Use <code>option_price</code> (obrigatório) e <code>unity_price</code></td>
-</tr>
-</tbody>
-</table>
-<h3 id="novos-modulos">Novos módulos<a class="headerlink" href="#novos-modulos" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Módulo</th>
-<th>Descrição</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Customer / CRM</strong></td>
-<td>Entidade de cliente, leads, avaliações — novo 4º ator no ecossistema</td>
-</tr>
-<tr>
-<td><strong>Fidelidade</strong></td>
-<td>Programas de pontos, cashback, cupons e catálogo de recompensas</td>
-</tr>
-<tr>
-<td><strong>Indoor / Salão</strong></td>
-<td>Operações de mesa, comanda e balcão com entidade Conta central</td>
-</tr>
-</tbody>
-</table>
-<h3 id="melhorias-e-novidades">Melhorias e novidades<a class="headerlink" href="#melhorias-e-novidades" title="Permanent link">&para;</a></h3>
+<h2 id="como-ler-este-changelog">Como ler este changelog<a class="headerlink" href="#como-ler-este-changelog" title="Permanent link">&para;</a></h2>
+<p>Este changelog esta organizado por capability/modulo para facilitar implementacao e migracao.</p>
+<p>Legenda usada:</p>
 <ul>
-<li><strong>Escopos OAuth por domínio:</strong> <code>od.orders</code> · <code>od.menu</code> · <code>od.logistics</code> · <code>od.crm</code> · <code>od.all</code></li>
-<li><strong>Discovery Well-Known obrigatório:</strong> endpoint <code>/.well-known/opendelivery</code> declarando todas as capabilities antes de qualquer integração</li>
-<li><strong>Separação status/evento:</strong> campo <code>status</code> no GET do pedido; eventos são informativos, não definem estado</li>
-<li><strong>Authorization Code Flow:</strong> suportado opcionalmente para casos de uso avançados</li>
-<li><strong><code>quantity_available</code> no ItemOffer:</strong> disponibilidade operacional (não controle de estoque)</li>
-<li><strong>Opcionais recursivos:</strong> múltiplos níveis sem limite técnico via OptionGroups aninhados</li>
-<li><strong>Múltiplos services do mesmo tipo:</strong> suportado (era limitação na V1)</li>
+<li><strong>Breaking</strong>: exige ajuste de contrato ou comportamento.</li>
+<li><strong>Novo</strong>: capability ou bloco funcional novo na V2.</li>
+<li><strong>Melhoria</strong>: esclarecimento, reforco normativo ou evolucao sem quebra direta de contrato.</li>
 </ul>
-<h3 id="indisponivel-no-rc-previsto-para-v21">Indisponível no RC (previsto para V2.1)<a class="headerlink" href="#indisponivel-no-rc-previsto-para-v21" title="Permanent link">&para;</a></h3>
+<hr />
+<h2 id="v200-rc-julho-2026">V2.0.0-rc - Julho 2026<a class="headerlink" href="#v200-rc-julho-2026" title="Permanent link">&para;</a></h2>
+<p>Primeira versao <strong>Release Candidate</strong> da V2. Esta release abre fase de validacao com o ecossistema; a V1 continua ativa durante a transicao.</p>
+<h3 id="status-validacao-com-o-ecossistema">Status: validacao com o ecossistema<a class="headerlink" href="#status-validacao-com-o-ecossistema" title="Permanent link">&para;</a></h3>
+<p>A publicacao do RC inicia um periodo de <strong>validacao</strong>, nao a release estavel. Nesta fase:</p>
+<ol>
+<li><strong>Revisao</strong> - empresas e implementadores revisam a documentacao (guia, protocolo e especificacoes da API).</li>
+<li><strong>Piloto</strong> - algumas empresas implementam trechos da especificacao em ambientes controlados e validam fluxos reais.</li>
+<li><strong>Feedback</strong> - ajustes e esclarecimentos podem ser incorporados com base nos resultados da revisao e dos pilotos.</li>
+<li><strong>Release</strong> - somente apos essa validacao a V2 sera promovida a versao estavel.</li>
+</ol>
+<p>Ate la, a <strong>V1 permanece ativa</strong> e continua sendo referencia para integracoes em producao.</p>
+<h3 id="mudancas-por-capability">Mudancas por capability<a class="headerlink" href="#mudancas-por-capability" title="Permanent link">&para;</a></h3>
+<h4 id="discovery">Discovery<a class="headerlink" href="#discovery" title="Permanent link">&para;</a></h4>
 <ul>
-<li>Reservas e fila de espera (Indoor)</li>
-<li>Detalhamento completo de LGPD / opt-in / opt-out (reunião pendente)</li>
-<li>Authorization Code Flow — fluxo completo em detalhamento</li>
+<li><strong>Melhoria</strong>: <code>/.well-known/opendelivery</code> passa a ser obrigatorio para declarar capabilities, versoes e modos de integracao antes da ativacao da integracao.</li>
+</ul>
+<p>Referencias: <a href="../../protocol/discovery/">Protocolo Discovery</a> · <a href="../../reference/discovery/">API Discovery</a></p>
+<h4 id="authentication">Authentication<a class="headerlink" href="#authentication" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Breaking</strong>: autenticacao por aplicacao, com um <code>client_id</code> por software (nao por loja).</li>
+<li><strong>Melhoria</strong>: padronizacao de escopos por dominio (<code>od.orders</code>, <code>od.menu</code>, <code>od.logistics</code>, <code>od.crm</code>, <code>od.all</code>).</li>
+<li><strong>Melhoria</strong>: <code>Authorization Code Flow</code> suportado opcionalmente para casos avancados.</li>
+</ul>
+<p>Referencias: <a href="../../protocol/authentication/">Protocolo Authentication</a> · <a href="../../reference/authentication/">API Authentication</a></p>
+<h4 id="merchant">Merchant<a class="headerlink" href="#merchant" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Breaking</strong>: <code>merchantId</code> passa a ser gerado pelo originador; PDV usa <code>externalCode</code> para correlacao interna.</li>
+<li><strong>Breaking</strong>: <code>merchantType</code> removido.</li>
+<li><strong>Breaking</strong>: servicos passam a ser identificados por tipo (<code>DELIVERY</code>, <code>TAKEOUT</code>, <code>INDOOR</code>), sem id separado.</li>
+<li><strong>Melhoria</strong>: pausa por servico explicita no modelo da capability.</li>
+</ul>
+<p>Referencias: <a href="../../protocol/merchant/">Protocolo Merchant</a> · <a href="../../reference/merchant/">API Merchant</a></p>
+<h4 id="menu">Menu<a class="headerlink" href="#menu" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Breaking</strong>: fim do webhook monolitico <code>merchantUpdate</code> da V1.</li>
+<li><strong>Breaking</strong>: adocao de CRUD granular por entidade de catalogo.</li>
+<li><strong>Breaking</strong>: <code>subtotal</code> em opcionais removido; usar <code>option_price</code> (obrigatorio) e <code>unity_price</code>.</li>
+<li><strong>Melhoria</strong>: opcionais recursivos com OptionGroups aninhados.</li>
+<li><strong>Melhoria</strong>: <code>quantity_available</code> em ItemOffer para disponibilidade operacional.</li>
+</ul>
+<p>Referencias: <a href="../../protocol/menu/">Protocolo Menu</a></p>
+<h4 id="orders">Orders<a class="headerlink" href="#orders" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Breaking</strong>: handshake de cancelamento do originador (<code>ORDER_CANCELLATION_REQUEST</code> + accept/deny) removido; cancelamento mandatorio via <code>CANCELLED</code>.</li>
+<li><strong>Breaking</strong>: evento <code>PICKED_UP</code> removido.</li>
+<li><strong>Breaking</strong>: <code>Order.type</code> removido da raiz; perfil passa para <code>Order.fulfillment.orderType</code>.</li>
+<li><strong>Breaking</strong>: <code>Order.delivery</code>, <code>Order.takeout</code> e <code>Order.indoor</code> movidos para <code>Order.fulfillment.*</code>.</li>
+<li><strong>Breaking</strong>: campos de preco de item/opcao foram agrupados em <code>pricing</code> dentro de <code>Order.items[*]</code> e <code>Order.items[*].options[*]</code>, mantendo formato da V1 (<code>Price { value, currency }</code>).</li>
+<li><strong>Breaking</strong>: <code>subtotalPrice</code> foi removido de item e opcao em Orders V2.</li>
+<li><strong>Breaking</strong>: <code>Order.status</code> vira campo autoritativo em <code>GET /orders/{id}</code>.</li>
+<li><strong>Melhoria</strong>: separacao explicita entre status e eventos.</li>
+<li><strong>Melhoria</strong>: repeticao de operacao ja aplicada segue padrao async com <code>202 Accepted</code> (sem transicao adicional).</li>
+</ul>
+<p>Referencias: <a href="../../protocol/orders/">Protocolo Orders</a> · <a href="../../reference/orders/">API Orders</a> · <a href="../../reference/conventions/#duplicidade-de-operacoes-de-ciclo-de-vida">Convencoes</a></p>
+<h4 id="logistics">Logistics<a class="headerlink" href="#logistics" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Melhoria</strong>: consolidacao de semantica async-first (<code>202 Accepted</code>) para operacoes de ciclo de vida na integracao de entrega.</li>
+<li><strong>Melhoria</strong>: alinhamento com discovery para modos de acompanhamento (push/pull) no contexto de rastreio.</li>
+</ul>
+<p>Referencias: <a href="../../protocol/logistics/">Protocolo Logistics</a> · <a href="../../reference/logistics/">API Logistics</a></p>
+<h4 id="customer">Customer<a class="headerlink" href="#customer" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Novo</strong>: capability de dados de cliente, leads e reviews na V2.</li>
+</ul>
+<p>Referencias: <a href="../../protocol/customer/">Protocolo Customer</a> · <a href="../../reference/customer/">API Customer</a></p>
+<h4 id="loyalty">Loyalty<a class="headerlink" href="#loyalty" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Novo</strong>: capability/modulo de loyalty (pontos, cashback, cupons e recompensas), dentro do dominio de CRM/Customer.</li>
+</ul>
+<p>Referencias: <a href="../../protocol/loyalty/">Protocolo Loyalty</a></p>
+<h4 id="indoor">Indoor<a class="headerlink" href="#indoor" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Novo</strong>: capability de operacoes de salao (mesa, comanda e balcao), com conta central e comportamento assincrono.</li>
+</ul>
+<p>Referencias: <a href="../../protocol/indoor/">Protocolo Indoor</a> · <a href="../../reference/indoor/">API Indoor</a></p>
+<h3 id="mudancas-transversais">Mudancas transversais<a class="headerlink" href="#mudancas-transversais" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Melhoria</strong>: modelo V2 reforca integracao assincrona como padrao (<code>202 Accepted</code> para mutacoes).</li>
+<li><strong>Melhoria</strong>: separacao mais nitida entre narrativa de dominio (Protocolo) e contrato implementavel (API Spec).</li>
 </ul>
 <hr />
 <h2 id="v170">V1.7.0<a class="headerlink" href="#v170" title="Permanent link">&para;</a></h2>
-<p>A V1 permanece ativa durante o período de transição.</p>
-<p>Para entender as diferenças e migrar, consulte o <a href="../migration-v1-v2/">Guia de Migração V1→V2</a>.</p>
+<p>A V1 permanece ativa durante a transicao.</p>
+<p>Para diferencas e migracao, consulte: <a href="../migration-v1-v2/">Guia de Migracao V1-&gt;V2</a>.</p>
+<div class="od-related">
+  <p class="od-related__label">Relacionado</p>
+  <ul class="od-related__list">
+    <li><a href="../migration-v1-v2/">Migracao V1->V2</a> - breaking changes e checklist</li>
+    <li><a href="../../documentation/roadmap/">Roadmap</a> - trabalho em andamento</li>
+    <li><a href="../getting-started/">Primeiros Passos</a> · <a href="../../reference/index/">Referencia da API</a></li>
+  </ul>
+</div>
 
 
 
@@ -2866,46 +3036,6 @@ colaborativo em comitês técnicos com mais de dez empresas do ecossistema brasi
       </main>
       
         <footer class="md-footer">
-  
-    
-      
-      <nav class="md-footer__inner md-grid" aria-label="Rodapé" >
-        
-          
-          <a href="../../protocol/roles-and-responsibilities/" class="md-footer__link md-footer__link--prev" aria-label="Anterior: Papéis e Responsabilidades">
-            <div class="md-footer__button md-icon">
-              
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
-            </div>
-            <div class="md-footer__title">
-              <span class="md-footer__direction">
-                Anterior
-              </span>
-              <div class="md-ellipsis">
-                Papéis e Responsabilidades
-              </div>
-            </div>
-          </a>
-        
-        
-          
-          <a href="../migration-v1-v2/" class="md-footer__link md-footer__link--next" aria-label="Próximo: Migração V1→V2">
-            <div class="md-footer__title">
-              <span class="md-footer__direction">
-                Próximo
-              </span>
-              <div class="md-ellipsis">
-                Migração V1→V2
-              </div>
-            </div>
-            <div class="md-footer__button md-icon">
-              
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
-            </div>
-          </a>
-        
-      </nav>
-    
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
@@ -2949,7 +3079,7 @@ colaborativo em comitês técnicos com mais de dez empresas do ecossistema brasi
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.tracking", "navigation.footer", "content.code.copy", "content.tooltips", "content.tabs.link", "content.action.edit", "toc.follow", "search.suggest", "search.highlight", "search.share"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copiado para \u00e1rea de transfer\u00eancia", "clipboard.copy": "Copiar para \u00e1rea de transfer\u00eancia", "search.result.more.one": "Mais 1 nesta p\u00e1gina", "search.result.more.other": "Mais # nesta p\u00e1gina", "search.result.none": "Nenhum resultado encontrado", "search.result.one": "1 resultado encontrado", "search.result.other": "# resultados encontrados", "search.result.placeholder": "Digite para iniciar a busca", "search.result.term.missing": "Ausente", "select.version": "Selecione a vers\u00e3o"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.tracking", "content.code.copy", "content.tooltips", "content.tabs.link", "toc.follow", "search.suggest", "search.highlight", "search.share"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copiado para \u00e1rea de transfer\u00eancia", "clipboard.copy": "Copiar para \u00e1rea de transfer\u00eancia", "search.result.more.one": "Mais 1 nesta p\u00e1gina", "search.result.more.other": "Mais # nesta p\u00e1gina", "search.result.none": "Nenhum resultado encontrado", "search.result.one": "1 resultado encontrado", "search.result.other": "# resultados encontrados", "search.result.placeholder": "Digite para iniciar a busca", "search.result.term.missing": "Ausente", "select.version": "Selecione a vers\u00e3o"}, "version": null}</script>
     
     
 
@@ -3002,45 +3132,41 @@ colaborativo em comitês técnicos com mais de dez empresas do ecossistema brasi
       title: "Guia",
       children: [{
       title: "In\u00edcio",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/",
+      url: "https://docs.opendelivery.com.br/",
       active: false
     },{
       title: "Primeiros Passos",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/guide/getting-started/",
+      url: "https://docs.opendelivery.com.br/guide/getting-started/",
       active: false
     },{
       title: "Trilhas por papel",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/guide/by-role/",
+      url: "https://docs.opendelivery.com.br/guide/by-role/",
       active: false
     },{
       title: "Conceitos",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/documentation/core-concepts/",
+      url: "https://docs.opendelivery.com.br/documentation/core-concepts/",
       active: false
     },{
       title: "Vis\u00e3o Geral do Protocolo",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/overview/",
-      active: false
-    },{
-      title: "Protocolo vs Binding",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/PROTOCOL_VS_BINDING/",
+      url: "https://docs.opendelivery.com.br/overview/",
       active: false
     },{
       title: "Pap\u00e9is e Responsabilidades",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/roles-and-responsibilities/",
+      url: "https://docs.opendelivery.com.br/protocol/roles-and-responsibilities/",
       active: false
     },{
       title: "Migra\u00e7\u00e3o e Hist\u00f3rico",
       children: [{
       title: "Changelog",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/guide/changelog/",
+      url: "https://docs.opendelivery.com.br/guide/changelog/",
       active: true
     },{
       title: "Migra\u00e7\u00e3o V1\u2192V2",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/guide/migration-v1-v2/",
+      url: "https://docs.opendelivery.com.br/guide/migration-v1-v2/",
       active: false
     },{
       title: "Roadmap",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/documentation/roadmap/",
+      url: "https://docs.opendelivery.com.br/documentation/roadmap/",
       active: false
     }]
     }]
@@ -3052,81 +3178,73 @@ colaborativo em comitês técnicos com mais de dez empresas do ecossistema brasi
       title: "Fundamentos",
       children: [{
       title: "Princ\u00edpios",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/principles/",
-      active: false
-    },{
-      title: "Regras Gerais",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/guidelines/",
-      active: false
-    },{
-      title: "Tratamento de Erros",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/error-handling/",
+      url: "https://docs.opendelivery.com.br/protocol/principles/",
       active: false
     },{
       title: "Fluxos",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/flows/",
+      url: "https://docs.opendelivery.com.br/protocol/flows/",
       active: false
     },{
       title: "Evolu\u00e7\u00e3o",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/evolution/",
+      url: "https://docs.opendelivery.com.br/protocol/evolution/",
       active: false
     }]
     },{
       title: "Infraestrutura",
       children: [{
       title: "Discovery",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/discovery/",
+      url: "https://docs.opendelivery.com.br/protocol/discovery/",
       active: false
     },{
       title: "Autentica\u00e7\u00e3o",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/authentication/",
+      url: "https://docs.opendelivery.com.br/protocol/authentication/",
       active: false
     }]
     },{
       title: "Capabilities",
       children: [{
-      title: "Merchant",
-      children: [{
-      title: "Vis\u00e3o geral",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/merchant/",
-      active: false
-    },{
-      title: "Dados da Loja",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/merchant-store/",
-      active: false
-    },{
-      title: "Menus",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/menu/",
-      active: false
-    }]
-    },{
       title: "Orders / Pedidos",
       children: [{
       title: "Vis\u00e3o geral",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/orders/",
+      url: "https://docs.opendelivery.com.br/protocol/orders/",
       active: false
     },{
       title: "Indoor / Sal\u00e3o",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/indoor/",
+      url: "https://docs.opendelivery.com.br/protocol/indoor/",
+      active: false
+    }]
+    },{
+      title: "Merchant",
+      children: [{
+      title: "Vis\u00e3o geral",
+      url: "https://docs.opendelivery.com.br/protocol/merchant/",
+      active: false
+    },{
+      title: "Dados da Loja",
+      url: "https://docs.opendelivery.com.br/protocol/merchant-store/",
+      active: false
+    },{
+      title: "Menus",
+      url: "https://docs.opendelivery.com.br/protocol/menu/",
       active: false
     }]
     },{
       title: "Log\u00edstica",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/logistics/",
+      url: "https://docs.opendelivery.com.br/protocol/logistics/",
       active: false
     },{
-      title: "Customer / CRM",
+      title: "Customer",
       children: [{
       title: "Vis\u00e3o geral",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/protocol/customer/",
+      url: "https://docs.opendelivery.com.br/protocol/customer/",
       active: false
     },{
       title: "Reviews",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/extensions/reviews/",
+      url: "https://docs.opendelivery.com.br/protocol/reviews/",
       active: false
     },{
-      title: "Fidelidade",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/extensions/loyalty/",
+      title: "Loyalty",
+      url: "https://docs.opendelivery.com.br/protocol/loyalty/",
       active: false
     }]
     }]
@@ -3136,44 +3254,55 @@ colaborativo em comitês técnicos com mais de dez empresas do ecossistema brasi
     {
       title: "Refer\u00eancia da API",
       children: [{
+      title: "Conven\u00e7\u00f5es",
+      children: [{
       title: "Vis\u00e3o Geral",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/",
+      url: "https://docs.opendelivery.com.br/reference/",
       active: false
+    },{
+      title: "Regras gerais",
+      url: "https://docs.opendelivery.com.br/reference/conventions/",
+      active: false
+    },{
+      title: "Tratamento de Erros",
+      url: "https://docs.opendelivery.com.br/reference/error-handling/",
+      active: false
+    }]
     },{
       title: "Infraestrutura",
       children: [{
       title: "Discovery",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/discovery/",
+      url: "https://docs.opendelivery.com.br/reference/discovery/",
       active: false
     },{
       title: "Autentica\u00e7\u00e3o",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/authentication/",
+      url: "https://docs.opendelivery.com.br/reference/authentication/",
       active: false
     }]
     },{
       title: "Capabilities",
       children: [{
-      title: "Merchant",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/merchant/",
-      active: false
-    },{
       title: "Pedidos",
       children: [{
       title: "Vis\u00e3o geral",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/orders/",
+      url: "https://docs.opendelivery.com.br/reference/orders/",
       active: false
     },{
       title: "Indoor",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/indoor/",
+      url: "https://docs.opendelivery.com.br/reference/indoor/",
       active: false
     }]
     },{
-      title: "Log\u00edstica",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/logistics/",
+      title: "Merchant",
+      url: "https://docs.opendelivery.com.br/reference/merchant/",
       active: false
     },{
-      title: "Customer \u0026 Fidelidade",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/reference/customer/",
+      title: "Log\u00edstica",
+      url: "https://docs.opendelivery.com.br/reference/logistics/",
+      active: false
+    },{
+      title: "Customer",
+      url: "https://docs.opendelivery.com.br/reference/customer/",
       active: false
     }]
     }]
@@ -3285,7 +3414,8 @@ colaborativo em comitês técnicos com mais de dez empresas do ecossistema brasi
     var cols = children.filter(function (c) {
       return (c.children && c.children.length) || c.url;
     });
-    mega.style.setProperty('--od-mega-cols', String(Math.min(cols.length, 4)));
+    /* Máximo 3 colunas (ex.: Convenções · Infraestrutura · Capabilities). */
+    mega.style.setProperty('--od-mega-cols', String(Math.min(cols.length, 3)));
 
     cols.forEach(function (col) {
       var li = document.createElement('li');

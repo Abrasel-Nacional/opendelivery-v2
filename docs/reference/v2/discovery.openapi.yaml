@@ -1,10 +1,20 @@
 openapi: 3.0.3
 info:
   title: Open Delivery Protocol V2 — Discovery (Well-Known Manifest)
-  version: 2.0.0-draft
+  version: 2.0.0-rc
   x-logo:
     altText: Open Delivery Protocol
   description: |
+    ## Release Candidate status
+
+    This contract is part of Open Delivery Protocol **V2.0.0-rc** (Release Candidate).
+    It is published for **ecosystem validation**: company review and implementation pilots.
+    Clarifying or corrective changes may still occur based on pilot feedback.
+    A stable release will follow only after validation completes.
+    **V1 remains the production reference** during the transition.
+
+    ---
+
     The **Discovery manifest** is the mandatory first step of every ODP V2 integration.
     Each participant publishes a single, public JSON document at a well-known URL so that
     counterparts can determine — before sending a single capability request — what is supported,
@@ -136,7 +146,7 @@ paths:
                         supported: true
                         receiver:
                           supported: true
-                          supportedOperations: [createOrder, confirmOrder, cancelOrder]
+                          supportedOperations: [confirmOrder, requestCancellation, getOrder]
                           unsupportedOperations: []
                           supportsWebhook: true
                           supportsPolling: false
@@ -174,9 +184,9 @@ paths:
                         receiver:
                           supported: true
                           supportedOperations:
-                            - createOrder
                             - confirmOrder
-                            - cancelOrder
+                            - getOrder
+                            - requestCancellation
                             - updateOrderStatus
                           unsupportedOperations:
                             - dispatchOrder
@@ -497,7 +507,7 @@ components:
           description: Order operations this participant accepts and can process.
           items:
             $ref: '#/components/schemas/OrderOperationType'
-          example: [createOrder, confirmOrder, cancelOrder, updateOrderStatus]
+          example: [confirmOrder, requestCancellation, getOrder, updateOrderStatus]
         unsupportedOperations:
           type: array
           description: |
@@ -528,14 +538,23 @@ components:
     OrderOperationType:
       type: string
       title: Order Operation Type
-      description: Standard order operations a receiver can be asked to handle.
+      description: |
+        Standard order operations a receiver can be asked to handle.
+        There is no createOrder — order entry is via CREATED event + GET.
       enum:
-        - createOrder
         - confirmOrder
-        - cancelOrder
+        - requestCancellation
+        - getOrder
         - updateOrderStatus
         - dispatchOrder
-      example: createOrder
+        - setOrderPreparing
+        - setOrderReadyForPickup
+        - setOrderDelivered
+        - sendOrderTracking
+        - validateDeliveryCode
+        - patchOrderDetails
+        - concludeOrder
+      example: confirmOrder
 
     # -------------------------------------------------------------------------
     # Merchant capability

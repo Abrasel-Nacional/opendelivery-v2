@@ -6,6 +6,14 @@ info:
   description: |
     Logistics Capability API for the Open Delivery Protocol V2.
 
+    ## Release Candidate status
+
+    This contract is part of Open Delivery Protocol **V2.0.0-rc** (Release Candidate).
+    It is published for **ecosystem validation**: company review and implementation pilots.
+    Clarifying or corrective changes may still occur based on pilot feedback.
+    A stable release will follow only after validation completes.
+    **V1 remains the production reference** during the transition.
+
     Logistics Capability defines delivery coordination primitives tied to an order context.
     Every delivery request MUST reference an existing order identifier.
 
@@ -13,6 +21,29 @@ info:
 
     All state-change operations return `202 Accepted`. Delivery status updates are
     delivered via webhooks. Use `GET /logistics/delivery/{orderId}` for reconciliation.
+    Never treat a `202` alone as confirmation of the state change — wait for the
+    corresponding event or poll `GET`.
+
+    ## Duplicate lifecycle operations (universal default)
+
+    Same rule as Orders (Architecture Committee 2026-03-26 / Keeta case). V1 often
+    suggested `422` for synchronous reprocessing of the same fact; that breaks POS
+    stacks that call the same progression twice.
+
+    **V2 default for delivery progression mutations** (`create`, ready-for-pickup,
+    collected, delivered, cancel, and equivalent signals):
+
+    | Situation | HTTP | Side effects |
+    |---|---|---|
+    | Transition is **valid** and not yet applied | `202 Accepted` | Process; emit event when done |
+    | Same operation **already applied** (delivery already in the target state, e.g. second `delivered` while status is `DELIVERED`) | **`202 Accepted`** | **No new transition**. Receiver **MAY** re-present the corresponding event |
+    | Transition is **impossible** (e.g. collect after cancel) | `409 Conflict` (or documented error) | No state change; error body |
+
+    Receivers **MUST NOT** return `422` / `409` solely because a successful lifecycle
+    operation is invoked again after the target state was already reached.
+
+    No client idempotency header is defined. Deduplicate **inbound events** by event id
+    when consuming webhooks/polling.
 
     ## Participants
 
@@ -109,6 +140,11 @@ paths:
 
         Returns `202 Accepted`. A `delivery.assigned` event is sent when a
         courier is assigned. Poll `GET /logistics/delivery/{orderId}` for status.
+
+        **Duplicate call:** if a delivery for this `orderId` was **already created**
+        and is still active, return **`202`** without creating a second delivery;
+        MAY re-present the latest relevant event. Do **not** fail only because the
+        request was already accepted (see info “Duplicate lifecycle operations”).
       requestBody:
         required: true
         content:
@@ -143,7 +179,9 @@ paths:
                   description: Delivery instructions for the courier
       responses:
         '202':
-          description: Delivery request accepted
+          description: |
+            Delivery request accepted, **or** delivery already exists for this order
+            (duplicate success path). Reconcile via event / GET.
           content:
             application/json:
               schema:
@@ -160,6 +198,10 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
+        '409':
+          description: |
+            Impossible to create delivery in the current context (not used merely because
+            a delivery was already created successfully).
 
   /logistics/delivery/{orderId}:
     parameters:
@@ -200,9 +242,15 @@ paths:
         Signals to the logistics provider that the order is packaged and
         ready to be collected at the store. Triggers courier dispatch if
         not already assigned.
+
+        Duplicate call after ready-for-pickup was already applied: return `202`
+        (see “Duplicate lifecycle operations”).
       responses:
-        '202': { description: Notification accepted }
+        '202':
+          description: Notification accepted, or already notified as ready for pickup
         '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Invalid state for this signal (not “already applied”)
 
   /logistics/delivery/{orderId}/collected:
     parameters:
@@ -218,9 +266,15 @@ paths:
       description: |
         Signals that the courier picked up the order from the store.
         Projected delivery status: `IN_TRANSIT`.
+
+        Duplicate call while already `IN_TRANSIT` (or past): return `202`
+        (see “Duplicate lifecycle operations”).
       responses:
-        '202': { description: Accepted }
+        '202':
+          description: Accepted for processing, or already collected / in transit
         '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Invalid state for this transition (not “already applied”)
 
   /logistics/delivery/{orderId}/delivered:
     parameters:
@@ -236,9 +290,15 @@ paths:
       description: |
         Signals successful delivery to the customer.
         Projected delivery status: `DELIVERED`.
+
+        Duplicate call while already `DELIVERED`: return `202`
+        (see “Duplicate lifecycle operations”).
       responses:
-        '202': { description: Accepted }
+        '202':
+          description: Accepted for processing, or already delivered
         '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Invalid state for this transition (not “already applied”)
 
   /logistics/delivery/{orderId}/problem:
     parameters:
@@ -281,7 +341,12 @@ paths:
       tags: [Delivery]
       operationId: cancelDelivery
       summary: Cancel a delivery
-      description: Cancels the delivery for this order. Does not cancel the order itself.
+      description: |
+        Cancels the delivery for this order. Does not cancel the order itself.
+
+        Duplicate call while delivery is **already cancelled**: return `202`
+        (see “Duplicate lifecycle operations”). `409` only when cancel is impossible
+        in the current state (e.g. already completed delivery, if policy forbids).
       requestBody:
         required: true
         content:
@@ -296,9 +361,11 @@ paths:
                 reason:
                   type: string
       responses:
-        '202': { description: Cancellation accepted }
+        '202':
+          description: Cancellation accepted, or already cancelled
         '404': { $ref: '#/components/responses/NotFound' }
-        '409': { $ref: '#/components/responses/Conflict' }
+        '409':
+          description: Invalid state for cancellation (not merely “already cancelled”)
 
 components:
 

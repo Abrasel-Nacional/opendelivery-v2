@@ -1,13 +1,15 @@
 # Getting started
 
+!!! warning "Release Candidate (V2.0.0-rc)"
+    This documentation is a **Release Candidate**. It was consolidated in technical committees and is now in an **ecosystem validation** period: company review and **implementation pilots**.
+
+    During this phase the specification may still change based on feedback. A **stable release** will be published only after validation completes. **V1 remains active** and is the production reference during the transition.
+
+    Send feedback via the [GitHub repository](https://github.com/Abrasel-Nacional/opendelivery-v2/issues). Details in the [changelog](changelog.md).
+
 Open Delivery is an **open protocol**, not a product. It defines how independent food-tech systems — ordering apps, restaurant management systems, logistics operators, and CRM platforms — interoperate without custom bilateral integrations.
 
 This guide covers the minimum you need to start an integration.
-
-<div class="od-api-callout">
-  <p>Prefer a path by product type? Use role-based paths.</p>
-  <a href="by-role/">Open role paths →</a>
-</div>
 
 ---
 
@@ -20,7 +22,7 @@ The protocol defines four roles. A system may play more than one.
 | **Originator** | Ordering app, marketplace, kiosk | Creates the order; receives lifecycle updates |
 | **Software Service (POS)** | Restaurant management system | Accepts orders; manages menu, account, fiscal |
 | **Logistics** | Delivery operator, own fleet | Executes delivery; emits tracking events |
-| **CRM** | Loyalty / customer data platform | Consumes order and customer data; manages loyalty programs |
+| **CRM software** | Customer data / loyalty platform | Consumes the **Customer** capability (and Reviews/Loyalty modules); does not drive kitchen order lifecycle |
 
 Identify which role(s) your system plays. That determines which capabilities you need.
 
@@ -75,19 +77,19 @@ Minimal response example:
 
 ```json
 {
-  "appId": "550e8400-e29b-41d4-a716-446655440000",
-  "openDelivery": {
-    "currentVersion": "2.0",
-    "supportedVersions": ["2.0"]
-  },
-  "discovery": { "version": "1.0.0" },
-  "authentication": {
-    "supportedGrantTypes": ["client_credentials"],
-    "clientIdGeneration": ["by_app"]
-  },
-  "capabilities": {
-    "orders": { "endpoint": "https://api.yourcompany.com/v2" }
-  }
+ "appId": "550e8400-e29b-41d4-a716-446655440000",
+ "openDelivery": {
+ "currentVersion": "2.0",
+ "supportedVersions": ["2.0"]
+ },
+ "discovery": { "version": "1.0.0" },
+ "authentication": {
+ "supportedGrantTypes": ["client_credentials"],
+ "clientIdGeneration": ["by_app"]
+ },
+ "capabilities": {
+ "orders": { "endpoint": "https://api.yourcompany.com/v2" }
+ }
 }
 ```
 
@@ -100,36 +102,34 @@ See [Discovery](../protocol/discovery.md) and the [Discovery API reference](../r
 Depending on your role:
 
 === "Originator"
-    1. **Discovery** — publish your Well-Known endpoint
-    2. **Orders** — create orders and consume lifecycle events
-    3. **Merchant** — read menus and store status
+ 1. **Discovery** — publish your Well-Known endpoint
+ 2. **Orders** — create orders and consume lifecycle events
+ 3. **Merchant** — read menus and store status
 
 === "Software Service (POS)"
-    1. **Discovery** — publish your Well-Known endpoint
-    2. **Merchant** — expose menu, hours, and pause
-    3. **Orders** — accept and process incoming orders
-    4. **Indoor** — if you support dine-in / tab / kiosk
+ 1. **Discovery** — publish your Well-Known endpoint
+ 2. **Merchant** — expose menu, hours, and pause
+ 3. **Orders** — accept and process incoming orders
+ 4. **Indoor** — if you support dine-in / tab / kiosk
 
 === "Logistics"
-    1. **Discovery** — publish your Well-Known endpoint
-    2. **Logistics** — receive delivery requests and emit tracking events
+ 1. **Discovery** — publish your Well-Known endpoint
+ 2. **Logistics** — receive delivery requests and emit tracking events
 
-=== "CRM"
-    1. **Discovery** — publish your Well-Known endpoint
-    2. **Customer** — manage customer data
-    3. **Loyalty** — manage loyalty programs and redemptions
+=== "CRM software"
+ 1. **Discovery** — publish your Well-Known endpoint
+ 2. **Customer** — customer-data capability (Reviews and/or Loyalty modules as needed)
+ 3. **Loyalty** (module) — programs and redemptions, if applicable
 
 ---
 
-## 5. References
-
-| Document | Description |
-|---|---|
-| [Concepts](../documentation/core-concepts.md) | Architecture, entities, interaction model |
-| [Roles and responsibilities](../protocol/roles-and-responsibilities.md) | Obligations of each role |
-| [Authentication](../protocol/authentication.md) | OAuth 2.0 models and scopes |
-| [Discovery](../protocol/discovery.md) | Well-Known endpoint and manifest structure |
-| [Guidelines](../protocol/guidelines.md) | Dates, pagination, idempotency |
-| [Error handling](../protocol/error-handling.md) | Standard error format and HTTP codes |
-| [Migration V1→V2](migration-v1-v2.md) | Breaking changes and migration guide |
-| [API reference](../reference/index.md) | Interactive OpenAPI specs |
+<div class="od-related">
+  <p class="od-related__label">Related</p>
+  <ul class="od-related__list">
+    <li><a href="by-role.md">Paths by role</a> — what to implement by product type</li>
+    <li><a href="../documentation/core-concepts.md">Concepts</a> — architecture and entities</li>
+    <li><a href="../protocol/discovery.md">Discovery</a> · <a href="../protocol/authentication.md">Authentication</a></li>
+    <li><a href="../reference/conventions.md">General rules</a> · <a href="../reference/error-handling.md">Error handling</a></li>
+    <li><a href="migration-v1-v2.md">Migration V1→V2</a> · <a href="../reference/index.md">API reference</a></li>
+  </ul>
+</div>

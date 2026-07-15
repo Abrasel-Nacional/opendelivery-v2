@@ -1,0 +1,17 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "apply-orders-matrix-move",
+      "type": "shell",
+      "command": "tools\\tmp_run_move_event_matrix.bat",
+      "problemMatcher": []
+    },
+    {
+      "label": "mkdocs-strict-check",
+      "type": "shell",
+      "command": "mkdocs build --strict",
+      "problemMatcher": []
+    }
+  ]
+}

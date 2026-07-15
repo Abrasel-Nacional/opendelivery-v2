@@ -10,10 +10,10 @@
       
       
       
-        <link rel="canonical" href="https://abrasel-nacional.github.io/opendelivery-v2/en/reference/logistics/">
+        <link rel="canonical" href="https://docs.opendelivery.com.br/en/reference/logistics/">
       
       
-        <link rel="prev" href="../indoor/">
+        <link rel="prev" href="../merchant/">
       
       
         <link rel="next" href="../customer/">
@@ -27,7 +27,7 @@
       
       
       <link rel="icon" href="../../../assets/images/opendelivery-logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
     
     
       
@@ -320,26 +320,31 @@
      quebrando a navegação e o realce do menu. O posicionamento abaixo do
      header + tabs é feito via `scrollYOffset` no Redoc.init (ver abaixo),
      que também desloca o menu fixo do ReDoc para fora da área do header. */
-  /* margin-top negativo afeta só conteúdo + painel direito (a sidebar
-     é position:fixed, então fica de fora do fluxo normal e não se
-     move com isso — ver odHeaderOffset no script abaixo, que é o
-     controle dela). Reduzido de -16 pra -8: -16 deixou a coluna do
-     meio colada demais no menu de tabs. */
+  /* Coluna do meio no fluxo normal. NÃO usar padding-top grande aqui:
+     o problema real ao navegar pelo menu é o scroll-spy / âncora parar
+     sob o header sticky — isso se corrige com scrollYOffset (JS) e
+     scroll-margin-top nos headings, não com faixa branca no load. */
   #redoc-container {
     background: #fff;
-    margin-top: -8px;
+    margin-top: 0;
+    padding-top: 0;
   }
+
+  /* NÃO usar scroll-margin-top nos headings: o ReDoc já aplica scrollYOffset
+     no clique do menu e no scroll-spy. Somar os dois faz o conteúdo parar
+     no item certo, mas o .active ficar no item de cima (off-by-one). */
 
   #redoc-container a {
     text-decoration: none;
   }
 
-  /* ── Shell da sidebar (P0: fundo + borda como MkDocs) ───────────────────
-     .menu-content é o painel fixo do ReDoc. Largura também vem do theme API. */
+  /* ── Shell da sidebar ───────────────────────────────────────────────────
+     Só visual. Posição/altura/width/margin ficam com o ReDoc (scrollYOffset +
+     theme.sidebar.width). Forçar top/height/overflow dessincroniza menu e
+     coluna do meio (faixa branca / gap). */
   #redoc-container .menu-content {
     background-color: var(--od-gray-50) !important;
     border-right: 1px solid var(--od-border);
-    /* Fallback nativo (se Perfect Scrollbar não estiver no nó) */
     scrollbar-width: thin;
     scrollbar-color: var(--od-gray-200) transparent;
   }
@@ -357,8 +362,7 @@
     background: var(--od-border);
   }
 
-  /* ReDoc 2.x usa Perfect Scrollbar (.ps / .ps__thumb-y) no menu —
-     o visual nativo sozinho quase nunca aparece. Espelha o thin do MkDocs. */
+  /* Perfect Scrollbar (ReDoc 2.x) — só cor, sem height forçado */
   #redoc-container .menu-content .ps__rail-y,
   #redoc-container .menu-content .ps__rail-x {
     background: transparent !important;
@@ -384,7 +388,6 @@
     width: 6px !important;
   }
 
-  /* Qualquer .ps dentro do redoc-wrap (menu é o caso principal) */
   #redoc-container .ps__rail-y {
     background: transparent !important;
   }
@@ -399,14 +402,11 @@
     background-color: var(--od-border) !important;
   }
 
-  /* Respiro horizontal: labels do ReDoc costumam ser width 100% colados
-     na borda; forçamos gutter nas laterais (como margin do MkDocs). */
+  /* Respiro horizontal nos labels (sem forçar width que estica badges). */
   #redoc-container .menu-content label.-depth0,
   #redoc-container .menu-content label.-depth1,
   #redoc-container .menu-content label.-depth2 {
     box-sizing: border-box !important;
-    width: calc(100% - 0.9rem) !important;
-    max-width: calc(100% - 0.9rem) !important;
     margin-left: 0.5rem !important;
     margin-right: 0.4rem !important;
   }
@@ -415,7 +415,7 @@
      Cabeçalhos dos x-tagGroups. Seletores de profundidade (-depthN) são
      estáveis entre versões do ReDoc — não dependem de classes hash geradas. */
   #redoc-container label.-depth0 {
-    font-size: 0.68rem !important;
+    font-size: 0.58rem !important;
     font-weight: 700 !important;
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -434,7 +434,7 @@
 
   /* ── Sidebar: tags e traits (depth1) ──────────────────────────────────── */
   #redoc-container label.-depth1 {
-    font-size: 0.78rem !important;
+    font-size: 0.68rem !important;
     font-weight: 500 !important;
     border-radius: var(--od-radius-sm);
     color: var(--od-text-soft);
@@ -448,7 +448,7 @@
 
   /* ── Sidebar: endpoints e seções de traits (depth2) ───────────────────── */
   #redoc-container label.-depth2 {
-    font-size: 0.76rem !important;
+    font-size: 0.66rem !important;
     font-weight: 400 !important;
     opacity: 0.9;
     border-radius: var(--od-radius-sm);
@@ -481,6 +481,159 @@
     background-color: rgba(0, 101, 46, 0.14) !important;
     color: var(--od-green-dark) !important;
     box-shadow: inset 3px 0 0 var(--od-green);
+  }
+
+  /* ── Call flow card (Host / Call) — template for capability OpenAPIs ───── */
+  #redoc-container .od-call-flow {
+    margin: 1rem 0 1.25rem;
+    padding: 0;
+    max-width: 36rem;
+  }
+
+  #redoc-container .od-call-flow__track {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 0.5rem;
+    padding: 0.85rem 0.9rem;
+    border: 1px solid var(--od-border);
+    border-radius: 12px;
+    background:
+      linear-gradient(180deg, #fbfefc 0%, var(--od-gray-50) 100%);
+    box-shadow: 0 1px 2px rgba(0, 70, 33, 0.05);
+  }
+
+  #redoc-container .od-call-flow__party {
+    flex: 1 1 8.5rem;
+    min-width: 7.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.7rem 0.8rem;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    background: #fff;
+  }
+
+  #redoc-container .od-call-flow__party--oa {
+    border-color: rgba(15, 111, 115, 0.22);
+    box-shadow: inset 3px 0 0 #0f6f73;
+  }
+
+  #redoc-container .od-call-flow__party--ss {
+    border-color: rgba(239, 108, 0, 0.25);
+    box-shadow: inset 3px 0 0 #ef6c00;
+  }
+
+  #redoc-container .od-call-flow__label {
+    display: inline-flex;
+    align-self: flex-start;
+    font-size: 0.55rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1.2;
+    padding: 0.14rem 0.38rem;
+    border-radius: 999px;
+  }
+
+  #redoc-container .od-call-flow__party--oa .od-call-flow__label {
+    color: #0f6f73;
+    background: rgba(15, 111, 115, 0.10);
+  }
+
+  #redoc-container .od-call-flow__party--ss .od-call-flow__label {
+    color: #c45a00;
+    background: rgba(239, 108, 0, 0.12);
+  }
+
+  #redoc-container .od-call-flow__name {
+    font-size: 0.74rem;
+    font-weight: 650;
+    color: var(--od-text);
+    line-height: 1.25;
+  }
+
+  #redoc-container .od-call-flow__hint {
+    display: none; /* optional secondary label — not shown */
+  }
+
+  #redoc-container .od-call-flow__edge {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    min-width: 4.25rem;
+    padding: 0.25rem 0.15rem;
+    align-self: center;
+  }
+
+  #redoc-container .od-call-flow__method {
+    font-family: "JetBrains Mono", "Roboto Mono", monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--od-green);
+    background: rgba(0, 101, 46, 0.10);
+    border: 1px solid rgba(0, 101, 46, 0.18);
+    border-radius: 999px;
+    padding: 0.2rem 0.55rem;
+    line-height: 1.2;
+  }
+
+  #redoc-container .od-call-flow__arrow {
+    display: block;
+    width: 2.75rem;
+    height: 2px;
+    background: linear-gradient(90deg, rgba(0, 101, 46, 0.25), var(--od-green));
+    border-radius: 2px;
+    position: relative;
+  }
+
+  #redoc-container .od-call-flow__arrow::after {
+    content: "";
+    position: absolute;
+    right: -1px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 5px solid transparent;
+    border-left-color: var(--od-green);
+    border-right-width: 0;
+  }
+
+  #redoc-container .od-call-flow--webhook .od-call-flow__method {
+    color: #c45a00;
+    background: rgba(239, 108, 0, 0.12);
+    border-color: rgba(239, 108, 0, 0.22);
+  }
+
+  #redoc-container .od-call-flow--webhook .od-call-flow__arrow {
+    background: linear-gradient(90deg, rgba(239, 108, 0, 0.25), #ef6c00);
+  }
+
+  #redoc-container .od-call-flow--webhook .od-call-flow__arrow::after {
+    border-left-color: #ef6c00;
+  }
+
+  @media (max-width: 720px) {
+    #redoc-container .od-call-flow__track {
+      flex-direction: column;
+    }
+
+    #redoc-container .od-call-flow__edge {
+      flex-direction: row;
+      min-width: 0;
+      width: 100%;
+      padding: 0.15rem 0;
+    }
+
+    #redoc-container .od-call-flow__arrow {
+      flex: 1;
+      width: auto;
+      max-width: 6rem;
+    }
   }
 </style>
 
@@ -794,6 +947,15 @@
   
     
     
+      
+  
+  
+  
+    
+  
+  
+    
+    
       <li class="md-tabs__item md-tabs__item--active">
         <a href="../" class="md-tabs__link">
           
@@ -803,6 +965,9 @@
 
         </a>
       </li>
+    
+  
+
     
   
 
@@ -1058,34 +1223,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../PROTOCOL_VS_BINDING/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Protocol vs binding
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../protocol/roles-and-responsibilities/" class="md-nav__link">
         
   
@@ -1127,10 +1264,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_8" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_7" >
         
           
-          <label class="md-nav__link" for="__nav_1_8" id="__nav_1_8_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_1_7" id="__nav_1_7_label" tabindex="0">
             
   
   
@@ -1148,8 +1285,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_8_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_1_8">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1377,62 +1514,6 @@
     
   
     Principles
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../protocol/guidelines/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    General rules
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../protocol/error-handling/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Error handling
   
 
     
@@ -1708,7 +1789,7 @@
   <span class="md-ellipsis">
     
   
-    Merchant
+    Orders
   
 
     
@@ -1721,6 +1802,122 @@
         
         <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_1_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2_3_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Orders
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../protocol/orders/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../protocol/indoor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Indoor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3_2" id="__nav_2_3_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Merchant
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3_2">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1828,122 +2025,6 @@
   
   
   
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3_2" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_3_2" id="__nav_2_3_2_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Orders
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_3_2">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Orders
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../protocol/orders/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Overview
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../protocol/indoor/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Indoor
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
     <li class="md-nav__item">
       <a href="../../protocol/logistics/" class="md-nav__link">
         
@@ -1996,7 +2077,7 @@
   <span class="md-ellipsis">
     
   
-    Customer / CRM
+    Customer
   
 
     
@@ -2012,7 +2093,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Customer / CRM
+    Customer
   
 
           </label>
@@ -2053,7 +2134,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../extensions/reviews/" class="md-nav__link">
+      <a href="../../protocol/reviews/" class="md-nav__link">
         
   
   
@@ -2081,7 +2162,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../extensions/loyalty/" class="md-nav__link">
+      <a href="../../protocol/loyalty/" class="md-nav__link">
         
   
   
@@ -2188,6 +2269,61 @@
   
   
   
+    
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conventions
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Conventions
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
     <li class="md-nav__item">
       <a href="../" class="md-nav__link">
         
@@ -2196,7 +2332,7 @@
   <span class="md-ellipsis">
     
   
-    Visão Geral
+    Overview
   
 
     
@@ -2205,6 +2341,70 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../conventions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    General rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../error-handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error handling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -2392,34 +2592,6 @@
   
   
   
-    <li class="md-nav__item">
-      <a href="../merchant/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Merchant
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
     
     
     
@@ -2434,10 +2606,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3_1" >
         
           
-          <label class="md-nav__link" for="__nav_3_3_2" id="__nav_3_3_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_3_1" id="__nav_3_3_1_label" tabindex="0">
             
   
   
@@ -2455,8 +2627,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_3_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_3_2">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_3_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3_1">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2534,6 +2706,34 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../merchant/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Merchant
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -2580,7 +2780,7 @@
   <span class="md-ellipsis">
     
   
-    Customer & Loyalty
+    Customer
   
 
     
@@ -2656,20 +2856,14 @@
     if (article) article.classList.remove("md-typeset");
   })();
 
-  /* Altura real do header + barra de tabs do Material. Passada ao ReDoc como
-     scrollYOffset: ele usa esse valor tanto para deslocar o menu fixo para
-     baixo do header (deixando os grupos clicáveis para colapsar) quanto para
-     calcular o realce/scroll da seção ativa corretamente. É uma função porque
-     o ReDoc a reavalia a cada scroll, acompanhando mudanças de layout. */
+  /* Altura do header sticky → único offset do ReDoc (âncoras + scroll-spy +
+     menu fixo). Um único valor — sem scroll-margin-top extra no CSS. */
   function odHeaderOffset() {
     var header = document.querySelector(".md-header");
     var tabs = document.querySelector(".md-tabs");
     var h = header ? header.getBoundingClientRect().height : 48;
     var t = tabs ? tabs.getBoundingClientRect().height : 0;
-    /* -28: a sidebar do ReDoc é position:fixed (não participa do fluxo
-       normal), então o margin-top negativo do #redoc-container não a
-       move — esse offset é o único jeito de aproximá-la do header. */
-    return Math.max(0, h + t - 40);
+    return Math.max(0, h + t - 12);
   }
 
   /* Mermaid é carregado globalmente via extra_javascript (mkdocs.yml), cujo
@@ -2678,63 +2872,184 @@
      aqui: o global ainda não existe. Adiamos toda a configuração até o
      `mermaid` estar disponível (poll leve; resolve antes do `load`, já que
      o script do rodapé não é async/defer). */
-  var odMermaidObserver = null;
+  var odEnhanceObserver = null;
+
+  function odParseFenceMeta(text) {
+    var meta = {};
+    String(text || "").split(/\r?\n/).forEach(function (line) {
+      var m = line.match(/^\s*([A-Za-z]+)\s*:\s*(.+?)\s*$/);
+      if (m) meta[m[1]] = m[2];
+    });
+    return meta;
+  }
+
+  function odBuildCallFlowCard(meta) {
+    var method = meta.method || "GET";
+    var fromParty = meta.fromParty || "oa";
+    var toParty = meta.toParty || "ss";
+    var root = document.createElement("div");
+    root.className = "od-call-flow";
+    if (fromParty === "ss" || meta.webhook === "true") {
+      root.classList.add("od-call-flow--webhook");
+    }
+
+    var track = document.createElement("div");
+    track.className = "od-call-flow__track";
+
+    function party(partyKey, label, name) {
+      var el = document.createElement("div");
+      el.className = "od-call-flow__party od-call-flow__party--" + partyKey;
+      var lab = document.createElement("span");
+      lab.className = "od-call-flow__label";
+      lab.textContent = label;
+      var nm = document.createElement("span");
+      nm.className = "od-call-flow__name";
+      nm.textContent = name;
+      el.appendChild(lab);
+      el.appendChild(nm);
+      return el;
+    }
+
+    var edge = document.createElement("div");
+    edge.className = "od-call-flow__edge";
+    var meth = document.createElement("span");
+    meth.className = "od-call-flow__method";
+    meth.textContent = method;
+    var arrow = document.createElement("span");
+    arrow.className = "od-call-flow__arrow";
+    arrow.setAttribute("aria-hidden", "true");
+    edge.appendChild(meth);
+    edge.appendChild(arrow);
+
+    track.appendChild(party(
+      fromParty,
+      meta.fromLabel || "Client",
+      meta.from || "Ordering Application"
+    ));
+    track.appendChild(edge);
+    track.appendChild(party(
+      toParty,
+      meta.toLabel || "Host",
+      meta.to || "Software Service"
+    ));
+    root.appendChild(track);
+    return root;
+  }
+
+  /* ReDoc escapa HTML em descriptions; usamos fence ```od-call-flow e montamos o DOM.
+     Fallback: se o highlighter não preserva language-*, detecta pelo conteúdo. */
+  function odProcessCallFlows() {
+    var blocks = document.querySelectorAll(
+      "#redoc-container code.language-od-call-flow:not([data-od-call-flow-processed]), " +
+      "#redoc-container pre > code:not([data-od-call-flow-processed])"
+    );
+    blocks.forEach(function (code) {
+      if (code.dataset.odCallFlowProcessed) return;
+      var raw = code.textContent || "";
+      var isFence =
+        code.classList.contains("language-od-call-flow") ||
+        (/^\s*method\s*:/m.test(raw) &&
+          /fromParty\s*:/m.test(raw) &&
+          /toParty\s*:/m.test(raw));
+      if (!isFence) return;
+      code.dataset.odCallFlowProcessed = "1";
+      var pre = code.closest("pre");
+      if (!pre) return;
+      var meta = odParseFenceMeta(raw);
+      pre.replaceWith(odBuildCallFlowCard(meta));
+    });
+  }
 
   function odProcessMermaid() {
+    if (typeof mermaid === "undefined") return;
     var blocks = document.querySelectorAll(
-      '#redoc-container code.language-mermaid:not([data-mermaid-processed])'
+      "#redoc-container code.language-mermaid:not([data-mermaid-processed])"
     );
     if (!blocks.length) return;
     blocks.forEach(function (code) {
-      code.dataset.mermaidProcessed = '1';
-      var pre = code.closest('pre');
+      code.dataset.mermaidProcessed = "1";
+      var pre = code.closest("pre");
       if (!pre) return;
-      var div = document.createElement('div');
-      div.className = 'mermaid';
+      var div = document.createElement("div");
+      div.className = "mermaid";
       div.textContent = code.textContent;
       pre.replaceWith(div);
     });
-    mermaid.run({ querySelector: '#redoc-container .mermaid:not([data-processed])' });
+    mermaid.run({ querySelector: "#redoc-container .mermaid:not([data-processed])" });
   }
 
-  function odInitMermaid() {
-    if (typeof mermaid === 'undefined') {
-      setTimeout(odInitMermaid, 50);
-      return;
+  function odProcessEnhancements() {
+    odProcessCallFlows();
+    odProcessMermaid();
+  }
+
+  function odInitEnhancements() {
+    /* Call-flow não depende do mermaid — processa já; mermaid entra quando carregar. */
+    odProcessCallFlows();
+
+    if (typeof mermaid !== "undefined") {
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: "neutral",
+        flowchart: { curve: "basis", useMaxWidth: true },
+        stateDiagram: { useMaxWidth: true }
+      });
+      odProcessMermaid();
+    } else {
+      setTimeout(function () {
+        if (typeof mermaid === "undefined") return;
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: "neutral",
+          flowchart: { curve: "basis", useMaxWidth: true },
+          stateDiagram: { useMaxWidth: true }
+        });
+        odProcessMermaid();
+      }, 50);
     }
 
-    mermaid.initialize({
-      startOnLoad: false,
-      theme: 'neutral',
-      flowchart: { curve: 'basis', useMaxWidth: true },
-      stateDiagram: { useMaxWidth: true }
-    });
-
-    odMermaidObserver = new MutationObserver(function (mutations) {
+    odEnhanceObserver = new MutationObserver(function (mutations) {
       var hasNew = mutations.some(function (m) {
         return Array.from(m.addedNodes).some(function (n) {
-          return n.nodeType === 1 && (
-            n.matches && n.matches('.language-mermaid') ||
-            n.querySelector && n.querySelector('.language-mermaid')
+          return (
+            n.nodeType === 1 &&
+            ((n.matches &&
+              (n.matches(".language-mermaid") ||
+                n.matches(".language-od-call-flow") ||
+                n.matches("pre"))) ||
+              (n.querySelector &&
+                (n.querySelector(".language-mermaid") ||
+                  n.querySelector(".language-od-call-flow"))))
           );
         });
       });
-      if (hasNew) odProcessMermaid();
+      if (hasNew) odProcessEnhancements();
     });
 
-    /* ReDoc já pode ter renderizado blocos mermaid enquanto aguardávamos o
-       global carregar — processa o que já existe antes de observar novos. */
-    odProcessMermaid();
-    odMermaidObserver.observe(document.getElementById('redoc-container'), {
+    odEnhanceObserver.observe(document.getElementById("redoc-container"), {
       childList: true,
       subtree: true
     });
   }
 
-  odInitMermaid();
+  odInitEnhancements();
 
-  Redoc.init(
-    "../v2/logistics.openapi.yaml",
+  /* Resolve openapi_spec for ReDoc.
+     Front matter uses a path relative to the shell page (e.g. ../v2/orders.openapi.yaml).
+     With mkdocs-static-i18n, English pages live under /en/… but the YAML artifacts are
+     only published once under the default locale tree (no /en/ prefix). Browser-relative
+     resolution on EN would 404 on …/en/reference/v2/*.openapi.yaml — strip /en/ from the
+     resolved path so both locales load the same English contract. */
+  function odResolveOpenApiSpec(spec) {
+    if (!spec) return spec;
+    if (/^https?:\/\//i.test(spec)) return spec;
+    var url = new URL(spec, window.location.href);
+    url.pathname = url.pathname.replace(/\/en(?=\/|$)/, "");
+    return url.href;
+  }
+
+  var odRedocReady = Redoc.init(
+    odResolveOpenApiSpec("../v2/logistics.openapi.yaml"),
     {
       scrollYOffset: odHeaderOffset,
       pathInMiddlePanel: true,
@@ -2800,6 +3115,22 @@
     },
     document.getElementById("redoc-container")
   );
+
+  /* Garante processar call-flows/mermaid após o primeiro paint do ReDoc. */
+  if (odRedocReady && typeof odRedocReady.then === "function") {
+    odRedocReady.then(function () {
+      odHeaderOffset();
+      odProcessEnhancements();
+    });
+  } else {
+    setTimeout(function () {
+      odHeaderOffset();
+      odProcessEnhancements();
+    }, 300);
+  }
+
+  /* Aplica offset já no parse (antes do ReDoc medir o menu). */
+  odHeaderOffset();
 </script>
 
 
@@ -2821,48 +3152,6 @@
       </main>
       
         <footer class="md-footer">
-  
-    
-      
-        
-      
-      <nav class="md-footer__inner md-grid" aria-label="Footer" >
-        
-          
-          <a href="../indoor/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Indoor">
-            <div class="md-footer__button md-icon">
-              
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
-            </div>
-            <div class="md-footer__title">
-              <span class="md-footer__direction">
-                Previous
-              </span>
-              <div class="md-ellipsis">
-                Indoor
-              </div>
-            </div>
-          </a>
-        
-        
-          
-          <a href="../customer/" class="md-footer__link md-footer__link--next" aria-label="Next: Customer &amp; Loyalty">
-            <div class="md-footer__title">
-              <span class="md-footer__direction">
-                Next
-              </span>
-              <div class="md-ellipsis">
-                Customer & Loyalty
-              </div>
-            </div>
-            <div class="md-footer__button md-icon">
-              
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
-            </div>
-          </a>
-        
-      </nav>
-    
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
@@ -2906,7 +3195,7 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.tracking", "navigation.footer", "content.code.copy", "content.tooltips", "content.tabs.link", "content.action.edit", "toc.follow", "search.suggest", "search.highlight", "search.share"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.tracking", "content.code.copy", "content.tooltips", "content.tabs.link", "toc.follow", "search.suggest", "search.highlight", "search.share"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
 
@@ -2959,45 +3248,41 @@
       title: "Guide",
       children: [{
       title: "Home",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/",
+      url: "https://docs.opendelivery.com.br/en/",
       active: false
     },{
       title: "Getting started",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/guide/getting-started/",
+      url: "https://docs.opendelivery.com.br/en/guide/getting-started/",
       active: false
     },{
       title: "Paths by role",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/guide/by-role/",
+      url: "https://docs.opendelivery.com.br/en/guide/by-role/",
       active: false
     },{
       title: "Concepts",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/documentation/core-concepts/",
+      url: "https://docs.opendelivery.com.br/en/documentation/core-concepts/",
       active: false
     },{
       title: "Protocol overview",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/overview/",
-      active: false
-    },{
-      title: "Protocol vs binding",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/PROTOCOL_VS_BINDING/",
+      url: "https://docs.opendelivery.com.br/en/overview/",
       active: false
     },{
       title: "Roles and responsibilities",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/roles-and-responsibilities/",
+      url: "https://docs.opendelivery.com.br/en/protocol/roles-and-responsibilities/",
       active: false
     },{
       title: "Migration and history",
       children: [{
       title: "Changelog",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/guide/changelog/",
+      url: "https://docs.opendelivery.com.br/en/guide/changelog/",
       active: false
     },{
       title: "Migration V1\u2192V2",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/guide/migration-v1-v2/",
+      url: "https://docs.opendelivery.com.br/en/guide/migration-v1-v2/",
       active: false
     },{
       title: "Roadmap",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/documentation/roadmap/",
+      url: "https://docs.opendelivery.com.br/en/documentation/roadmap/",
       active: false
     }]
     }]
@@ -3009,81 +3294,73 @@
       title: "Fundamentals",
       children: [{
       title: "Principles",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/principles/",
-      active: false
-    },{
-      title: "General rules",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/guidelines/",
-      active: false
-    },{
-      title: "Error handling",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/error-handling/",
+      url: "https://docs.opendelivery.com.br/en/protocol/principles/",
       active: false
     },{
       title: "Flows",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/flows/",
+      url: "https://docs.opendelivery.com.br/en/protocol/flows/",
       active: false
     },{
       title: "Evolution",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/evolution/",
+      url: "https://docs.opendelivery.com.br/en/protocol/evolution/",
       active: false
     }]
     },{
       title: "Infrastructure",
       children: [{
       title: "Discovery",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/discovery/",
+      url: "https://docs.opendelivery.com.br/en/protocol/discovery/",
       active: false
     },{
       title: "Authentication",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/authentication/",
+      url: "https://docs.opendelivery.com.br/en/protocol/authentication/",
       active: false
     }]
     },{
       title: "Capabilities",
       children: [{
-      title: "Merchant",
-      children: [{
-      title: "Overview",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/merchant/",
-      active: false
-    },{
-      title: "Store data",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/merchant-store/",
-      active: false
-    },{
-      title: "Menus",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/menu/",
-      active: false
-    }]
-    },{
       title: "Orders",
       children: [{
       title: "Overview",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/orders/",
+      url: "https://docs.opendelivery.com.br/en/protocol/orders/",
       active: false
     },{
       title: "Indoor",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/indoor/",
+      url: "https://docs.opendelivery.com.br/en/protocol/indoor/",
+      active: false
+    }]
+    },{
+      title: "Merchant",
+      children: [{
+      title: "Overview",
+      url: "https://docs.opendelivery.com.br/en/protocol/merchant/",
+      active: false
+    },{
+      title: "Store data",
+      url: "https://docs.opendelivery.com.br/en/protocol/merchant-store/",
+      active: false
+    },{
+      title: "Menus",
+      url: "https://docs.opendelivery.com.br/en/protocol/menu/",
       active: false
     }]
     },{
       title: "Logistics",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/logistics/",
+      url: "https://docs.opendelivery.com.br/en/protocol/logistics/",
       active: false
     },{
-      title: "Customer / CRM",
+      title: "Customer",
       children: [{
       title: "Overview",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/customer/",
+      url: "https://docs.opendelivery.com.br/en/protocol/customer/",
       active: false
     },{
       title: "Reviews",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/extensions/reviews/",
+      url: "https://docs.opendelivery.com.br/en/protocol/reviews/",
       active: false
     },{
       title: "Loyalty",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/extensions/loyalty/",
+      url: "https://docs.opendelivery.com.br/en/protocol/loyalty/",
       active: false
     }]
     }]
@@ -3093,44 +3370,55 @@
     {
       title: "API reference",
       children: [{
-      title: "Vis\u00e3o Geral",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/reference/",
+      title: "Conventions",
+      children: [{
+      title: "Overview",
+      url: "https://docs.opendelivery.com.br/en/reference/",
       active: false
+    },{
+      title: "General rules",
+      url: "https://docs.opendelivery.com.br/en/reference/conventions/",
+      active: false
+    },{
+      title: "Error handling",
+      url: "https://docs.opendelivery.com.br/en/reference/error-handling/",
+      active: false
+    }]
     },{
       title: "Infrastructure",
       children: [{
       title: "Discovery",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/reference/discovery/",
+      url: "https://docs.opendelivery.com.br/en/reference/discovery/",
       active: false
     },{
       title: "Authentication",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/reference/authentication/",
+      url: "https://docs.opendelivery.com.br/en/reference/authentication/",
       active: false
     }]
     },{
       title: "Capabilities",
       children: [{
-      title: "Merchant",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/reference/merchant/",
-      active: false
-    },{
       title: "Orders",
       children: [{
       title: "Overview",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/reference/orders/",
+      url: "https://docs.opendelivery.com.br/en/reference/orders/",
       active: false
     },{
       title: "Indoor",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/reference/indoor/",
+      url: "https://docs.opendelivery.com.br/en/reference/indoor/",
       active: false
     }]
     },{
+      title: "Merchant",
+      url: "https://docs.opendelivery.com.br/en/reference/merchant/",
+      active: false
+    },{
       title: "Logistics",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/reference/logistics/",
+      url: "https://docs.opendelivery.com.br/en/reference/logistics/",
       active: true
     },{
-      title: "Customer \u0026 Loyalty",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/reference/customer/",
+      title: "Customer",
+      url: "https://docs.opendelivery.com.br/en/reference/customer/",
       active: false
     }]
     }]
@@ -3242,7 +3530,8 @@
     var cols = children.filter(function (c) {
       return (c.children && c.children.length) || c.url;
     });
-    mega.style.setProperty('--od-mega-cols', String(Math.min(cols.length, 4)));
+    /* Máximo 3 colunas (ex.: Convenções · Infraestrutura · Capabilities). */
+    mega.style.setProperty('--od-mega-cols', String(Math.min(cols.length, 3)));
 
     cols.forEach(function (col) {
       var li = document.createElement('li');

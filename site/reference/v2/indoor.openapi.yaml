@@ -2,45 +2,23 @@ openapi: 3.1.0
 x-spectral-ignore:
 - owasp:api4:2023-string-restricted
 info:
-  title: Open Delivery V2 — Indoor / Table Service API
+  title: Open Delivery V2 — Indoor / Table Service
   version: 2.0.0-rc
-  summary: Normative Indoor contracts — account, payments, fiscal documents, and events
+  summary: Normative Indoor contracts — account lifecycle, payments, fiscal documents, and webhook events
   description: |-
     This specification is the **normative, self-contained contract** of Open Delivery
-    for on-premise / table-service operations (table, tab, or counter): endpoints, fields,
-    MUST rules, errors, and JSON examples.
+    for **on-premise / table-service operations**: endpoints, fields, MUST rules,
+    errors, and JSON examples.
 
-    An implementer MUST be able to integrate this capability using **only this document**
-    (ReDoc). The [Indoor protocol guide](../../protocol/indoor/) is optional helper
-    material — concepts, narrative flows, and checklists for readers who do not yet
-    know the domain.
+    Recommended reading flow in ReDoc:
+    1. **Release notes** (RC status and V1 -> V2 framing)
+    2. **Overview** (account model, Orders prerequisite, responsibilities)
+    3. **Integration** (authentication and Discovery declarations)
+    4. **Indoor account** (account semantics and operations)
+    5. **Events** (webhook delivery and deduplication)
+    6. **External docs** (related capabilities and guides)
 
-    ---
-
-    ## Related documents
-
-    | Document | Purpose |
-    |---|---|
-    | [Indoor guide (concepts and flows)](../../protocol/indoor/) | Conceptual helper — optional if you already know the domain |
-    | [Orders OpenAPI](../orders/) | Prerequisite — creating orders with `orderType: INDOOR` |
-    | [Authentication OpenAPI](../authentication/) | OAuth 2.0 and HMAC webhook signatures |
-    | [Discovery OpenAPI](../discovery/) | Declaring the `indoor` extension in the well-known manifest |
-
-    ---
-
-    ## Out of MVP (V2.1+)
-
-    The following were discussed in the Indoor committee and are **NOT** part of this
-    release candidate:
-
-    - Table reservations and waitlists
-    - “Call waiter” endpoint
-    - Structured transfer history (`TransferHistoryEntry`)
-    - Indoor event polling (`GET /events` — commented out; delivery is webhook-only)
-    - Automatic lock / pre-close timeout by origin
-  externalDocs:
-    description: Indoor guide — concepts, roles, and flows (helper)
-    url: ../../protocol/indoor/
+    The RC and compatibility notes are in the **Release notes** section.
 servers:
 - url: https://api.example.com/od/v2
   description: Production environment
@@ -51,56 +29,64 @@ servers:
 security:
 - bearerAuth: []
 tags:
+- name: ReleaseNotes
+  x-displayName: Release notes
+  x-traitTag: true
+  description: |-
+    ## Release Candidate status
+
+    This contract is part of Open Delivery Protocol **V2.0.0-rc** (Release Candidate).
+    It is published for **ecosystem validation**: company review and implementation pilots.
+    Clarifying or corrective changes may still occur based on pilot feedback.
+    A stable release will follow only after validation completes.
+    **V1 remains the production reference** during the transition.
+
+    ## Framing changes from V1
+
+    | Change | V1 / legacy integrations | V2 |
+    |---|---|---|
+    | Indoor model | Commonly bilateral and implementation-specific | Explicit **Indoor** capability with normative account contract |
+    | Order entry into indoor flow | Often described as local create or POS-owned account opening | Always via **Orders**: `CREATED` event + `GET /orders/{orderId}` with `fulfillment.orderType: INDOOR` |
+    | Central entity | Order or local ticket abstractions varied by integrator | **Account** is the operational source for grouping, payment, close, and fiscal |
+    | Account event delivery | Often proprietary | **Webhook-only** for `ACCOUNT_*`, `PAYMENT_*`, and `FISCAL_*` |
+    | Duplicate lifecycle behavior | Repeated pre-close / close often treated as error | **`202 Accepted` if already in target state** |
+    | Payment timing | Frequently coupled to checkout step only | Payment may be posted in **`IN_USE`** or **`IN_PAYMENT`** |
+
+    The normative transport contract for order lifecycle remains in **Orders**.
 - name: CapabilityOverview
   x-displayName: Overview
   x-traitTag: true
   description: |-
     ## Indoor / Table Service Capability
 
-    This specification describes the Open Delivery protocol transport contracts for
-    **on-premise consumption** (indoor). The order is the channel that brings items in;
-    the **account** is the central entity for operational grouping, payments, closing,
-    and fiscal integration.
+    Open Delivery Indoor standardizes the **interoperable account lifecycle** for
+    **on-premise consumption**: table, tab, or counter. Orders are the channel that
+    bring items in; the **account** is the central entity for grouping, payments,
+    closing, and fiscal integration.
 
     > **Indoor is not only waiter table service.** The specification covers any
-    > on-premise model — table, tab, or counter — including **full self-service**
+    > on-premise model - table, tab, or counter - including **full self-service**
     > via totem, QR Code, or tablet, without staff intervention.
 
     > **Open Delivery is a protocol, not a product API.**
     > There is no central server or shared production environment. Each implementation
     > hosts the endpoints on its own infrastructure.
 
-    ---
+    ## Prerequisite: Orders protocol
 
-    ## ⚠ Prerequisite: Orders protocol
+    **Indoor is an extension of Orders — not a standalone capability.** Both parties
+    (Ordering Application and Software Service) **MUST** implement Orders first.
 
-    **Indoor is an extension of the Open Delivery Orders protocol — not a standalone
-    capability.** This specification assumes both parties (Ordering Application and
-    Software Service) already implement the base order flow.
+    The indoor **account is opened from an order**: when the Software Service processes
+    an order with `fulfillment.orderType: INDOOR` (via Orders **event** `CREATED` + `GET /orders/{orderId}` -
+    there is **no** `POST /orders` create endpoint) for an operational key without an open
+    account, it creates the account. Later INDOOR orders for the same key add items to
+    that account. Order entry/lifecycle details are defined only in Orders — not repeated here.
 
-    Orders defines (see [Orders OpenAPI](../orders/) and the
-    [Orders guide](../../protocol/orders/)):
-
-    - **Order lifecycle** — statuses `CREATED`, `CONFIRMED`, `PREPARING`,
-      `READY`, `IN_DELIVERY`, `DELIVERED`, `CANCELLED`, `CONCLUDED` (INDOOR profile
-      uses the applicable subset — no delivery dispatch)
-    - **Order event reception** — polling and/or webhook, per Discovery
-    - **Order details** — `GET /orders/{orderId}`
-    - **Status updates** — `confirm`, `preparing`, `ready-for-pickup`,
-      `delivered`, `cancel`, `conclude`
-    - **V2 cancellation** — direct unilateral operation (`POST /orders/{id}/cancel`)
-
-    > **Indoor account events** (this spec) are **webhook-only** —
-    > there is no polling for account events. Do not confuse this with the Orders
-    > order-event mechanism.
-
-    An indoor order (`orderType: INDOOR`) follows the same lifecycle and order-event
-    mechanisms as any other protocol order. Indoor adds **account management** on top —
-    grouping orders, payments, and fiscal documents into a consumption session.
+    - [Orders API Spec](../orders/) — normative order contract
+    - [Orders guide](../../protocol/orders/) — concepts and lifecycle
 
     > **Implementations without an active Orders protocol MUST NOT use this capability.**
-
-    ---
 
     ## Operation modes and channels
 
@@ -120,21 +106,123 @@ tags:
     on the same account because they share `operationMode` + `identifier`; the channel
     is only order metadata.
 
+    ## How the account enters the protocol
+
+    1. The **Ordering Application** originates an order in its own system.
+    2. It emits a **`CREATED`** event through Orders.
+    3. The **Software Service** calls **`GET /orders/{orderId}`** in Orders and detects
+       `fulfillment.orderType: INDOOR`.
+    4. If there is no open account for the operational key, the Software Service opens it.
+    5. Later INDOOR orders on the same key add items to that account.
+    6. Account lifecycle facts are then exposed by this capability.
+
+    ```mermaid
+    sequenceDiagram
+        participant OA as Ordering Application
+        participant SS as Software Service
+
+        Note over OA: Order created in OA system
+        OA-->>SS: Orders event CREATED (type=INDOOR)
+        SS->>OA: GET /orders/{orderId}
+        OA-->>SS: 200 Order (fulfillment.orderType=INDOOR)
+        SS-->>OA: accountEvent ACCOUNT_OPENED
+        OA->>SS: POST /accounts/payments
+        SS-->>OA: 200 OK
+        SS-->>OA: accountEvent PAYMENT_CREATED
+        OA->>SS: POST /accounts/pre-close
+        SS-->>OA: 202 Accepted
+        SS-->>OA: accountEvent ACCOUNT_PRE_CLOSED
+    ```
+
     ## Parties involved
 
     | Role | Responsibility in this capability |
     |---|---|
-    | **Software Service** | Restaurant management system. Hosts and implements all endpoints in this specification. **MUST implement the Orders protocol.** |
-    | **Ordering Application** | Ordering surface — self-service totem, tablet (customer or waiter), QR Code, front desk, or app. Consumes endpoints to create orders, query accounts, post payments, and request fiscal documents. **MUST implement the Orders protocol.** |
+    | **Software Service** | Restaurant management system. **Hosts** account, payment, fiscal, and account webhook emission behavior. **MUST implement Orders** to receive the source order. |
+    | **Ordering Application** | Ordering surface - self-service totem, tablet (customer or waiter), QR Code, front desk, or app. **Consumes** Indoor endpoints and **hosts** the webhook receiver for `accountEvent`. **MUST implement Orders** to originate the source order. |
 
+    ## Account vs events
+
+    Indoor separates the **current business state** of the account from the
+    **notifications** emitted about that account.
+
+    | Concept | What it is | Source of truth |
+    |---|---|---|
+    | **Account status** | Current account business condition | `account.status` on `GET /accounts` / `GET /accounts/{accountId}` |
+    | **Account event** | Immutable notified fact | Webhook payload (`eventId`, `eventType`) |
+
+    - `202 Accepted` on account mutations means accepted for processing, not final business confirmation.
+    - Consumers MUST reconcile with account GET operations whenever needed.
+    - Consumers MUST deduplicate webhook delivery by `eventId`.
+    - Consumers MUST NOT assume strict delivery order across account events.
+
+    ## Responsibilities by endpoint
+
+    | Endpoint | Hosted by | Called by |
+    |---|---|---|
+    | [`GET /accounts`](#operation/getAccount) | Software Service | Ordering Application |
+    | [`GET /accounts/{accountId}`](#operation/getAccountById) | Software Service | Ordering Application |
+    | [`POST /accounts/pre-close`](#operation/preCloseAccount) | Software Service | Ordering Application |
+    | [`POST /accounts/unlock`](#operation/unlockAccount) | Software Service | Ordering Application |
+    | [`POST /accounts/close`](#operation/closeAccount) | Software Service | Ordering Application |
+    | [`POST /accounts/items/{itemId}/cancel`](#operation/cancelAccountItem) | Software Service | Ordering Application |
+    | [`POST /accounts/transfers`](#operation/transferAccountContent) | Software Service | Ordering Application |
+    | [`POST /accounts/payments`](#operation/createPayment) | Software Service | Ordering Application |
+    | [`GET /accounts/payments`](#operation/listAccountPayments) | Software Service | Ordering Application |
+    | [`POST /accounts/fiscal`](#operation/requestFiscalDocument) | Software Service | Ordering Application |
+    | [`GET /accounts/fiscal`](#operation/listAccountFiscalDocuments) | Software Service | Ordering Application |
+    | Webhook [`accountEvent`](#operation/receiveAccountEvent) | Ordering Application | Software Service |
+
+    Authentication and Discovery declarations are defined in [Integration](#tag/IntegrationProfile).
+
+- name: IntegrationProfile
+  x-displayName: Integration
+  x-traitTag: true
+  description: |-
     ## Authentication
 
-    All endpoints in this specification require a Bearer Token. Supported OAuth 2.0
-    grant models, scopes, and webhook signing (HMAC-SHA256) are shared across Open
-    Delivery and documented in the [Authentication specification](../authentication/) —
-    not duplicated here.
+    All endpoints require `Authorization: Bearer {token}` unless marked otherwise.
+
+    OAuth 2.0 grant models, scopes, and webhook signature validation (HMAC-SHA256)
+    are defined in the [Authentication specification](../authentication/).
+
+    Preferred scope for this capability: `od.indoor`.
 
     <SecurityDefinitions />
+
+    ## Discovery declarations
+
+    Implementations MUST publish Indoor behavior in [Discovery](../discovery/)
+    so counterparties can integrate account, fiscal, and payment flows predictably.
+
+    At minimum, declare:
+    - `capabilities.indoor.version` and `capabilities.indoor.supported`.
+    - Fiscal issuer behavior through `invoiceIssuer`.
+    - Fiscal timing through `invoiceIssueMoment`.
+    - Whether account tracking requires `usesAccountId`.
+
+    Normative interpretation:
+    - Indoor remains an **extension of Orders** at the domain level.
+    - Discovery publishes Indoor support as its own capability object: `capabilities.indoor`.
+    - Counterparties SHOULD align account lookup and fiscal flow behavior with the declared Indoor fields.
+
+- name: ExternalDocs
+  x-displayName: External docs
+  x-traitTag: true
+  description: |-
+    ## External docs
+
+    Companion documents for this capability. The API Spec on this page remains the
+    normative, self-contained HTTP contract.
+
+    | Document | Purpose |
+    |---|---|
+    | [Indoor guide (concepts and flows)](../../protocol/indoor/) | Conceptual helper — optional if you already know the domain |
+    | [Orders API Spec](../orders/) | Prerequisite — `fulfillment.orderType: INDOOR` via event `CREATED` + GET (no create POST) |
+    | [Orders guide](../../protocol/orders/) | Orders protocol concepts and lifecycle |
+    | [Authentication API Spec](../authentication/) | OAuth 2.0 and HMAC webhook signatures |
+    | [Discovery API Spec](../discovery/) | Declaring the `indoor` extension in the well-known manifest |
+    | [General conventions](../conventions/) | Shared duplicate lifecycle and protocol-wide rules |
 - name: AccountOverview
   x-displayName: Account overview
   x-traitTag: true
@@ -152,8 +240,9 @@ tags:
 
     The account is **not created by an endpoint in this specification**. It is born
     automatically in the Software Service when the Orders protocol processes an order
-    with `orderType: INDOOR`. On that order, the Software Service creates the indoor
-    account for the `operationMode` + `identifier` present on the order.
+    with `fulfillment.orderType: INDOOR` (event-driven entry - **no** `POST /orders`). On that order, the
+    Software Service creates the indoor account for the `operationMode` + `identifier`
+    present on the order.
 
     > The Ordering Application does not call any Indoor endpoint to create the account —
     > that is an internal Software Service responsibility triggered by the Orders flow.
@@ -170,8 +259,9 @@ tags:
         participant OA as Ordering Application
         participant SS as Software Service
 
-        OA->>SS: POST /orders (orderType: INDOOR)
-        SS-->>OA: 201 Created
+        OA->>SS: Orders event CREATED (type=INDOOR)
+        SS->>OA: GET /orders/{orderId}
+        OA-->>SS: Order type=INDOOR
         SS-)OA: ACCOUNT_OPENED — status: IN_USE
 
         opt early payment (optional, at any time)
@@ -205,7 +295,7 @@ tags:
 
     | Event | Trigger | Obligation | Account status after |
     |---|---|---|---|
-    | `ACCOUNT_OPENED` | Account created by Orders (`orderType: INDOOR`) | **MUST** | `IN_USE` |
+    | `ACCOUNT_OPENED` | Account created by Orders (`fulfillment.orderType: INDOOR` via event + GET) | **MUST** | `IN_USE` |
     | `ACCOUNT_ITEM_ADDED` | New INDOOR order adds items | **MUST** | `IN_USE` |
     | `ACCOUNT_ITEM_REMOVED` | Items transferred to another account | **MAY** | `IN_USE` |
     | `ACCOUNT_ITEM_CANCELLED` | Item cancelled via [`POST /accounts/items/{itemId}/cancel`](#operation/cancelAccountItem) | **MUST** | `IN_USE` |
@@ -232,26 +322,6 @@ tags:
     | Pre-close ([`POST /accounts/pre-close`](#operation/preCloseAccount)) | ✅ | — |
     | Unlock ([`POST /accounts/unlock`](#operation/unlockAccount)) | — | ✅ |
     | Close ([`POST /accounts/close`](#operation/closeAccount)) | ❌ | ✅ |
-
-    ## Responsibilities by endpoint
-
-    > Order create/query endpoints belong to the **Orders protocol**, not this
-    > specification. The table below covers Indoor endpoints only.
-
-    | Endpoint | Hosted by | Called by |
-    |---|---|---|
-    | [`GET /accounts`](#operation/getAccount) | Software Service | Ordering Application |
-    | [`GET /accounts/{accountId}`](#operation/getAccountById) | Software Service | Ordering Application |
-    | [`POST /accounts/pre-close`](#operation/preCloseAccount) | Software Service | Ordering Application |
-    | [`POST /accounts/unlock`](#operation/unlockAccount) | Software Service | Ordering Application |
-    | [`POST /accounts/close`](#operation/closeAccount) | Software Service | Ordering Application |
-    | [`POST /accounts/items/{itemId}/cancel`](#operation/cancelAccountItem) | Software Service | Ordering Application |
-    | [`POST /accounts/transfers`](#operation/transferAccountContent) | Software Service | Ordering Application |
-    | [`POST /accounts/payments`](#operation/createPayment) | Software Service | Ordering Application |
-    | [`GET /accounts/payments`](#operation/listAccountPayments) | Software Service | Ordering Application |
-    | [`POST /accounts/fiscal`](#operation/requestFiscalDocument) | Software Service | Ordering Application |
-    | [`GET /accounts/fiscal`](#operation/listAccountFiscalDocuments) | Software Service | Ordering Application |
-    | Webhook [`accountEvent`](#operation/receiveAccountEvent) | Ordering Application | Software Service *(async notification)* |
 - name: Accounts
   description: 'Indoor account operations: query, item cancellation, transfers between accounts, pre-close,
     unlock, and final close.'
@@ -277,9 +347,16 @@ tags:
 
     For narrative flows and checklists, see the [Indoor guide](../../protocol/indoor/).
 x-tagGroups:
+- name: Read first
+  tags:
+  - ReleaseNotes
 - name: Overview
   tags:
   - CapabilityOverview
+  - ExternalDocs
+- name: Integration
+  tags:
+  - IntegrationProfile
 - name: Indoor account
   tags:
   - AccountOverview
@@ -300,15 +377,15 @@ paths:
         Retrieves the active account using the operational key (operationMode + identifier).
         This is the primary way to access and operate on an account.
 
-        | **Hosted by** | Software Service |
-        |---|---|
-        | **Called by** | Ordering Application |
 
-        ```mermaid
-        graph LR
-            OA["Ordering Application"] -- GET --> SS["Software Service"]
-            style OA fill:#e0f2f1,stroke:#0f6f73,color:#0f6f73
-            style SS fill:#fff3e0,stroke:#ef6c00,color:#ef6c00
+        ```od-call-flow
+        method: GET
+        from: Ordering Application
+        fromLabel: Client
+        fromParty: oa
+        to: Software Service
+        toLabel: Host
+        toParty: ss
         ```
       parameters:
       - $ref: '#/components/parameters/OperationModeQuery'
@@ -323,63 +400,63 @@ paths:
               examples:
                 accountInUse:
                   summary: TABLE account in use with partial payment
-                  value: null
-                  accountId: acc-table-5-20260315
-                  operationMode: TABLE
-                  identifier: '5'
-                  status: IN_USE
-                  lastEvent: ACCOUNT_ITEM_ADDED
-                  openedAt: '2026-03-15T19:02:11Z'
-                  orders:
-                  - orderId: ord-1001
-                    originChannel: QR_CODE
-                    createdAt: '2026-03-15T19:02:11Z'
-                  - orderId: ord-1002
-                    originChannel: WAITER_TABLET
-                    createdAt: '2026-03-15T19:18:40Z'
-                  items:
-                  - itemId: item-1
-                    externalCode: SKU-BURGER-01
-                    name: Classic Burger
-                    quantity: 2
-                    unitPrice: 32.9
-                    totalPrice: 65.8
-                    origin: ORDERING_APPLICATION
-                    addedAt: '2026-03-15T19:02:12Z'
-                    status: ACTIVE
-                    options:
-                    - externalCode: OPT-CHEESE
-                      name: Extra cheese
-                      quantity: 1
-                      unitPrice: 4.0
-                      totalPrice: 4.0
-                  - itemId: item-2
-                    externalCode: SKU-SODA-01
-                    name: Soft drink 350ml
-                    quantity: 2
-                    unitPrice: 8.5
-                    totalPrice: 17.0
-                    origin: ORDERING_APPLICATION
-                    addedAt: '2026-03-15T19:18:41Z'
-                    status: ACTIVE
-                  payments:
-                  - paymentId: pay-1
-                    amount: 20.0
-                    methodInfo:
-                      method: PIX
-                    paidAt: '2026-03-15T19:25:00Z'
-                  totals:
-                    itemsSubtotal: 86.8
-                    serviceCharge:
-                      rate: 10
-                      amount: 8.68
-                    taxes:
-                      amount: 0
-                    discount: 0
-                    paid: 20.0
-                    due: 75.48
-                  fiscal:
-                    documentIssued: false
+                  value:
+                    accountId: acc-table-5-20260315
+                    operationMode: TABLE
+                    identifier: '5'
+                    status: IN_USE
+                    lastEvent: ACCOUNT_ITEM_ADDED
+                    openedAt: '2026-03-15T19:02:11Z'
+                    orders:
+                    - orderId: ord-1001
+                      originChannel: QR_CODE
+                      createdAt: '2026-03-15T19:02:11Z'
+                    - orderId: ord-1002
+                      originChannel: WAITER_TABLET
+                      createdAt: '2026-03-15T19:18:40Z'
+                    items:
+                    - itemId: item-1
+                      externalCode: SKU-BURGER-01
+                      name: Classic Burger
+                      quantity: 2
+                      unitPrice: 32.9
+                      totalPrice: 65.8
+                      origin: ORDERING_APPLICATION
+                      addedAt: '2026-03-15T19:02:12Z'
+                      status: ACTIVE
+                      options:
+                      - externalCode: OPT-CHEESE
+                        name: Extra cheese
+                        quantity: 1
+                        unitPrice: 4.0
+                        totalPrice: 4.0
+                    - itemId: item-2
+                      externalCode: SKU-SODA-01
+                      name: Soft drink 350ml
+                      quantity: 2
+                      unitPrice: 8.5
+                      totalPrice: 17.0
+                      origin: ORDERING_APPLICATION
+                      addedAt: '2026-03-15T19:18:41Z'
+                      status: ACTIVE
+                    payments:
+                    - paymentId: pay-1
+                      amount: 20.0
+                      methodInfo:
+                        method: PIX
+                      paidAt: '2026-03-15T19:25:00Z'
+                    totals:
+                      itemsSubtotal: 86.8
+                      serviceCharge:
+                        rate: 10
+                        amount: 8.68
+                      taxes:
+                        amount: 0
+                      discount: 0
+                      paid: 20.0
+                      due: 75.48
+                    fiscal:
+                      documentIssued: false
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -400,15 +477,15 @@ paths:
         Retrieves the account using the internal identifier (accountId) returned by a
         previous call. Alternative to access by operational key.
 
-        | **Hosted by** | Software Service |
-        |---|---|
-        | **Called by** | Ordering Application |
 
-        ```mermaid
-        graph LR
-            OA["Ordering Application"] -- GET --> SS["Software Service"]
-            style OA fill:#e0f2f1,stroke:#0f6f73,color:#0f6f73
-            style SS fill:#fff3e0,stroke:#ef6c00,color:#ef6c00
+        ```od-call-flow
+        method: GET
+        from: Ordering Application
+        fromLabel: Client
+        fromParty: oa
+        to: Software Service
+        toLabel: Host
+        toParty: ss
         ```
       parameters:
       - $ref: '#/components/parameters/AccountId'
@@ -422,63 +499,63 @@ paths:
               examples:
                 accountById:
                   summary: Same account retrieved by accountId
-                  value: null
-                  accountId: acc-table-5-20260315
-                  operationMode: TABLE
-                  identifier: '5'
-                  status: IN_USE
-                  lastEvent: ACCOUNT_ITEM_ADDED
-                  openedAt: '2026-03-15T19:02:11Z'
-                  orders:
-                  - orderId: ord-1001
-                    originChannel: QR_CODE
-                    createdAt: '2026-03-15T19:02:11Z'
-                  - orderId: ord-1002
-                    originChannel: WAITER_TABLET
-                    createdAt: '2026-03-15T19:18:40Z'
-                  items:
-                  - itemId: item-1
-                    externalCode: SKU-BURGER-01
-                    name: Classic Burger
-                    quantity: 2
-                    unitPrice: 32.9
-                    totalPrice: 65.8
-                    origin: ORDERING_APPLICATION
-                    addedAt: '2026-03-15T19:02:12Z'
-                    status: ACTIVE
-                    options:
-                    - externalCode: OPT-CHEESE
-                      name: Extra cheese
-                      quantity: 1
-                      unitPrice: 4.0
-                      totalPrice: 4.0
-                  - itemId: item-2
-                    externalCode: SKU-SODA-01
-                    name: Soft drink 350ml
-                    quantity: 2
-                    unitPrice: 8.5
-                    totalPrice: 17.0
-                    origin: ORDERING_APPLICATION
-                    addedAt: '2026-03-15T19:18:41Z'
-                    status: ACTIVE
-                  payments:
-                  - paymentId: pay-1
-                    amount: 20.0
-                    methodInfo:
-                      method: PIX
-                    paidAt: '2026-03-15T19:25:00Z'
-                  totals:
-                    itemsSubtotal: 86.8
-                    serviceCharge:
-                      rate: 10
-                      amount: 8.68
-                    taxes:
-                      amount: 0
-                    discount: 0
-                    paid: 20.0
-                    due: 75.48
-                  fiscal:
-                    documentIssued: false
+                  value:
+                    accountId: acc-table-5-20260315
+                    operationMode: TABLE
+                    identifier: '5'
+                    status: IN_USE
+                    lastEvent: ACCOUNT_ITEM_ADDED
+                    openedAt: '2026-03-15T19:02:11Z'
+                    orders:
+                    - orderId: ord-1001
+                      originChannel: QR_CODE
+                      createdAt: '2026-03-15T19:02:11Z'
+                    - orderId: ord-1002
+                      originChannel: WAITER_TABLET
+                      createdAt: '2026-03-15T19:18:40Z'
+                    items:
+                    - itemId: item-1
+                      externalCode: SKU-BURGER-01
+                      name: Classic Burger
+                      quantity: 2
+                      unitPrice: 32.9
+                      totalPrice: 65.8
+                      origin: ORDERING_APPLICATION
+                      addedAt: '2026-03-15T19:02:12Z'
+                      status: ACTIVE
+                      options:
+                      - externalCode: OPT-CHEESE
+                        name: Extra cheese
+                        quantity: 1
+                        unitPrice: 4.0
+                        totalPrice: 4.0
+                    - itemId: item-2
+                      externalCode: SKU-SODA-01
+                      name: Soft drink 350ml
+                      quantity: 2
+                      unitPrice: 8.5
+                      totalPrice: 17.0
+                      origin: ORDERING_APPLICATION
+                      addedAt: '2026-03-15T19:18:41Z'
+                      status: ACTIVE
+                    payments:
+                    - paymentId: pay-1
+                      amount: 20.0
+                      methodInfo:
+                        method: PIX
+                      paidAt: '2026-03-15T19:25:00Z'
+                    totals:
+                      itemsSubtotal: 86.8
+                      serviceCharge:
+                        rate: 10
+                        amount: 8.68
+                      taxes:
+                        amount: 0
+                      discount: 0
+                      paid: 20.0
+                      due: 75.48
+                    fiscal:
+                      documentIssued: false
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -506,17 +583,23 @@ paths:
         > New items and metadata changes are blocked until unlock or close. Payments
         > continue to be accepted.
 
-        **Preconditions:** account **MUST** be `IN_USE`. Otherwise return `409 Conflict`.
+        **Preconditions:** account **MUST** be `IN_USE` for a *first* pre-close.
 
-        | **Hosted by** | Software Service |
-        |---|---|
-        | **Called by** | Ordering Application |
+        **Duplicate call:** if the account is **already** `IN_PAYMENT` because pre-close
+        was applied, return **`202`** (see info “Duplicate lifecycle operations”) — do
+        **not** return `409` only because pre-close already happened.
 
-        ```mermaid
-        graph LR
-            OA["Ordering Application"] -- POST --> SS["Software Service"]
-            style OA fill:#e0f2f1,stroke:#0f6f73,color:#0f6f73
-            style SS fill:#fff3e0,stroke:#ef6c00,color:#ef6c00
+        **Invalid call:** if pre-close is impossible (e.g. account `CLOSED`), return `409`.
+
+
+        ```od-call-flow
+        method: POST
+        from: Ordering Application
+        fromLabel: Client
+        fromParty: oa
+        to: Software Service
+        toLabel: Host
+        toParty: ss
         ```
       parameters:
       - $ref: '#/components/parameters/OperationModeQuery'
@@ -535,7 +618,9 @@ paths:
                   requestedBy: ordering-app-qr
       responses:
         '202':
-          description: 'Pre-close request accepted. Expected event: ACCOUNT_PRE_CLOSED.'
+          description: |
+            Pre-close accepted, **or** account already pre-closed (`IN_PAYMENT`).
+            Expected event when newly applied: `ACCOUNT_PRE_CLOSED`.
           content:
             application/json:
               schema:
@@ -543,13 +628,15 @@ paths:
               examples:
                 accepted:
                   summary: Accepted for processing
-                  value: null
-                  status: ACCEPTED
-                  correlationId: corr-a1b2c3d4
+                  value:
+                    status: ACCEPTED
+                    correlationId: corr-a1b2c3d4
         '400':
           $ref: '#/components/responses/BadRequest'
         '409':
-          $ref: '#/components/responses/Conflict'
+          description: |
+            Invalid state for pre-close (e.g. CLOSED). Not used merely because the
+            account was already pre-closed.
         '401':
           $ref: '#/components/responses/Unauthorized'
         '429':
@@ -568,15 +655,18 @@ paths:
 
         > **Event emitted:** `ACCOUNT_UNLOCKED` — account status returns to `IN_USE`.
 
-        | **Hosted by** | Software Service |
-        |---|---|
-        | **Called by** | Ordering Application |
+        **Duplicate call:** if the account is **already** `IN_USE` (unlock already applied),
+        return **`202`**. `409` only when unlock is impossible (e.g. `CLOSED`).
 
-        ```mermaid
-        graph LR
-            OA["Ordering Application"] -- POST --> SS["Software Service"]
-            style OA fill:#e0f2f1,stroke:#0f6f73,color:#0f6f73
-            style SS fill:#fff3e0,stroke:#ef6c00,color:#ef6c00
+
+        ```od-call-flow
+        method: POST
+        from: Ordering Application
+        fromLabel: Client
+        fromParty: oa
+        to: Software Service
+        toLabel: Host
+        toParty: ss
         ```
       parameters:
       - $ref: '#/components/parameters/OperationModeQuery'
@@ -594,7 +684,9 @@ paths:
                   reason: Customer ordered another item
       responses:
         '202':
-          description: 'Unlock request accepted. Expected event: ACCOUNT_UNLOCKED.'
+          description: |
+            Unlock accepted, **or** account already unlocked (`IN_USE`).
+            Expected event when newly applied: `ACCOUNT_UNLOCKED`.
           content:
             application/json:
               schema:
@@ -602,13 +694,16 @@ paths:
               examples:
                 accepted:
                   summary: Accepted for processing
-                  value: null
-                  status: ACCEPTED
-                  correlationId: corr-a1b2c3d4
+                  value:
+                    status: ACCEPTED
+                    correlationId: corr-a1b2c3d4
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: |
+            Invalid state for unlock (e.g. CLOSED). Not used merely because already unlocked.
         '429':
           $ref: '#/components/responses/TooManyRequests'
         '500':
@@ -628,19 +723,23 @@ paths:
         > **Event emitted:** `ACCOUNT_CLOSED` — account status becomes `CLOSED`.
         > Irreversible: no further changes — **including new payments** — are accepted.
 
-        **Preconditions:** account **MUST** be `IN_PAYMENT`. The Software Service **MUST**
-        validate that paid total covers the account amount (except business courtesy/discount).
-        If balance does not allow close, return `409 Conflict`.
+        **Preconditions:** account **MUST** be `IN_PAYMENT` for a *first* close. The Software
+        Service **MUST** validate that paid total covers the account amount (except business
+        courtesy/discount). If balance does not allow close, return `409 Conflict`.
 
-        | **Hosted by** | Software Service |
-        |---|---|
-        | **Called by** | Ordering Application |
+        **Duplicate call:** if the account is **already** `CLOSED`, return **`202`**
+        (see “Duplicate lifecycle operations”) — do **not** return `409` only because close
+        already happened.
 
-        ```mermaid
-        graph LR
-            OA["Ordering Application"] -- POST --> SS["Software Service"]
-            style OA fill:#e0f2f1,stroke:#0f6f73,color:#0f6f73
-            style SS fill:#fff3e0,stroke:#ef6c00,color:#ef6c00
+
+        ```od-call-flow
+        method: POST
+        from: Ordering Application
+        fromLabel: Client
+        fromParty: oa
+        to: Software Service
+        toLabel: Host
+        toParty: ss
         ```
       parameters:
       - $ref: '#/components/parameters/OperationModeQuery'
@@ -659,7 +758,9 @@ paths:
                   discount: 5.0
       responses:
         '202':
-          description: 'Close request accepted. Expected event: ACCOUNT_CLOSED. Irreversible.'
+          description: |
+            Close accepted, **or** account already closed. Expected event when newly applied:
+            `ACCOUNT_CLOSED`. Irreversible once closed.
           content:
             application/json:
               schema:
@@ -667,13 +768,17 @@ paths:
               examples:
                 accepted:
                   summary: Accepted for processing
-                  value: null
-                  status: ACCEPTED
-                  correlationId: corr-a1b2c3d4
+                  value:
+                    status: ACCEPTED
+                    correlationId: corr-a1b2c3d4
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: |
+            Close not allowed (e.g. insufficient payment, wrong status). Not used merely
+            because the account was already closed.
         '429':
           $ref: '#/components/responses/TooManyRequests'
         '500':
@@ -690,15 +795,15 @@ paths:
 
         > **Event emitted:** `ACCOUNT_ITEM_CANCELLED`.
 
-        | **Hosted by** | Software Service |
-        |---|---|
-        | **Called by** | Ordering Application |
 
-        ```mermaid
-        graph LR
-            OA["Ordering Application"] -- POST --> SS["Software Service"]
-            style OA fill:#e0f2f1,stroke:#0f6f73,color:#0f6f73
-            style SS fill:#fff3e0,stroke:#ef6c00,color:#ef6c00
+        ```od-call-flow
+        method: POST
+        from: Ordering Application
+        fromLabel: Client
+        fromParty: oa
+        to: Software Service
+        toLabel: Host
+        toParty: ss
         ```
       parameters:
       - $ref: '#/components/parameters/OperationModeQuery'
@@ -758,15 +863,15 @@ paths:
         > **Events emitted:** `ACCOUNT_ITEM_REMOVED` on the source account and
         > `ACCOUNT_ITEM_ADDED` on the target account.
 
-        | **Hosted by** | Software Service |
-        |---|---|
-        | **Called by** | Ordering Application |
 
-        ```mermaid
-        graph LR
-            OA["Ordering Application"] -- POST --> SS["Software Service"]
-            style OA fill:#e0f2f1,stroke:#0f6f73,color:#0f6f73
-            style SS fill:#fff3e0,stroke:#ef6c00,color:#ef6c00
+        ```od-call-flow
+        method: POST
+        from: Ordering Application
+        fromLabel: Client
+        fromParty: oa
+        to: Software Service
+        toLabel: Host
+        toParty: ss
         ```
       parameters:
       - $ref: '#/components/parameters/OperationModeQuery'
@@ -841,15 +946,15 @@ paths:
 
         > **Event emitted:** `PAYMENT_CREATED`.
 
-        | **Hosted by** | Software Service |
-        |---|---|
-        | **Called by** | Ordering Application |
 
-        ```mermaid
-        graph LR
-            OA["Ordering Application"] -- POST --> SS["Software Service"]
-            style OA fill:#e0f2f1,stroke:#0f6f73,color:#0f6f73
-            style SS fill:#fff3e0,stroke:#ef6c00,color:#ef6c00
+        ```od-call-flow
+        method: POST
+        from: Ordering Application
+        fromLabel: Client
+        fromParty: oa
+        to: Software Service
+        toLabel: Host
+        toParty: ss
         ```
       parameters:
       - $ref: '#/components/parameters/OperationModeQuery'
@@ -886,15 +991,15 @@ paths:
               examples:
                 paymentCreated:
                   summary: Card payment with NSU
-                  value: null
-                  paymentId: pay-2
-                  amount: 75.48
-                  methodInfo:
-                    method: CREDIT_CARD
-                    brand: VISA
-                    nsu: '12345678901234'
-                  tip: 5.0
-                  paidAt: '2026-03-15T20:10:00Z'
+                  value:
+                    paymentId: pay-2
+                    amount: 75.48
+                    methodInfo:
+                      method: CREDIT_CARD
+                      brand: VISA
+                      nsu: '12345678901234'
+                    tip: 5.0
+                    paidAt: '2026-03-15T20:10:00Z'
         '400':
           $ref: '#/components/responses/BadRequest'
         '409':
@@ -914,15 +1019,15 @@ paths:
         Returns all payment postings registered on the account identified by the
         operational key.
 
-        | **Hosted by** | Software Service |
-        |---|---|
-        | **Called by** | Ordering Application |
 
-        ```mermaid
-        graph LR
-            OA["Ordering Application"] -- GET --> SS["Software Service"]
-            style OA fill:#e0f2f1,stroke:#0f6f73,color:#0f6f73
-            style SS fill:#fff3e0,stroke:#ef6c00,color:#ef6c00
+        ```od-call-flow
+        method: GET
+        from: Ordering Application
+        fromLabel: Client
+        fromParty: oa
+        to: Software Service
+        toLabel: Host
+        toParty: ss
         ```
       parameters:
       - $ref: '#/components/parameters/OperationModeQuery'
@@ -981,15 +1086,15 @@ paths:
         > notified via webhook ([`accountEvent`](#operation/receiveAccountEvent)), because
         > issuance may take a variable amount of time.
 
-        | **Hosted by** | Software Service |
-        |---|---|
-        | **Called by** | Ordering Application |
 
-        ```mermaid
-        graph LR
-            OA["Ordering Application"] -- POST --> SS["Software Service"]
-            style OA fill:#e0f2f1,stroke:#0f6f73,color:#0f6f73
-            style SS fill:#fff3e0,stroke:#ef6c00,color:#ef6c00
+        ```od-call-flow
+        method: POST
+        from: Ordering Application
+        fromLabel: Client
+        fromParty: oa
+        to: Software Service
+        toLabel: Host
+        toParty: ss
         ```
       parameters:
       - $ref: '#/components/parameters/OperationModeQuery'
@@ -1017,9 +1122,9 @@ paths:
               examples:
                 accepted:
                   summary: Accepted for asynchronous processing
-                  value: null
-                  status: ACCEPTED
-                  correlationId: corr-a1b2c3d4
+                  value:
+                    status: ACCEPTED
+                    correlationId: corr-a1b2c3d4
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -1037,15 +1142,15 @@ paths:
         Returns all fiscal documents associated with the account identified by the
         operational key.
 
-        | **Hosted by** | Software Service |
-        |---|---|
-        | **Called by** | Ordering Application |
 
-        ```mermaid
-        graph LR
-            OA["Ordering Application"] -- GET --> SS["Software Service"]
-            style OA fill:#e0f2f1,stroke:#0f6f73,color:#0f6f73
-            style SS fill:#fff3e0,stroke:#ef6c00,color:#ef6c00
+        ```od-call-flow
+        method: GET
+        from: Ordering Application
+        fromLabel: Client
+        fromParty: oa
+        to: Software Service
+        toLabel: Host
+        toParty: ss
         ```
       parameters:
       - $ref: '#/components/parameters/OperationModeQuery'
@@ -1102,15 +1207,15 @@ webhooks:
         headers (`X-App-Id`, `X-App-MerchantId`, `X-App-Signature`) defined in the
         [Authentication specification](../authentication/).
 
-        | **Hosted by** | Ordering Application (webhook endpoint) |
-        |---|---|
-        | **Called by** | Software Service |
 
-        ```mermaid
-        graph LR
-            SS["Software Service"] -- POST --> OA["Ordering Application"]
-            style OA fill:#e0f2f1,stroke:#0f6f73,color:#0f6f73
-            style SS fill:#fff3e0,stroke:#ef6c00,color:#ef6c00
+        ```od-call-flow
+        method: POST
+        from: Software Service
+        fromLabel: Client
+        fromParty: ss
+        to: Ordering Application
+        toLabel: Host
+        toParty: oa
         ```
       parameters:
       - $ref: '#/components/parameters/XAppId'
@@ -1328,76 +1433,57 @@ components:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
   schemas:
-    OrderCreateRequest:
+    Order:
+      description: |
+        Snapshot reference of an order already originated via the Orders protocol
+        (`fulfillment.orderType: INDOOR`). There is no order-create endpoint in Indoor or Orders —
+        entry is event `CREATED` + GET on the Orders host.
       type: object
-      description: Request body to create an indoor order (orderType INDOOR).
-      required:
-      - orderType
-      - items
-      - indoor
       properties:
-        orderType:
+        orderId:
           type: string
-          enum:
-          - INDOOR
-          description: Order type. For this module, always INDOOR.
-        items:
-          type: array
-          minItems: 1
-          description: Items included in this order posting.
-          items:
-            $ref: '#/components/schemas/OrderItemInput'
+          description: Order identifier.
+        accountId:
+          type: string
+          description: Account related to the order.
+        createdAt:
+          type: string
+          format: date-time
+          description: Order creation date/time.
         indoor:
           allOf:
           - $ref: '#/components/schemas/Indoor'
           description: Indoor extension data for the order.
-    OrderCreateResponse:
-      type: object
-      description: Response returned after creating an indoor order.
-      required:
-      - orderId
-      - status
-      properties:
-        orderId:
-          type: string
-          description: Identifier of the created order.
-        accountId:
-          type: string
-          description: |
-            Account identifier when it already exists or was created while processing the order.
-        status:
-          type: string
-          enum:
-          - ACCEPTED
-          - REJECTED
-          - PENDING
-          description: Result of the initial order processing.
-    Order:
-      description: Full representation of an already created indoor order.
-      allOf:
-      - $ref: '#/components/schemas/OrderCreateRequest'
-      - type: object
-        properties:
-          orderId:
-            type: string
-            description: Order identifier.
-          accountId:
-            type: string
-            description: Account related to the order.
-          createdAt:
-            type: string
-            format: date-time
-            description: Order creation date/time.
     Indoor:
       type: object
       description: Indoor extension attached to the order — operational key, channel, and service preferences.
       example:
         operationMode: TABLE
         identifier: '5'
+        account:
+          id: acc-table-5-20260315
         originChannel:
           type: QR_CODE
           id: qr-table-5
+          notes: Table 5 QR sticker
         consumptionType: DINE_IN
+        fulfillment:
+          type: CALL
+          call:
+            notifyOriginator: true
+            type: TICKET_NUMBER
+            label: A42
+        service:
+          waiterCode: WT-01
+          waiterName: Carla
+          peopleCount: 2
+        notifications:
+          whatsAppId: '5511999990000'
+        fiscal:
+          shouldIssueDocument: true
+          documentStatus: PENDING
+          printDocument: true
+          paymentNSURequiredForNFCE: true
       required:
       - operationMode
       - identifier
@@ -1412,10 +1498,15 @@ components:
           type: string
           description: |
             Operational identifier of the table, tab, or counter used to locate the active session before, during, or after order creation.
-        accountId:
-          type: string
-          description: |
-            Internal account identifier when already known. MUST NOT be required on the first order POST.
+        account:
+          type: object
+          description: Existing account reference when already known by the Software Service.
+          required:
+          - id
+          properties:
+            id:
+              type: string
+              description: Existing account identifier (`account.id` in payload notation).
         originChannel:
           allOf:
           - $ref: '#/components/schemas/OriginChannel'
@@ -1953,6 +2044,8 @@ components:
     OrderFiscalInfo:
       type: object
       description: Fiscal preferences provided on the indoor order.
+      required:
+      - shouldIssueDocument
       properties:
         shouldIssueDocument:
           type: boolean
@@ -1963,7 +2056,12 @@ components:
           - NOT_ISSUED
           - PENDING
           - ISSUED
-          description: Known fiscal status at order time.
+          description: |
+            Known fiscal status at order time.
+            Canonical values replace common legacy labels:
+            - `NOT_ISSUED` (legacy: NAO_EMITIDA)
+            - `ISSUED` (legacy: EMITIDA)
+            - `PENDING` (legacy: PENDENTE)
         printDocument:
           type: boolean
           description: Whether the document should be printed.
@@ -1998,7 +2096,10 @@ components:
           - APP
           - WHATSAPP
           - OTHER
-          description: Indoor order origin channel.
+          description: |
+            Indoor order origin channel.
+            Canonical values replace common legacy labels such as TABLET_CLIENTE,
+            TABLET_GARCOM, FRENTE_DE_CAIXA, PDV, APLICATIVO, and OUTRO.
         id:
           type: string
           description: Specific channel/device/origin identifier.
@@ -2008,6 +2109,8 @@ components:
     FulfillmentInfo:
       type: object
       description: Order delivery or pickup method.
+      required:
+      - type
       properties:
         type:
           type: string
@@ -2038,7 +2141,9 @@ components:
           - CALL_NAME
           - WHATSAPP
           - OTHER
-          description: Identification type used to call the customer.
+          description: |
+            Identification type used to call the customer.
+            `TICKET_NUMBER` corresponds to legacy "senha" flows.
         label:
           type: string
           description: Visible call value such as ticket number, name, or equivalent label.
@@ -2202,13 +2307,22 @@ components:
       - TABLE
       - TAB
       - COUNTER
-      description: Primary operational mode for indoor service.
+      description: |
+        Primary operational mode for indoor service.
+        Canonical values replace common legacy labels:
+        - `TABLE` (legacy: MESA)
+        - `TAB` (legacy: COMANDA)
+        - `COUNTER` (legacy: BALCAO)
     ConsumptionType:
       type: string
       enum:
       - DINE_IN
       - TAKEAWAY
-      description: Consumption intent associated with the indoor order.
+      description: |
+        Consumption intent associated with the indoor order.
+        Canonical values replace common legacy labels:
+        - `DINE_IN` (legacy: CONSUMIR_NO_LOCAL)
+        - `TAKEAWAY` (legacy: LEVAR)
     AccountStatus:
       type: string
       enum:

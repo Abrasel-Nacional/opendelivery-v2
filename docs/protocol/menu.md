@@ -1,147 +1,158 @@
 # Menus
 
 <p class="od-meta">
-  <span class="od-badge od-badge--code">merchant</span>
-  <span class="od-badge">Merchant · catálogo</span>
+ <span class="od-badge od-badge--core">Capability</span>
+ <span class="od-badge od-badge--code">merchant</span>
+ <span class="od-badge">Merchant · catálogo</span>
 </p>
 
-<div class="od-api-callout">
-  <p>Catálogo (menus, itens, opcionais). Identidade e services em <strong>Dados da Loja</strong> — mesmo OpenAPI Merchant.</p>
-  <a href="../reference/merchant/">Abrir referência OpenAPI →</a>
-</div>
+!!! note "Especificação da API"
+    O contrato implementável está na **[especificação de Merchant](../reference/merchant.md)** — somente em inglês.
 
 !!! note "Parte da capability Merchant"
-    **Menus** e **[Dados da Loja](merchant-store.md)** compõem a capability `merchant` (ver [Visão geral](merchant.md)). Não são extensões do Discovery.
+    **Menus** e **[Dados da Loja](merchant-store.md)** compõem a capability `merchant` (ver [visão geral](merchant.md)). Não são extensões do Discovery.
 
-Esta página cobre composição e sincronismo do **catálogo**: menus, categorias, item-offers, option-groups e opções. Para Merchant ID, services e pause, veja [Dados da Loja](merchant-store.md).
+Esta página cobre o **catálogo**: menus, categorias, item-offers, option-groups e opções. Services e pause: [Dados da Loja](merchant-store.md).
 
 ---
 
-## Hierarquia do catálogo
+## Quebra V1 → V2 (cardápio)
 
-O catálogo é composto por entidades independentes com relacionamentos explícitos. Cada entidade é gerenciada por **CRUD granular** — não há mais a operação monolítica de publicação do cardápio da V1.
+!!! important "Fim do merchantUpdate monolítico"
+    Na V1, atualização de cardápio era o webhook **`merchantUpdate` / `menuUpdated`** com payload completo. Na V2 o caminho normativo é **CRUD por entidade** + **`GET …/snapshot`** para bootstrap.
+
+| Campo / modelo | V1 | V2 |
+|---|---|---|
+| Publicação | Webhook monolítico | CRUD + snapshot |
+| `option_price` | Opcional | **Obrigatório** (0 se grátis) |
+| `subtotal` em opções | Presente / confuso | **Removido** |
+| `unity_price` | Implícito | **Explícito** |
+| `quantity_available` | — | **Novo** (operacional) |
+
+---
+
+## Hierarquia
 
 ```
 Merchant
-├── Service (DELIVERY / TAKEOUT / INDOOR)  →  menuId
+├── Service (DELIVERY / TAKEOUT / INDOOR) → menuId
 └── Menu
-    └── Category
-        └── ItemOffer
-            └── OptionGroup (recursivo)
-                └── Option
+ └── Category
+ └── ItemOffer
+ └── OptionGroup (recursivo)
+ └── Option → OptionGroup…
 ```
 
-Um estabelecimento pode ter **múltiplos menus** (ex.: almoço, janta, bebidas). Cada [Service](merchant-store.md#serviço-service) em Dados da Loja pode referenciar o menu ativo via `menuId`.
+Um estabelecimento pode ter **múltiplos menus**. Cada [Service](merchant-store.md#serviço-service) pode referenciar o menu ativo via `menuId`.
 
 ---
 
-## Menu e Categoria
+## Snapshot vs CRUD
 
-Um **Menu** agrupa Categorias. Uma **Categoria** agrupa ItemOffers.
-
-Operações típicas (ver OpenAPI para o contrato completo):
-
-- CRUD de menus, categorias e vínculos
-- Snapshot hierárquico para bootstrap (abaixo)
-
----
-
-## ItemOffer
-
-Um **ItemOffer** é a oferta de um produto com preço e disponibilidade no contexto do catálogo.
-
-| Campo | Tipo | Obrigatório | Descrição |
-|---|---|---|---|
-| `id` | string | SIM | Identificador único (UUID) |
-| `name` | string | SIM | Nome exibido ao consumidor |
-| `description` | string | NÃO | Texto descritivo |
-| `unity_price` | object | SIM | Preço unitário com valor e moeda |
-| `quantity_available` | integer | NÃO | Quantidade disponível no momento (operacional, não estoque) |
-| `optionGroupIds` | array[string] | NÃO | Grupos de opções associados |
-
-!!! info "`quantity_available` é operacional"
-    Representa a quantidade disponível **agora** (ex.: prato do dia com 10 porções). **Não** é integração de estoque multi-canal. Quando omitido, considera-se disponibilidade ilimitada.
-
----
-
-## OptionGroup (recursivo)
-
-Grupo de opções selecionáveis (ex.: “Ponto da carne”, “Complementos”). OptionGroups são **recursivos** — uma opção pode carregar um sub-grupo.
-
-| Campo | Tipo | Obrigatório | Descrição |
-|---|---|---|---|
-| `id` | string | SIM | Identificador único |
-| `name` | string | SIM | Nome do grupo |
-| `min` | integer | SIM | Mínimo de seleções (0 = opcional) |
-| `max` | integer | SIM | Máximo de seleções |
-| `options` | array[Option] | SIM | Lista de opções |
-
-### Option
-
-| Campo | Tipo | Obrigatório | Descrição |
-|---|---|---|---|
-| `id` | string | SIM | Identificador único |
-| `name` | string | SIM | Nome da opção |
-| `option_price` | object | SIM | Preço incremental da opção |
-| `optionGroupIds` | array[string] | NÃO | Sub-grupos (recursividade) |
-
-!!! important "`option_price` é obrigatório na V2"
-    Na V1 o preço da opção era opcional. Na V2, **todo `Option` DEVE ter `option_price`**. Sem custo adicional: `{ "value": 0, "currency": "BRL" }`. O campo `subtotal` foi removido — o total no pedido usa `unity_price` + soma dos `option_price`.
-
----
-
-## Snapshot do cardápio
-
-Para bootstrap ou reconciliação completa:
+| Cenário | Abordagem | operationId |
+|---|---|---|
+| Carga inicial / reconciliação | Snapshot completo | `getMenuSnapshot` |
+| Listar menus | Listagem | `listMenus` |
+| Preço / nome / disponibilidade | PATCH/PUT da entidade | `updateItemOffer`, … |
+| Novo item / categoria / opção | POST | `createItemOffer`, `createCategory`, `createOption` |
+| Remoção | DELETE (async `202`) | `deleteItemOffer`, … |
 
 ```
 GET /merchants/{merchantId}/menus/{menuId}/snapshot
 ```
 
-O snapshot retorna menu, categorias, item-offers, option-groups e options em uma estrutura hierárquica. **Recomendado** para onboarding e full sync.
+O snapshot devolve a hierarquia (categorias → item-offers → option-groups → options). É o substituto prático do “cardápio completo” da V1 **para bootstrap**, não um retorno do webhook monolítico.
 
-Para atualizações incrementais, use os endpoints granulares de cada entidade (CRUD).
+```mermaid
+sequenceDiagram
+ participant OA as Ordering Application
+ participant SS as Software Service
+
+ OA->>SS: GET …/menus/{menuId}/snapshot
+ SS-->>OA: 200 MenuSnapshot
+ Note over OA: bootstrap local
+ OA->>SS: PATCH …/item-offers/{id} { unity_price }
+ SS-->>OA: 202 Accepted
+```
 
 ---
 
-## Sincronismo (visão prática)
+## ItemOffer e preços
 
-| Cenário | Abordagem |
+| Campo | Obrigatório | Notas |
+|---|---|---|
+| `unity_price` | SIM | Preço base em unidades menores (centavos) |
+| `quantity_available` | NÃO | Sinal **operacional** (ex.: 10 porções do prato do dia). **Não** é estoque multi-canal. `null`/omitido = sem limite declarado; `0` = indisponível |
+| `status` | SIM | `AVAILABLE` / `UNAVAILABLE` |
+| `externalCode` | NÃO | Código interno do PDV |
+
+---
+
+## OptionGroup e Option (recursivos)
+
+OptionGroups podem aninhar (ex.: tamanho → ponto → molho). Uso real costuma ser 2–3 níveis.
+
+!!! important "`option_price` obrigatório na V2"
+    Todo `Option` DEVE ter `option_price`. Sem custo adicional: `0`. O campo `subtotal` de opções da V1 foi removido — no pedido, use `unity_price` + soma dos `option_price` (ver [Orders](orders.md)).
+
+---
+
+## Mapa de operações (catálogo)
+
+| Objetivo | operationId |
 |---|---|
-| Carga inicial / reconciliação | Snapshot |
-| Mudança de preço ou nome | PATCH da entidade (ItemOffer, Option…) |
-| Novo item / categoria | POST na entidade correspondente |
-| Menu completo substituído | PUT/snapshot conforme binding |
-
-Quem é **fonte da verdade** do catálogo (PDV vs originador) deve ser declarado no [Discovery](discovery.md) e nas regras de negócio da integração — o protocolo não impõe um único dono universal.
-
----
-
-## Regras normativas (catálogo)
-
-**O Software Service DEVE:**
-
-- Preservar integridade referencial entre menu, categorias, item-offers, option-groups e opções
-- Retornar `202 Accepted` para mutações assíncronas
-- Declarar `quantity_available` só quando houver limitação operacional real
-
-**A Ordering Application DEVE:**
-
-- Tratar `quantity_available` como dica operacional, não garantia de estoque
-- Preferir snapshot no bootstrap e endpoints granulares para deltas
-
-**Ambos DEVEM:**
-
-- Usar `option_price: { value: 0, currency: "..." }` para opções sem custo
-- Operar o catálogo sob a capability `merchant` (escopos de leitura/escrita de merchant/menu)
+| Listar menus | `listMenus` |
+| Snapshot | `getMenuSnapshot` |
+| Categorias | `listCategories` · `createCategory` · `replaceCategory` · `deleteCategory` |
+| Item offers | `listItemOffers` · `createItemOffer` · `replaceItemOffer` · `updateItemOffer` · `deleteItemOffer` |
+| Option groups | `listOptionGroups` · `createOptionGroup` · `replaceOptionGroup` · `deleteOptionGroup` |
+| Options | `listOptions` · `createOption` · `replaceOption` · `deleteOption` |
 
 ---
 
-<div class="od-next-step">
-  <div class="od-next-step__label">Próximo passo</div>
-  <div class="od-next-step__links">
-    <a href="merchant/">Visão geral Merchant</a>
-    <a href="merchant-store/">Dados da Loja</a>
-    <a href="../reference/merchant/">OpenAPI Merchant</a>
-  </div>
+## Sincronismo
+
+Quem é **fonte da verdade** do catálogo (PDV vs originador) deve estar claro no Discovery e no contrato comercial. O protocolo:
+
+- **Não** reintroduz `merchantUpdate` como caminho core V2  
+- **Não** define webhook de delta de cardápio no MVP  
+- Reconciliação: snapshot + CRUD  
+
+Mutações assíncronas retornam **`202`**; creates síncronos podem retornar **`201`** com corpo.
+
+---
+
+## Checklists
+
+!!! tip "Checklist — Ordering Application"
+    - [ ] Bootstrap com snapshot  
+    - [ ] Deltas via CRUD, não webhook monolítico  
+    - [ ] `option_price` sempre presente no consumo  
+    - [ ] `quantity_available` como dica, não garantia de estoque  
+
+!!! tip "Checklist — Software Service"
+    - [ ] Integridade referencial menu → … → options  
+    - [ ] `202` em mutações assíncronas  
+    - [ ] Sem `merchantType` / sem `subtotal` de opção V1  
+
+---
+
+## Fora do MVP
+
+| Tema | Status |
+|---|---|
+| Webhook de notificação de delta de catálogo | Não normativo no core |
+| Custom fields livres | Fora do MVP |
+| Controle de estoque multi-canal | Fora de escopo |
+
+---
+
+<div class="od-related">
+  <p class="od-related__label">Relacionado</p>
+  <ul class="od-related__list">
+    <li><a href="../reference/merchant.md">Especificação de Merchant</a></li>
+    <li><a href="merchant-store.md">Dados da Loja</a></li>
+    <li><a href="merchant.md">Merchant — visão geral</a></li>
+    <li><a href="orders.md">Orders</a> — preços no pedido</li>
+  </ul>
 </div>

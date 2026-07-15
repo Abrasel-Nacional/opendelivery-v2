@@ -5,66 +5,67 @@
 ```
 Open Delivery Protocol v2
 ├── 1. GUIA
-│   ├── Início (landing)
-│   ├── Primeiros Passos
-│   ├── Trilhas por papel
-│   ├── Conceitos
-│   ├── Visão Geral do Protocolo
-│   ├── Protocolo vs Binding
-│   ├── Papéis e Responsabilidades
-│   └── Migração e Histórico (Changelog, V1→V2, Roadmap)
+│ ├── Início (landing)
+│ ├── Primeiros Passos
+│ ├── Trilhas por papel
+│ ├── Conceitos
+│ ├── Visão Geral do Protocolo
+│ ├── Papéis e Responsabilidades
+│ └── Migração e Histórico (Changelog, V1→V2, Roadmap)
 │
 ├── 2. PROTOCOLO
-│   ├── Fundamentos (princípios, regras, erros, fluxos, evolução)
-│   ├── Infraestrutura (Discovery, Autenticação)
-│   ├── Capabilities
-│   │   ├── Merchant
-│   │   │   ├── Visão geral
-│   │   │   ├── Dados da Loja
-│   │   │   └── Menus
-│   │   ├── Orders / Pedidos
-│   │   │   └── Indoor / Salão (extensão)
-│   │   ├── Logística
-│   │   └── Customer / CRM
-│   │       ├── Reviews (extensão)
-│   │       └── Loyalty / Fidelidade (extensão)
+│ ├── Fundamentos (princípios, fluxos, evolução)
+│ ├── Infraestrutura (Discovery, Autenticação) — narrativa de domínio
+│ ├── Capabilities
+│ │ ├── Merchant
+│ │ │ ├── Visão geral
+│ │ │ ├── Dados da Loja
+│ │ │ └── Menus
+│ │ ├── Orders / Pedidos
+│ │ │ └── Indoor / Salão (extensão)
+│ │ ├── Logística
+│ │ └── Customer
+│ │ ├── Reviews (módulo)
+│ │ └── Loyalty (módulo)
 │
-└── 3. REFERÊNCIA DA API (OpenAPI + ReDoc)
-    ├── Infraestrutura (Discovery, Autenticação)
-    └── Capabilities (Merchant, Orders, Logistics, Customer, Indoor)
+└── 3. REFERÊNCIA DA API (especificação da API) — fonte normativa
+ ├── Convenções (regras gerais, tratamento de erros)
+ ├── Infraestrutura (Discovery, Autenticação)
+ └── Capabilities (Merchant, Orders, Logistics, Customer, Indoor)
 ```
 
 ## Notes
 
-- **Protocol-first:** regras e papéis vivem em Protocolo; contrato HTTP em **Referência** (ReDoc).
+- **Sem transport binding:** não há camada “protocolo agnóstico + binding REST”. O contrato implementável é a **especificação da API**.
+- **Camadas:** Guia = onboarding; Protocolo = domínio (explicativo); API = norma de implementação.
 - **Header:** mega-menu em colunas no Protocolo (Fundamentos · Infra · Capabilities); subpáginas (Menus, Indoor…) só na **sidebar**.
-- **Extensões** dependem da capability pai e são declaradas no Discovery.
-- **Bindings REST** (`docs/transport-bindings/`) são legado pré-ReDoc e **não** entram no site (`exclude_docs`).
+- **Extensões** (ex.: Indoor) dependem da capability pai e são declaradas no Discovery. **Reviews** e **Loyalty** são módulos de Customer, não extensões.
+- **`docs/transport-bindings/**`** é legado pré- e **não** entra no site (`exclude_docs`).
 - Atas de comitê em `docs/reference/v2/comites/` ficam no repositório mas **não** entram no site.
 
-## Modelo Guia ↔ OpenAPI (capabilities)
+## Modelo Guia ↔ especificação da API (capabilities)
 
 Padrão híbrido (piloto: **Indoor**; replicar nas demais capabilities):
 
 | Camada | Arquivo | Conteúdo |
 |--------|---------|----------|
-| **Guia** | `docs/protocol/{capability}.md` | Visão geral, papéis, conceitos, fluxos Mermaid, checklists, Discovery, mapa ops → OpenAPI, fora do MVP |
-| **OpenAPI** | `docs/reference/v2/{capability}.openapi.yaml` | Normativa auto-suficiente **em inglês**: endpoints, campos, MUST/MAY, erros, **exemplos JSON**, webhooks |
-| **Casca ReDoc** | `docs/reference/{capability}.md` (+ `.en.md`) | Front matter `template: redoc.html` + callout ligando ao guia (nota de idioma) |
+| **Guia de domínio** | `docs/protocol/{capability}.md` | Visão geral, papéis, conceitos, fluxos Mermaid, checklists, mapa ops → especificação da API, fora do MVP — **não** é fonte normativa de campos |
+| **especificação da API** | `docs/reference/v2/{capability}.openapi.yaml` | Normativa auto-suficiente **em inglês**: endpoints, campos, MUST/MAY, erros, **exemplos JSON**, webhooks |
+| **Casca ** | `docs/reference/{capability}.md` (+ `.en.md`) | Front matter `template: redoc.html` + callout ligando ao guia (nota de idioma) |
 
 ### Regras
 
-1. **OpenAPI se basta** — quem só abre o ReDoc consegue implementar (exemplos em request/response/schemas).
-2. **Guia é auxiliar** — não é fonte normativa de campos; evita tabelas de schema longas (linka para a spec).
+1. **especificação da API se basta** — quem só abre o consegue implementar (exemplos em request/response/schemas). Em divergência com o Markdown de Protocolo, **prevalece a especificação da API**.
+2. **Protocolo é auxiliar** — não é fonte normativa de campos; evita tabelas de schema longas (linka para a spec).
 3. **Cruzamento obrigatório**
-   - Guia → callout + tabela “objetivo → operationId” + próximo passo para ReDoc.
-   - OpenAPI → `info.externalDocs` + links no `info.description` / tags para o guia e specs irmãs (Orders, Auth, Discovery).
+ - Protocolo → callout + tabela “objetivo → operationId” + próximo passo para.
+ - especificação da API → `info.externalDocs` / tags External docs para o guia e specs irmãs (Orders, Auth, Discovery).
 4. **Fora do MVP** — temas em debate no comitê ficam explícitos (não se tornam normativos “por acaso”).
 5. **Atas** em `docs/reference/v2/comites/` orientam decisões; não inventar regras sem base.
 
 ### Call flow card (endpoints)
 
-ReDoc **escapes raw HTML** in descriptions. Use a fenced block processed by JS in `overrides/redoc.html`:
+ **escapes raw HTML** in descriptions. Use a fenced block processed by JS in `overrides/redoc.html`:
 
 ````markdown
 ```od-call-flow
@@ -81,21 +82,22 @@ toParty: ss
 - **OA → SS** (normal): Client = Ordering Application, Host = Software Service
 - **SS → OA** (webhook): reverse parties (adds `od-call-flow--webhook` styling)
 
-Same idea as the old Hosted/Called table; reusable for all capabilities.
-
 ### Checklist ao editar uma capability
 
-- [ ] Guia **PT + EN** (`page.md` e `page.en.md`): callout de camadas, Discovery, mapa ops, fora do MVP
-- [ ] OpenAPI **somente EN**: exemplos em todas as operações e schemas-chave
-- [ ] OpenAPI: tag **External docs** no grupo Overview (não `info.externalDocs` solto)
-- [ ] OpenAPI: `.od-call-flow` em cada operação (hosts/calls + method)
-- [ ] OpenAPI: eventos com obrigatoriedade MUST/MAY alinhada ao guia
-- [ ] `reference/{capability}.md` + `.en.md`: callout para o guia + “OpenAPI always English”
+- [ ] Guia de domínio **PT + EN** (`page.md` e `page.en.md`): callout de camadas, Discovery, mapa ops, fora do MVP
+- [ ] especificação da API **somente EN**: exemplos em todas as operações e schemas-chave
+- [ ] especificação da API: tag **External docs** no grupo Overview (não `info.externalDocs` solto)
+- [ ] especificação da API: `.od-call-flow` em cada operação (hosts/calls + method)
+- [ ] especificação da API: eventos com obrigatoriedade MUST/MAY alinhada ao guia de domínio
+- [ ] `reference/{capability}.md` + `.en.md`: callout para o guia + “especificação da API always English”
+- [ ] Sem linguagem de “transport binding” / protocolo agnóstico de transporte
 - [ ] `python -m mkdocs build --strict`
 
-### Ordem sugerida (pós-Indoor)
+### Ordem de capabilities (nav, landing, indexes)
 
-Orders → Merchant → Logistics → Customer (e extensões Reviews/Loyalty).
+**Orders sempre em primeiro** entre as capabilities de domínio (antes de Merchant, Logistics, Customer). Indoor permanece sob Orders como extensão.
+
+Ordem de trabalho de documentação: Orders → Merchant → Logistics → Customer (e extensões Reviews/Loyalty).
 
 ## i18n (PT + EN)
 
@@ -107,7 +109,7 @@ Plugin: **mkdocs-static-i18n** (`docs_structure: suffix`).
 | **en** | `page.en.md` | `/en/…` |
 
 - `fallback_to_default: true` — se faltar `.en.md`, o EN reutiliza o PT (temporário).
-- **OpenAPI / ReDoc contracts:** **always English** (`docs/reference/v2/*.openapi.yaml`). No exceptions per capability.
+- **especificação da API contracts:** **always English** (`docs/reference/v2/*.openapi.yaml`). No exceptions per capability.
 - **Guides / protocol pages:** **bilingual** — PT default (`page.md`) + EN (`page.en.md`).
 - **Não traduzir** nomes de schemas, campos, enums, eventos, paths nem tokens de protocolo nos exemplos JSON.
 - Nav EN via `nav_translations` no `mkdocs.yml`.

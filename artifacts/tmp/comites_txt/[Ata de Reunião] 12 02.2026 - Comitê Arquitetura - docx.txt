@@ -1,0 +1,36 @@
+Ata de Reunião 12/02/2026
+Comitê Técnico Arquitetura ­ Open Delivery V2.0.0
+Data: 12 de fevereiro de 2026 (quinta-feira) Início: 10:00 Formato: Microsoft Teams
+1) Contexto e objetivo da sessão A sessão teve como objetivo revisar os impactos da autenticação por software no padrão Open Delivery V2, entender os ajustes necessários na arquitetura e nos endpoints (pedido, cardápio, logística) e levantar dores técnicas dos participantes. Também foram discutidas camadas adicionais de segurança, possibilidade de manter ou descontinuar o pulling, estrutura de assinatura de requisições e melhorias no onboarding entre parceiros via endpoint de configuração.
+2) Participantes 1. Guilherme Camargo ­ Abrasel Nacional (Líder técnico Open Delivery) 2. Ana Santos ­ Abrasel Nacional (Líder de Operações Open Delivery) 3. Carlos Eduardo Rodrigues de Almeida - 3S Chackout 4. Julio Zampieri ­ Keeta 5. Cesar ­ XMenu 6. Isabelly Vitória Pignatari ­ 3S Checkout 7. Evandro Duarte ­ 3S Checkout 8. Cesar ­ X Menu 9. Murilo ­ Keeta 10. Enzo Madalena - keeta 11. Leandro ­ Eclética 12. Flávio Silva ­ Colibri | RS
+
+13. Hemógenes Alves Domingos ­ Colibri | RS 14. Juliano's AI Notetaker (tldv.io) ­ não verificado 15. Outros participantes não identificados na transcrição
+3) Comunicados e alinhamentos iniciais · Solicitação para todos colocarem nome + empresa no Teams para registro. · Reunião gravada como de costume. · Semana seguinte (Carnaval) não terá reunião. Retomada em 26/02. · Repositório da V2 no GitHub está organizado; participantes devem abrir issues diretamente. · Backlog estruturado por temas; revisões serão contínuas.
+4) Pauta técnica 4.1 Autenticação por software
+· Reavaliação da adoção como padrão, dado retorno de parceiros que ainda dependem de autenticação por loja.
+· Objetivo: mapear impactos antes de decisão final. 4.2 Token e merchants
+· Decisão preliminar: não retornar merchants junto com o token. · Criação de endpoint GET /merchants para listar as lojas disponíveis ao
+software. 4.3 Pulling
+· Com autenticação por software, pulling passa a retornar eventos de várias lojas.
+· Necessidade de: o Campo opcional para filtrar merchants.
+
+o Identificação do merchant no evento retornado. · Discussão sobre GET não aceitar body  ajustes seriam breaking
+change; será avaliado. 4.4 Webhook
+· Já contém merchant ID no header  sem mudanças necessárias. 4.5 Cardápio
+· Todos os endpoints futuramente deverão receber merchant ID. · Estrutura final depende do novo modelo de sincronismo do cardápio. 4.6 Logística · Sem grandes impactos; merchant já é enviado no request.
+5) Dores e necessidades levantadas (detalhadas por quem falou) Carlos Eduardo Rodrigues de Almeida
+· Retornar merchants no token quebra padrão OAuth2. · Ferramentas e gateways não suportam token com payload diferenciado. · Lista de merchants no pulling pode gerar headers muito grandes. · Defende filtro opcional: consumidor pode querer "tudo" de uma vez. · Manter duas formas de autenticação (por software e por loja) gera risco
+operacional no cadastro. Julio Zampieri ­ Keeta
+· Keeta não utiliza pulling  considera tema sensível e complexo. · Risco de alteração de payload em trânsito (ex.: proxies mudando valores). · Justifica adoção de assinatura bidirecional para garantir integridade da
+mensagem. Guilherme Camargo ­ Abrasel
+· Preocupação com aumento de complexidade se ambas autenticações forem mantidas.
+
+· Falta de uso adequado do escopo OAuth na V1 pode ser corrigida agora. · Necessidade de formalizar configurações via endpoint em vez de acordos
+manuais. Cesar ­ XMenu
+· Parceiros precisam escolher modo de autenticação no onboarding. · Padrão precisa prever claramente esta escolha.
+6) Encaminhamentos e acordos · Criar GET /merchants para listar lojas autorizadas ao software. · No pulling: o Filtro por merchant opcional. o Eventos devem identificar o merchant. · Assinatura de mensagens: o Disponível como recurso de segurança. o Não será obrigatória. o Aplicada nos dois sentidos (request/response). · Endpoint de configuração será revisado e possivelmente tornado obrigatório. · Escopos OAuth serão reorganizados (orders, menu, logistics, CRM). · Decisão sobre manter autenticação por loja fica para a próxima reunião. · Próxima etapa incluirá revisão completa do fluxo de pedidos e diferenciação entre pedido de salão e delivery.
+7) Próximos encontros · 26/02/2026 ­ Continuidade da discussão sobre autenticação, escopos e pulling.
+
+· Reuniões semanais seguintes para aprofundar fluxos de pedido, cardápio e logística no padrão V2.
+
+

@@ -1,14 +1,12 @@
 # Logística
 
 <p class="od-meta">
-  <span class="od-badge od-badge--core">Capability</span>
-  <span class="od-badge od-badge--code">logistics</span>
+ <span class="od-badge od-badge--core">Capability</span>
+ <span class="od-badge od-badge--code">logistics</span>
 </p>
 
-<div class="od-api-callout">
-  <p>Regras e fluxos nesta página. Contrato HTTP na referência OpenAPI.</p>
-  <a href="../reference/logistics/">Abrir referência OpenAPI →</a>
-</div>
+!!! note "Especificação da API"
+    O contrato implementável (endpoints, campos, erros e exemplos) está na **[especificação de Logistics](../reference/logistics.md)** — somente em inglês.
 
 ## Visão Geral
 
@@ -27,6 +25,9 @@ Esta capability **não** cobre:
 - Ciclo de vida do pedido (capability Orders)
 - Publicação de catálogo (capability Merchant)
 - Relacionamento com cliente e CRM (capability Customer)
+
+!!! note "Chamada repetida no ciclo da entrega"
+    Se a operação **já foi aplicada** (entrega já no estado alvo), o host **retorna `202`** — não `422`/`409` só por duplicidade. Ver [Convenções](../reference/conventions.md#duplicidade-de-operacoes-de-ciclo-de-vida) e [especificação Logistics](../reference/logistics.md).
 
 ---
 
@@ -63,14 +64,14 @@ Em todas as operações desta capability, a **Delivery Platform é o Provider** 
 
 ```mermaid
 stateDiagram-v2
-    direction LR
-    [*] --> PENDING : POST /logistics/delivery
-    PENDING --> ASSIGNED : entregador designado
-    ASSIGNED --> IN_TRANSIT : coleta confirmada
-    IN_TRANSIT --> DELIVERED : entrega confirmada
-    PENDING --> CANCELLED : cancelamento
-    ASSIGNED --> CANCELLED : cancelamento
-    IN_TRANSIT --> FAILED : falha irrecuperável
+ direction LR
+ [*] --> PENDING: POST /logistics/delivery
+ PENDING --> ASSIGNED: entregador designado
+ ASSIGNED --> IN_TRANSIT: coleta confirmada
+ IN_TRANSIT --> DELIVERED: entrega confirmada
+ PENDING --> CANCELLED: cancelamento
+ ASSIGNED --> CANCELLED: cancelamento
+ IN_TRANSIT --> FAILED: falha irrecuperável
 ```
 
 | Status | Significado |
@@ -176,11 +177,11 @@ Participantes que expõem a capability Logística DEVEM declarar `logistics` no 
 
 ```json
 "capabilities": {
-  "logistics": {
-    "baseUrl": "https://api.example.com",
-    "operations": ["availability", "delivery", "tracking"],
-    "trackingMode": "push"
-  }
+ "logistics": {
+ "baseUrl": "https://api.example.com",
+ "operations": ["availability", "delivery", "tracking"],
+ "trackingMode": "push"
+ }
 }
 ```
 
@@ -219,16 +220,12 @@ Escopos mínimos recomendados:
 - Implementar estratégia de acompanhamento compatível com o `trackingMode` declarado
 - Cancelar a entrega explicitamente antes de cancelar o pedido correspondente
 
----
-
-**Referência completa de campos e contratos REST:** [Referência da API — Logística →](../reference/logistics.md)
-
----
-
-<div class="od-next-step">
-  <div class="od-next-step__label">Próximo passo</div>
-  <div class="od-next-step__links">
-    <a href="../reference/logistics/">Abrir referência OpenAPI</a>
-    <a href="orders/">Protocolo Orders</a>
-  </div>
+<div class="od-related">
+  <p class="od-related__label">Relacionado</p>
+  <ul class="od-related__list">
+    <li><a href="../reference/logistics.md">Especificação de Logistics</a> — endpoints e eventos</li>
+    <li><a href="orders.md">Orders</a> — status do pedido vs tracking</li>
+    <li><a href="../reference/orders.md">Especificação de Orders</a></li>
+    <li><a href="../reference/conventions.md">Regras gerais</a></li>
+  </ul>
 </div>

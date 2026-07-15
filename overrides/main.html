@@ -397,7 +397,8 @@
     var cols = children.filter(function (c) {
       return (c.children && c.children.length) || c.url;
     });
-    mega.style.setProperty('--od-mega-cols', String(Math.min(cols.length, 4)));
+    /* Máximo 3 colunas (ex.: Convenções · Infraestrutura · Capabilities). */
+    mega.style.setProperty('--od-mega-cols', String(Math.min(cols.length, 3)));
 
     cols.forEach(function (col) {
       var li = document.createElement('li');

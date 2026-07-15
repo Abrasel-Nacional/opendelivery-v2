@@ -1,0 +1,39 @@
+Ata de Reunião 29/05/2026
+Comitê Técnico Cardápio e Arquitetura ­ Open Delivery V2.0.0
+Data: 29 de maio de 2026 (sexta - feira) Início: 9:30 Formato: Reunião Microsoft Teams
+1) Contexto e objetivo da sessão A reunião teve como objetivo avançar nas definições técnicas do modelo de cardápio da V2 do Open Delivery, com foco principal em:
+· Estrutura de múltiplos níveis de opções (nested options) · Uso de item offer vs option · Tratamento de default quantity · Modelagem de recursividade no pedido · Garantia de consistência entre cardápio e pedido A sessão deu continuidade a discussões anteriores e buscou consolidar decisões para evolução da modelagem.
+2) Participantes
+· Guilherme Camargo ­ Abrasel Nacional · Carlos Eduardo Rodrigues de Almeida · Flavio Silva · Bruno Stefano ­ 99Food
+3) Comunicados e alinhamentos iniciais · Continuidade da discussão sobre múltiplos níveis iniciada nas semanas anteriores · Apresentação de modelos alternativos para estruturação de opções · Necessidade de consolidar modelo final para documentação da V2
+
+4) Pauta técnica · Múltiplos níveis de opções o Definição de estrutura recursiva (opções dentro de opções). o Possibilidade de suportar vários níveis, embora o uso real geralmente pare em até 3 níveis. · Modelagem de dados (item offer vs option) o Debate entre centralizar dados no item offer ou manter no option. o Tendência de manter o modelo atual para facilitar a migração e reduzir complexidade. · Default quantity · Utilizado para diferenciar: o itens padrão (já incluídos) o itens opcionais (adicionais) · Problema: o mesmo item pode ter comportamentos diferentes dependendo do contexto (ex: ingrediente vs adicional). · Recursividade no pedido o Estrutura do pedido deve refletir o cardápio (hierárquica). o Inclusão de option group para manter o contexto de cada escolha. · Cálculo de preços e quantidades · Possibilidade de erros com: o multiplicação de quantidades em múltiplos níveis o soma de valores entre níveis · Necessidade de atenção na implementação pelos players. · Customização vs categorização · Debate sobre o uso correto dos níveis: o nível inferior deve representar customização do item superior, e não apenas organização do cardápio.
+
+o Risco de uso indevido como subcategoria. · Embora o modelo permita alta complexidade:
+o a maioria dos casos reais é simples · A interface (UX) deve guiar o usuário para evitar combinações incorretas.
+5) Dores e necessidades levantadas
+Carlos Eduardo Rodrigues de Almeida Dores:
+· Regras inconsistentes entre itens: o preço, quantidade e comportamento variam por contexto
+· Necessidade de duplicação de itens · Complexidade ao tentar usar override de propriedades · Risco de:
+o aumento da complexidade do padrão o dificuldade de entendimento e implementação · Problemas ao misturar: o customização vs categorização · Difícil representar corretamente: o customizações que dependem do item pai Necessidades: · Modelo mais simples e previsível · Garantir que níveis abaixo sejam sempre customizações do nível acima · Evitar duplicação desnecessária de dados · Melhor estrutura para processamento pelo originador
+
+Guilherme Camargo ­ Abrasel Nacional Dores:
+· Complexidade para modelar múltiplos níveis sem gerar inconsistência · Dificuldade em definir posição correta do default quantity · Risco de:
+o cálculos errados (quantidade × quantidade) o ambiguidades na interpretação do pedido · Possibilidade de uso inadequado da recursividade (subcategorias vs customizações) · Falta de clareza sobre: o até que nível permitir flexibilidade Necessidades: · Simplificar modelo mantendo flexibilidade · Garantir consistência entre cardápio e pedido · Melhor orientação para implementadores · Evitar cenários ambíguos
+Flávio Silva Dores:
+· Ambiguidade no uso de quantidade: o item pai vs item filho
+· Risco alto de erro na interpretação: o tanto na API quanto na interface
+· Complexidade crescente na: o definição de preço o totalização
+· Possibilidade de inconsistência entre plataformas
+
+Necessidades: · Separar claramente: o itens de escolha vs itens de quantidade · Modelo mais simples para UX · Redução de ambiguidades na implementação
+Bruno Stefano Dores:
+· Diferença entre: o modelagem ideal vs realidade de mercado
+· Cenários onde o mesmo item precisa de parâmetros diferentes · Necessidade de tratar itens distintos quando comportamento muda Necessidades: · Garantir compatibilidade com modelos já utilizados · Estrutura prática para integração com originadores
+Dores coletivas: · Alta complexidade no suporte a múltiplos níveis · Dificuldade de equilibrar: o flexibilidade vs simplicidade · Risco de: o má utilização da estrutura o inconsistências entre plataformas · Problemas potenciais com:
+
+o cálculo de preço o controle de quantidade · Falta de padronização clara no mercado
+6) Encaminhamentos e acordos · Manter modelo próximo ao atual para facilitar migração · Permitir múltiplos níveis (recursividade), mas sem limitar tecnicamente · Tratar níveis inferiores como customização do nível superior · Incluir option group no pedido para manter contexto · Trabalhar melhores exemplos reais (menos abstratos) · Revisar estrutura antes de consolidar na documentação final
+7) Próximos encontros · Refinamento final do modelo de múltiplos níveis · Revisão completa dos JSONs · Validação com exemplos reais de mercado · Consolidação para documentação da V2
+
+

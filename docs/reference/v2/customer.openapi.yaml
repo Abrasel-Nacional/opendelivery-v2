@@ -2,253 +2,243 @@
 x-spectral-ignore:
   - owasp:api4:2023-string-restricted
 info:
-  title: Open Delivery V2 - Customer & Loyalty
-  version: 2.0.0-rc1
-  summary: Contratos de transporte CRM e Loyalty do protocolo Open Delivery V2
-  description: >
-    Contratos de transporte do protocolo Open Delivery para gestão de dados de clientes,
-    leads, pedidos no contexto de CRM, avaliações, eventos de relacionamento e
-    programas de fidelidade.
+  title: Open Delivery V2 — Customer
+  version: 2.0.0-rc
+  summary: Normative Customer contracts — customer data, leads, relationship orders, reviews, loyalty, and events
+  description: |-
+    ## Release Candidate status
+
+    This contract is part of Open Delivery Protocol **V2.0.0-rc** (Release Candidate).
+    It is published for **ecosystem validation**: company review and implementation pilots.
+    Clarifying or corrective changes may still occur based on pilot feedback.
+    A stable release will follow only after validation completes.
+    **V1 remains the production reference** during the transition.
+
+    ---
+
+    This specification is the **normative, self-contained contract** of the Open Delivery
+    **Customer** capability: customer records, leads, order history in a **customer-data**
+    context, reviews, relationship events, and loyalty programs.
+
+    An implementer MUST be able to integrate using **only this document** for the modules
+    they implement. Guides are listed under **External docs**.
+
+    ## Capability name
+
+    The capability is named **`customer`** only. There is **no** capability named “CRM”.
+    **CRM software** is a product class that MAY implement or consume Customer endpoints
+    (often called **Software CRM** in guides). Do not rename the protocol capability to CRM.
+
+    ## Modular modules (not Discovery extensions)
+
+    Customer is **one** capability. Within it, parties MAY implement:
+
+    | Module | Typical paths | Standalone? |
+    |---|---|---|
+    | **Core customer data** | `/customers`, `/leads`, customer-context `/orders`, `customerEvent` | Base module |
+    | **Reviews** | `/reviews`, review-related events | **MAY implement Reviews alone** among Customer modules |
+    | **Loyalty** | `/loyalty/*`, loyalty accounts, `loyaltyEvent` | **MAY implement Loyalty alone** among Customer modules |
+
+    Reviews and Loyalty are **not** separate Discovery extensions and **not** separate
+    capabilities. They are optional modules of Customer. Discovery SHOULD declare which
+    Customer operations/modules are active.
+
+    Customer **does not require** Orders for the core customer-data and reviews modules.
+    When customer-context orders are exchanged, the **order data shape is the same as**
+    the [Orders](../orders/) capability — do not redefine order schema here.
+
+    ## Async-first model
+
+    Batch and write operations typically return `202 Accepted`. Webhooks notify facts.
+    Deduplicate by event id. Do not treat HTTP status alone as final business confirmation.
+
+    ## Authorization
+
+    Bearer OAuth 2.0. Preferred scope: `od.crm` (historical name for customer-domain access)
+    or scopes declared in Discovery. See [Authentication](../authentication/).
 
 servers:
   - url: https://api.example.com/od/v2
-    description: Ambiente de produção
+    description: Production environment
     x-internal: false
   - url: https://sandbox.example.com/od/v2
-    description: Ambiente de staging/homologação
+    description: Staging / homologation environment
     x-internal: true
 
 security:
   - bearerAuth: []
 
 tags:
-  # ── Visão Geral ──────────────────────────────────────────────────────────────
   - name: CapabilityOverview
-    x-displayName: Visão Geral
+    x-displayName: Overview
     x-traitTag: true
     description: |-
-      ## Customer & Loyalty Capability
+      ## Customer capability
 
-      Esta especificação descreve os contratos de transporte do protocolo Open Delivery
-      para as capacidades de **CRM** (Customers, Leads, Orders, Reviews, Events) e
-      **Loyalty** (programas, contas, transações, recompensas, cupons, resgates e eventos).
+      Open Delivery **Customer** standardizes exchange of **customer data** (dados do
+      cliente) between ordering platforms and systems that manage customer relationships —
+      including **Software CRM**, loyalty engines, and quality tools.
 
-      > **Open Delivery é um protocolo, não uma API de produto.**
-      > Não há servidor central nem ambiente de produção. Cada parte implementa os
-      > endpoints que lhe cabem em sua própria infraestrutura.
+      > **Open Delivery is a protocol, not a product API.**
+      > There is no central production host. Each party hosts the endpoints it implements.
 
-      ## Partes envolvidas
+      ### Parties
 
-      | Papel | Responsabilidade nesta capability |
+      | Role | Responsibility |
       |---|---|
-      | **Ordering Application** | Plataforma de pedidos. Envia dados ao CRM/Loyalty e recebe eventos via webhook. |
-      | **Software Service — CRM/Loyalty** | Plataforma de CRM e fidelidade. Hospeda e implementa os endpoints desta especificação. Emite eventos via webhook à Ordering Application. |
+      | **Ordering Application** | Origin of customer, lead, review, and often order-history payloads. Pushes data and/or serves pull APIs. Receives webhooks. |
+      | **Software CRM** (or other Customer host) | System that **hosts** Customer endpoints (ingest, query, loyalty, reviews) and/or **pulls** from the Ordering Application. Emits customer/loyalty events when it is the authority. |
 
-      ## Fluxo feliz — CRM
+      Integration modes: **push** (OA → host), **pull** (host → OA), or **hybrid**. Declare modes in Discovery.
+
+      ### Happy path — customer data + reviews
 
       ```mermaid
       sequenceDiagram
           participant OA as Ordering Application
-          participant SS as Software Service (CRM)
+          participant SS as Software CRM
 
-          Note over OA,SS: Sincronização inicial de clientes
-          OA->>SS: POST /customers (lote)
+          OA->>SS: POST /customers (batch)
           SS-->>OA: 202 Accepted
-
-          Note over OA,SS: Lead capturado na plataforma
-          OA->>SS: POST /leads (lote)
+          OA->>SS: POST /leads (batch)
           SS-->>OA: 202 Accepted
-
-          Note over OA,SS: Pedido concluído — CRM recebe contexto
-          OA->>SS: POST /orders (lote)
+          OA->>SS: POST /orders (customer-context batch)
           SS-->>OA: 202 Accepted
-
-          Note over OA,SS: CRM enriquece dados via pull
-          SS->>OA: GET /customers (filtros)
-          OA-->>SS: 200 OK (lista paginada)
-
-          Note over OA,SS: Cliente submete avaliação
+          SS->>OA: GET /customers
+          OA-->>SS: 200 OK
           OA->>SS: POST /reviews
           SS-->>OA: 202 Accepted
-
-          Note over OA,SS: Evento relevante de cliente
-          SS-)OA: webhook: customerEvent
-          OA-->>SS: 204 No Content
+          SS-)OA: webhook customerEvent
+          OA-->>SS: 204
       ```
 
-      ## Fluxo feliz — Loyalty
+      ### Happy path — loyalty module
 
       ```mermaid
       sequenceDiagram
           participant OA as Ordering Application
-          participant SS as Software Service (Loyalty)
+          participant SS as Software CRM
 
-          Note over OA,SS: OA consulta saldo do cliente
           OA->>SS: GET /customers/{id}/loyalty-accounts
-          SS-->>OA: 200 OK (contas e saldo)
-
-          Note over OA,SS: Cliente escolhe recompensa
+          SS-->>OA: 200 OK
           OA->>SS: GET /loyalty/rewards
-          SS-->>OA: 200 OK (catálogo)
-
-          Note over OA,SS: Cliente confirma resgate
+          SS-->>OA: 200 OK
           OA->>SS: POST /loyalty/redemptions
           SS-->>OA: 202 Accepted
-
-          Note over OA,SS: SS notifica OA sobre movimentação
-          SS-)OA: webhook: loyaltyEvent
-          OA-->>SS: 204 No Content
+          SS-)OA: webhook loyaltyEvent
+          OA-->>SS: 204
       ```
 
-      ## Descoberta de capacidades
+      ### Discovery and authentication
 
-      Antes de qualquer operação, a **Ordering Application DEVE** consultar
-      `GET /.well-known/opendelivery` no Software Service para descobrir as
-      capacidades disponíveis, limites de payload, paginação e metadados de
-      integração. O contrato completo desse endpoint está na
-      [especificação de Discovery](../discovery/).
-
-      ## Autenticação
-
-      Todos os endpoints desta especificação exigem um Bearer Token. Os modelos de
-      concessão OAuth 2.0 suportados, os escopos e o mecanismo de assinatura de
-      webhooks (HMAC-SHA256) são comuns a todo o protocolo Open Delivery e estão
-      documentados na [especificação de Autenticação](../authentication/) — não
-      duplicados aqui.
+      Consult `GET /.well-known/opendelivery` before operating. Full contract:
+      [Discovery](../discovery/). OAuth and webhook HMAC: [Authentication](../authentication/).
 
       <SecurityDefinitions />
-
-  # ── CRM ──────────────────────────────────────────────────────────────────────
-  - name: CRMOverview
-    x-displayName: Visão Geral do CRM
+  - name: ExternalDocs
+    x-displayName: External docs
     x-traitTag: true
     description: |-
-      ## CRM no contexto do protocolo
+      ## External docs
 
-      A capacidade de CRM define contratos de transporte para sincronização de dados
-      entre a plataforma de pedidos e o sistema de CRM. O protocolo **não impõe**
-      regras de negócio internas — segmentação, eligibilidade de campanhas e lógica
-      promocional são responsabilidade de cada implementação.
+      | Document | Purpose |
+      |---|---|
+      | [Customer guide](../../protocol/customer/) | Concepts, modules, V2 notes |
+      | [Reviews guide](../../protocol/reviews/) | Reviews module narrative |
+      | [Loyalty guide](../../protocol/loyalty/) | Loyalty module narrative |
+      | [Orders API Spec](../orders/) | Operational order lifecycle and order schema |
+      | [Authentication](../authentication/) | OAuth 2.0 and webhook signing |
+      | [Discovery](../discovery/) | Declaring `customer` and supported operations |
+  - name: CustomerDataOverview
+    x-displayName: Customer data overview
+    x-traitTag: true
+    description: |-
+      ## Customer data module
 
-      > **Customer não é Loyalty.** Esta capability cobre cadastro de clientes, leads,
-      > pedidos no contexto CRM, avaliações e eventos de relacionamento. Acúmulo de
-      > pontos, resgates e cupons estão na seção Loyalty.
+      Core of the Customer capability: customers, leads, customer-context orders, and
+      relationship events. The protocol does **not** impose campaign, segmentation, or
+      scoring rules.
 
-      ## Responsabilidades por endpoint
+      > **Customer-context orders** are not the Orders lifecycle. For kitchen/logistics
+      > status, use [Orders](../orders/). Here, orders enrich the customer profile.
 
-      | Endpoint | Ordering Application | Software Service (CRM) |
-      |---|:---:|:---:|
-      | `GET /customers` | ↗️ | ✅ |
-      | `POST /customers` | ↗️ | ✅ |
-      | `GET /leads` | ↗️ | ✅ |
-      | `POST /leads` | ↗️ | ✅ |
-      | `GET /orders` | ↗️ | ✅ |
-      | `POST /orders` | ↗️ | ✅ |
-      | `GET /orders/{orderId}` | ↗️ | ✅ |
-      | `GET /reviews` | ↗️ | ✅ |
-      | `POST /reviews` | ↗️ | ✅ |
-      | `GET /reviews/{reviewId}` | ↗️ | ✅ |
-      | Webhook `customerEvent` | ✅ | ↗️ |
+      ### Responsibilities (typical)
 
-      ✅ implementa (hospeda) · ↗️ consome (chama)
+      | Endpoint | Hosted by | Called by |
+      |---|---|---|
+      | `GET/POST /customers` | Software CRM (or OA for pull) | Counterpart |
+      | `GET/POST /leads` | Software CRM (or OA for pull) | Counterpart |
+      | `GET/POST /orders` (customer context) | Software CRM (or OA for pull) | Counterpart |
+      | Webhook `customerEvent` | Ordering Application | Software CRM |
 
   - name: Customers
     description: |-
-      Entidade central do padrão Customer. Representa o cliente final com
-      identificadores canônicos, dados de contato, endereços e consentimentos.
-
-      O único campo obrigatório é `identifier` — todos os demais são opcionais e
-      podem ser enriquecidos progressivamente ao longo do relacionamento.
-
+      Central entity of Customer. Canonical `identifier` is required; other fields are
+      optional and may be enriched over time.
   - name: Leads
     description: |-
-      Lead representa um potencial cliente em fase de aquisição, com estrutura mínima.
-      A plataforma de pedidos envia leads ao CRM conforme eventos de interesse
-      (ex.: carrinho abandonado, consulta de cardápio, formulário preenchido).
-
+      Potential customer in acquisition. Minimal structure; OA sends leads on interest events.
   - name: Orders
     description: |-
-      Visão CRM dos pedidos: histórico e sincronização em lote. Esta tag **não**
-      replica o lifecycle operacional de pedidos — para isso, consulte a
-      especificação de Orders. Aqui o foco é enriquecer o perfil do cliente
-      no CRM com o histórico de compras para analytics e segmentação.
-
+      Customer-context order history (batch/query). **Does not** replace operational
+      Orders lifecycle. Order payload shape MUST align with the Orders capability schema.
   - name: Reviews
     description: |-
-      Avaliações com modelo MVP flexível. O campo `ratings` suporta múltiplas
-      metodologias de avaliação (NPS, estrelas, escala numérica, thumbs) que
-      podem coexistir dentro do mesmo protocolo.
-
+      Optional **Reviews** module of Customer. Flexible ratings (stars, NPS, thumbs).
+      MAY be implemented without Loyalty or without full lead/order sync.
   - name: CustomerEvents
     description: |-
-      Webhook assíncrono de eventos focados no cliente. Notifica a Ordering
-      Application sobre eventos com relevância direta para CRM, sem replicar
-      o lifecycle operacional completo do pedido.
-
-  # ── Loyalty ──────────────────────────────────────────────────────────────────
+      Async webhook of customer-relationship facts. Not operational order lifecycle events.
   - name: LoyaltyOverview
-    x-displayName: Visão Geral do Loyalty
+    x-displayName: Loyalty overview
     x-traitTag: true
     description: |-
-      ## Loyalty no contexto do protocolo
+      ## Loyalty module
 
-      A capacidade de Loyalty define contratos de transporte para programas de
-      fidelidade. O protocolo transporta estrutura e estado — **não impõe** regras
-      de eligibilidade, cálculo de pontos, expiração ou segmentação de campanhas.
+      Optional module of **Customer** (not a separate capability, not a Discovery extension).
+      Transport for programs, accounts, transactions, rewards, coupons, and redemptions.
+      Business rules (earn rates, tiers, expiry) stay in each implementation.
 
-      > **Loyalty é uma extensão de Customer.** Implementações que não possuem
-      > a capability Customer ativa não podem usar esta extensão.
+      Parties MAY implement **only** Loyalty endpoints of this specification if that is
+      all they need — still under capability name `customer` in Discovery.
 
-      ## Responsabilidades por endpoint
+      ### Responsibilities (typical)
 
-      | Endpoint | Ordering Application | Software Service (Loyalty) |
-      |---|:---:|:---:|
-      | `GET /loyalty/programs` | ↗️ | ✅ |
-      | `POST /loyalty/programs` | ↗️ | ✅ |
-      | `GET /loyalty/programs/{programId}` | ↗️ | ✅ |
-      | `GET /customers/{customerId}/loyalty-accounts` | ↗️ | ✅ |
-      | `GET /loyalty/accounts/{accountId}` | ↗️ | ✅ |
-      | `GET /loyalty/accounts/{accountId}/transactions` | ↗️ | ✅ |
-      | `GET /loyalty/rewards` | ↗️ | ✅ |
-      | `GET /loyalty/coupons` | ↗️ | ✅ |
-      | `POST /loyalty/redemptions` | ↗️ | ✅ |
-      | Webhook `loyaltyEvent` | ✅ | ↗️ |
+      | Endpoint | Hosted by | Called by |
+      |---|---|---|
+      | `/loyalty/*`, loyalty accounts | Software CRM / loyalty host | Ordering Application |
+      | Webhook `loyaltyEvent` | Ordering Application | Loyalty host |
 
-      ✅ implementa (hospeda) · ↗️ consome (chama)
+      ### Account status vs operations
 
-      ## Operações permitidas por status de conta
-
-      | Operação | `ENROLLED` | `ACTIVE` | `SUSPENDED` |
+      | Operation | `ENROLLED` | `ACTIVE` | `SUSPENDED` |
       |---|---|---|---|
-      | Consultar saldo | ✅ | ✅ | ✅ |
-      | Acumular pontos | ↗️ | ✅ | ↗️ |
-      | Resgatar recompensa | ↗️ | ✅ | ↗️ |
-      | Usar cupom | ↗️ | ✅ | ↗️ |
-
+      | Read balance | ✅ | ✅ | ✅ |
+      | Earn points | MAY | ✅ | MUST NOT |
+      | Redeem reward | MAY | ✅ | MUST NOT |
+      | Use coupon | MAY | ✅ | MUST NOT |
   - name: Loyalty
     description: |-
-      Fidelidade orientada a programa: contas, transações, recompensas, cupons
-      e resgates. Cada conta de fidelidade está vinculada a um programa e a um
-      cliente identificado pelo protocolo Customer.
-
+      Loyalty programs, accounts, transactions, rewards, coupons, redemptions.
   - name: LoyaltyEvents
     description: |-
-      Webhook específico de eventos de fidelidade. Notifica a Ordering Application
-      sobre movimentações relevantes no programa de fidelidade do cliente:
-      acúmulo de pontos, resgates, uso de cupons e mudança de tier.
+      Loyalty-specific webhook (earn, burn, redeem, coupon, tier changes).
 
 x-tagGroups:
-  - name: Visão Geral
+  - name: Overview
     tags:
       - CapabilityOverview
-  - name: CRM
+      - ExternalDocs
+  - name: Customer data
     tags:
-      - CRMOverview
+      - CustomerDataOverview
       - Customers
       - Leads
       - Orders
-      - Reviews
       - CustomerEvents
+  - name: Reviews
+    tags:
+      - Reviews
   - name: Loyalty
     tags:
       - LoyaltyOverview

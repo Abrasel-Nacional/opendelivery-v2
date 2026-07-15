@@ -1,36 +1,32 @@
 # Princípios de Design
 
-<div class="od-api-callout">
-  <p>Fundamentos do protocolo. Continue a jornada ou abra o contrato técnico.</p>
-  <a href="../guide/getting-started/">Primeiros Passos →</a>
-</div>
+!!! warning "Release Candidate (V2.0.0-rc)"
+    O protocolo V2 está em **Release Candidate**, em período de **validação com o ecossistema** (revisão por empresas e pilotos de implementação). A versão estável será publicada somente após essa fase. A V1 permanece ativa na transição. Detalhes: [Evolução](evolution.md) · [Changelog](../guide/changelog.md).
 
-Esta seção define os princípios fundamentais que orientam o design, a governança e a evolução do Open Delivery Protocol v2.
+Esta seção descreve os **princípios de design** do Open Delivery Protocol v2: como o ecossistema se coordena e o que a documentação prioriza.
 
-Estes princípios são **normativos**.  
-Todas as especificações, capabilities e extensões do protocolo DEVEM estar alinhadas a eles.
+Eles orientam o conteúdo da tab **Protocolo** (conceitos, fluxos, papéis) e as **especificações da API** (contrato normativo REST/HTTP).
+**Obrigações de implementação (campos, endpoints, MUST/MAY de API)** estão na [Referência da API](../reference/index.md) — a especificação da API é a fonte normativa do contrato.
 
 ---
 
-## Protocolo em Primeiro Lugar
+## Interoperabilidade, não produto
 
-O Open Delivery é projetado como um **protocolo**, não como uma API, plataforma ou produto.
+O Open Delivery é um **protocolo de interoperabilidade** expresso como **especificação da API (REST/HTTP)**.
 
-A especificação define:
-- Conceitos compartilhados
-- Fatos observáveis
-- Responsabilidades claras entre sistemas independentes
+Ele define uma linguagem compartilhada para sistemas independentes de food service — não é uma plataforma, um runtime nem um produto SaaS.
 
-O protocolo NÃO:
-- Dita fluxos de trabalho internos
-- Prescreve detalhes de implementação
-- Exige tecnologias ou fornecedores específicos
+A documentação se organiza em:
 
-Mecanismos de transporte, APIs, padrões de mensageria e ferramental são **escolhas de implementação**, não parte do protocolo em si.
+| Camada | Papel |
+|---|---|
+| **Guia** | Onboarding, papéis, migração, histórico |
+| **Protocolo** | Domínio: conceitos, fluxos, responsabilidades (explicativo) |
+| **Referência da API** | Especificação da API (normativa) — suficiente para implementar |
 
 ---
 
-## Descentralização e Autonomia
+## Descentralização e autonomia
 
 O Open Delivery pressupõe um **ecossistema descentralizado**.
 
@@ -39,6 +35,7 @@ O Open Delivery pressupõe um **ecossistema descentralizado**.
 - Não há intermediário obrigatório
 
 Cada participante:
+
 - Permanece autônomo
 - Possui seu estado interno
 - Aplica suas próprias regras de negócio
@@ -47,192 +44,170 @@ O protocolo existe para **coordenar sistemas**, não para controlá-los.
 
 ---
 
-## Separação Clara de Responsabilidades
+## Separação de responsabilidades na documentação
 
-O protocolo impõe uma separação estrita entre:
+- **Protocolo (esta tab)** — *o que* os sistemas coordenam: entidades, ciclos de vida, papéis, fluxos
+- **especificação da API (Referência da API)** — *como* isso se implementa em REST/HTTP: paths, schemas, erros, exemplos
+- **Implementação** — arquitetura, UX e regras internas de cada participante
 
-- **Regras do protocolo** — o que os sistemas devem acordar
-- **Lógica de implementação** — como os sistemas se comportam internamente
-- **Serviços do ecossistema** — ferramental e suporte à adoção
-
-Esta separação garante:
-- Estabilidade de longo prazo
-- Múltiplos estilos de integração
-- Liberdade de escolha arquitetural
+Isso evita duas fontes de verdade para campos e endpoints. Em dúvida de contrato, **prevalece a especificação da API**.
 
 ---
 
-## Independência de Capabilities
+## Independência de capabilities
 
 As capabilities do Open Delivery são **independentes** entre si.
 
-Os participantes podem implementar qualquer capability ou combinação de capabilities:
+Os participantes podem implementar qualquer capability ou combinação:
 
-- Uma plataforma pode implementar apenas **Merchant** — para publicar dados de catálogo
-- Uma plataforma pode implementar apenas **Logistics** — para prover coordenação de entrega
-- Uma plataforma pode implementar apenas **Orders** — para gerenciar o ciclo de vida de pedidos
-- Uma plataforma pode implementar apenas **Customer** — para interoperabilidade de CRM e identidade
-- Uma plataforma pode implementar **qualquer combinação** das anteriores
+- Apenas **Merchant** — catálogo e dados de loja
+- Apenas **Logistics** — coordenação de entrega
+- Apenas **Orders** — ciclo de vida de pedidos
+- Apenas **Customer** — CRM e identidade
+- Qualquer combinação das anteriores
 
-Nenhuma capability é pré-requisito para outra. Cada capability define suas próprias entidades de coordenação, ciclo de vida e obrigações.
+Nenhuma capability é pré-requisito para outra, salvo **extensões** explicitamente ligadas ao pai:
 
-**Dependências de extensão existem apenas onde explicitamente declaradas:**
-
-- **Indoor** estende **Orders** — Indoor requer que Orders esteja implementada
-- **Loyalty** estende **Customer** — Loyalty requer que Customer esteja implementada
-
-Todas as demais combinações de capabilities são independentes por padrão.
+- **Indoor** estende **Orders**
+- **Loyalty** (e **Reviews**) estendem **Customer**
 
 ---
 
-## Eventos Representam Fatos, Não Etapas de Fluxo
+## Eventos representam fatos, não etapas de workflow
 
-Eventos representam **fatos que ocorreram**, não etapas de um fluxo de trabalho.
+Eventos representam **fatos que ocorreram**, não passos internos de processo.
 
 Um evento:
-- É imutável
-- Ocorre em um momento específico no tempo
-- Comunica informações a outros sistemas
 
-Eventos NÃO DEVEM:
+- É imutável
+- Ocorre em um momento específico
+- Comunica informação a outros sistemas
+
+Eventos não devem:
+
 - Codificar etapas internas de processo
 - Espelhar máquinas de estado internas
-- Descrever implicitamente como o trabalho é realizado
+- Descrever como o trabalho é realizado por trás
 
-Apenas eventos relevantes para a **coordenação entre sistemas** são definidos pelo protocolo.
-
----
-
-## Estados Representam a Condição Atual
-
-Estados representam a **condição atual** de uma entidade.
-
-- Estados podem mudar ao longo do tempo
-- Estados descrevem o que é conhecido agora
-- Estados são descritivos, não prescritivos
-
-Consumidores DEVEM tratar o estado atual como a **fonte de verdade**, não a presença ou ausência de eventos opcionais.
+Apenas fatos relevantes para a **coordenação entre sistemas** entram no protocolo.
 
 ---
 
-## Eventos Normativos, Condicionais e Opcionais
+## Estados representam a condição atual
 
-O protocolo distingue entre:
+Estados descrevem a **condição atual** de uma entidade.
 
-- **Eventos normativos** — DEVEM ser emitidos em todos os contextos relevantes
-- **Eventos condicionais** — DEVEM ser emitidos apenas em perfis específicos
-- **Eventos opcionais** — PODEM ser emitidos para fornecer contexto adicional
+- Podem mudar ao longo do tempo
+- São descritivos, não prescritivos de workflow interno
 
-Eventos opcionais:
-- Nunca são exigidos para a correção do protocolo
-- Não devem ser dependidos pelos consumidores
-- Existem para enriquecer integrações, não para garantir comportamento
+Consumidores devem tratar o **estado consultável** (ex.: `GET` do recurso) como fonte de verdade para reconciliação, e eventos como notificações de fatos — detalhes por capability na especificação da API e nas páginas de Protocolo correspondentes.
 
 ---
 
-## Obrigações com Escopo por Perfil
+## Obrigações com escopo por perfil
 
-As obrigações de eventos têm **escopo por perfil**, não são globais.
+Obrigações de eventos e fluxos têm **escopo por perfil** (ex.: `DELIVERY`, `TAKEOUT`, `INDOOR`), não são necessariamente globais.
 
 Um evento pode ser:
+
 - Obrigatório em um perfil
 - Opcional em outro
 - Não aplicável em um terceiro
 
-Isso evita super-especificação e preserva a flexibilidade do protocolo.
+Isso evita super-especificação e preserva flexibilidade operacional.
 
 ---
 
-## Suporte Declarado em Vez de Flags por Pedido
+## Suporte declarado, não flags por pedido
 
-O comportamento do protocolo NÃO DEVE ser controlado por flags dinâmicas por pedido.
+O comportamento esperado entre parceiros é declarado de forma estável (Discovery, onboarding), não por flags dinâmicas em cada pedido.
 
-Em vez disso:
-- Os sistemas declaram explicitamente as capabilities, perfis e extensões suportadas
-- O suporte declarado permanece estável entre pedidos
-- Os pedidos contêm apenas dados de negócio e contexto
+- Capabilities, perfis e extensões suportadas são **declarados**
+- Pedidos carregam dados de negócio e contexto
+- O manifesto well-known é o ponto de partida da integração
 
-Isso garante comportamento previsível e separação limpa entre dados de negócio e declarações de suporte ao protocolo.
+Ver [Discovery](discovery.md) e a [especificação de Discovery](../reference/discovery.md).
 
 ---
 
-## Tolerância e Resiliência
+## Tolerância e resiliência
 
 O Open Delivery pressupõe sistemas distribuídos com falhas parciais.
 
-Implementações DEVEM:
+Implementações devem:
+
 - Tolerar eventos opcionais ausentes
-- Tratar eventos duplicados
-- Aceitar entrega fora de ordem
-- Evitar dependência de garantias de timing
+- Tratar eventos duplicados (deduplicação por id de evento)
+- Aceitar entrega fora de ordem quando o contrato não garantir ordem
+- Evitar dependência de timing rígido entre parceiros
 
-O protocolo favorece **consistência eventual** em vez de sincronização estrita.
+Prefere-se **consistência eventual** a sincronização estrita.
 
----
-
-## Neutralidade de Transporte e Tecnologia
-
-O protocolo é independente de:
-- Protocolos de transporte
-- Formatos de serialização
-- Mecanismos de autenticação
-- Modelos de implantação
-
-Bindings de transporte PODEM ser definidos separadamente sem alterar o protocolo.
+Convenções HTTP compartilhadas: [Regras gerais](../reference/conventions.md) · [Erros](../reference/error-handling.md).
 
 ---
 
-## Governança e Gestão
+## Contrato único: especificação da API (REST/HTTP)
 
-O Open Delivery é governado por um modelo formal de governança.
+A forma padronizada de implementar o Open Delivery V2 é a **especificação da API** publicado na tab **Referência da API** (REST/HTTP + JSON).
+
+Não há camada separada de “transport binding” nem expectativa de múltiplos bindings oficiais paralelos. Evolução do contrato ocorre nas especificações da API e na documentação associada.
+
+---
+
+## Governança e gestão
+
+O Open Delivery é governado de forma aberta e transparente.
 
 A governança existe para:
-- Garantir transparência e isonomia
-- Preservar a neutralidade do protocolo
-- Coordenar sua evolução ao longo do tempo
 
-A governança NÃO:
+- Garantir transparência e isonomia
+- Coordenar a evolução do protocolo
+- Publicar releases e Release Candidates
+
+A governança **não**:
+
 - Restringe a adoção
 - Impõe condições comerciais
 - Concede direitos exclusivos a qualquer participante
 
----
-
-## Coordenação Institucional
-
-A iniciativa Open Delivery é coordenada institucionalmente pela Abrasel.
-
-Esta coordenação inclui:
-- Gestão dos repositórios oficiais
-- Publicação das especificações
-- Atividades de comunicação e divulgação
-
-A coordenação institucional NÃO:
-- Altera a natureza aberta do protocolo
-- Restringe o acesso à especificação
-- Impõe participação ou registro obrigatórios
+Propostas e issues: [repositório GitHub](https://github.com/Abrasel-Nacional/opendelivery-v2).
 
 ---
 
-## Princípio do Minimalismo
+## Coordenação institucional
 
-O protocolo define a **superfície mínima necessária** para habilitar a interoperabilidade.
+A iniciativa é coordenada institucionalmente pela **Abrasel**.
 
-Qualquer coisa que:
-- Seja puramente interna
-- Seja específica de implementação
-- Não seja necessária para a coordenação
+Isso inclui repositórios oficiais, publicação da documentação e comunicação.
+Não altera a natureza aberta do protocolo nem exige registro obrigatório para leitura da especificação.
 
-DEVERIA permanecer fora do protocolo.
+---
+
+## Minimalismo
+
+O protocolo define a **superfície mínima** necessária à interoperabilidade.
+
+O que for puramente interno, específico de implementação ou desnecessário à coordenação entre sistemas deve permanecer **fora** do contrato e desta documentação normativa de API.
 
 ---
 
 ## Resumo
 
-Estes princípios garantem que o Open Delivery v2 permaneça:
-- Estável
-- Neutro
-- Extensível
-- Adequado ao crescimento de longo prazo do ecossistema
+O Open Delivery v2 prioriza:
 
-Todas as seções futuras desta especificação DEVEM estar em conformidade com estes princípios.
+- Interoperabilidade entre sistemas autônomos
+- Capabilities independentes e extensões explícitas
+- Estados consultáveis e eventos como fatos
+- Um contrato implementável em **especificação da API (REST/HTTP)**
+- Documentação em camadas claras: Guia · Protocolo · API
+
+<div class="od-related">
+  <p class="od-related__label">Relacionado</p>
+  <ul class="od-related__list">
+    <li><a href="../reference/index.md">Referência da API</a> — contratos implementáveis</li>
+    <li><a href="discovery.md">Discovery</a></li>
+    <li><a href="flows.md">Fluxos</a></li>
+    <li><a href="evolution.md">Evolução</a></li>
+  </ul>
+</div>

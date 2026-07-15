@@ -1,0 +1,47 @@
+Ata de Reunião 09/04/2026
+Comitê Técnico Arquitetura ­ Open Delivery V2.0.0
+Data: 09 de abril de 2026 (quinta-feira) Início: 10:00 Formato: Microsoft Teams
+1) Contexto e objetivo da sessão A reunião teve como objetivo dar continuidade aos trabalhos da V2 do Open Delivery, com foco em arquitetura e estruturação do payload de pedidos. Foram apresentados:
+· O novo conceito de documentação, com abordagem mais protocolar (menos "API de produto").
+· A reorganização do payload de pedido, visando: o Reduzir ambiguidades herdadas da V1; o Melhorar clareza semântica; o Preparar o protocolo para evoluções futuras; o Minimizar impacto de migração V1  V2.
+· Discussões iniciais sobre cancelamento, logística, cardápio e custom fields.
+Também foi levantada a possibilidade de unificação futura dos comitês de Arquitetura e Cardápio, dado o alto acoplamento dos temas.
+2) Participantes 1. Guilherme Camargo ­ Abrasel Nacional (Líder Técnico Open Delivery). 2. Ana Santos ­ Abrasel Nacional (Líder de Operações Open Delivery). 3. Leandro ­ Eclética. 4. Isabelly Vitoria Pignatari- 3S Checkout 5. Evandro Duarte de Castro Filho ­ 3S Checkout
+
+6. Julio Zampieri ­ Keeta 7. Hermogenes Alves Domingos - Colibri Participantes aparecem na lista inicial do projeto, porém não tiveram falas identificáveis ou verificadas na transcrição.
+3) Comunicados e alinhamentos iniciais · A documentação da V2 será apresentada com linguagem normativa, separando: o Regras do protocolo o Camada de transporte / API · A ideia é evitar confusão gerada na V1, onde Swagger era interpretado como API de produto. · Está previsto: o Guia de migração V1  V2; o Possível uso de OpenAPI por capability; o Avaliação de Postman Collections e Swagger apenas via sandbox.
+4) Pauta técnica · Estrutura da documentação do Open Delivery como protocolo · Reorganização do payload de pedido · Agrupamento de campos contextuais · Estrutura de fulfillment (delivery, takeout, indoor) · Revisão de pricing e preços de item · Uso (ou não) de custom fields · Encaminhamentos para cancelamento, logística e cardápio
+
+5) Dores e necessidades levantadas (por quem falou)
+5.1 Guilherme Camargo ­ Abrasel Nacional
+Dores identificadas:
+· Documentação da V1 gerou confusão, sendo interpretada como API de produto e não como protocolo.
+· Payload do pedido ficou desorganizado ao longo do tempo, com campos "jogados" na raiz.
+· Campos de preço (unit, original, option, subtotal, total) confundem integradores.
+· Campo originalPrice é frequentemente mal interpretado (desconto de cupom vs. desconto de cadastro).
+· Campos como salesChannel e virtualBrand existem, mas não há clareza de uso real.
+· Risco de custom fields institucionalizarem extensões privadas, criando ruído de integração.
+· Alto acoplamento entre pedido, cardápio e arquitetura, dificultando decisões em comitês separados.
+Necessidades apontadas:
+· Tratar Open Delivery claramente como protocolo, com documentação normativa.
+· Reorganizar o payload sem remover campos de forma abrupta.
+· Agrupar campos informativos em um objeto não obrigatório (ex: contexto).
+· Criar estrutura clara de fulfillment para delivery, takeout e indoor.
+· Rediscutir preços de item para reduzir ambiguidade.
+· Definir regras claras para uso (ou restrição) de custom fields.
+· Avaliar unificação dos comitês de Arquitetura e Cardápio.
+
+5.2 Carlos Eduardo Rodrigues De Almeida Dores identificadas:
+· Campo category não agrega valor prático no pedido. · Estrutura atual de preços gera dificuldade operacional para PDVs. · originalPrice não é usado na prática e gera confusão conceitual. · optionPrice pode ser redundante, pois já é soma de opcionais. · Uso de fulfillment com apenas um filho ativo pode parecer estranho no
+JSON. · Custom fields podem gerar ruído de integração, expectativas
+divergentes e problemas de suporte. · Integrações precisam ser robustas sem depender de campos
+opcionais. Necessidades apontadas:
+· Payload mais simples e previsível para leitura operacional. · Manter campos que ajudem em debug (ex: merchant.name), mesmo que
+não sejam usados na integração. · Tornar objetos como context e campos informativos não obrigatórios. · Melhor definição do modelo de preços para refletir uso real de PDVs. · Tratar custom fields como algo controlado / excepcional, não como
+padrão.
+6) Encaminhamentos e acordos · Liberar rascunho da nova documentação para feedback do grupo. · Investigar com PDVs: o Uso real de originalPrice e optionPrice; o Impacto da remoção ou reorganização desses campos. · Reavaliar:
+
+o Estrutura de preços de item; o Agrupamento de charges e discounts; o Uso e governança de custom fields. · Continuar revisão do payload de pedido antes de avançar para cancelamento. · Levar proposta de unificação dos comitês para discussão futura.
+7) Próximos encontros · Continuidade da revisão do payload de pedido · Discussão sobre cancelamento · Avaliação de impactos de cardápio no pedido · Possível alinhamento entre comitês de Arquitetura e Cardápio
+
+

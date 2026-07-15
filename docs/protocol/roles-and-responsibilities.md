@@ -1,10 +1,5 @@
 # Papéis e Responsabilidades
 
-<div class="od-api-callout">
-  <p>Papéis no ecossistema. Continue a jornada ou abra o contrato técnico.</p>
-  <a href="../guide/by-role/">Trilhas por papel →</a>
-</div>
-
 ## Papéis de Interação Entre Capabilities
 
 Para padronizar a documentação de capabilities, cada operação usa estes papéis transversais:
@@ -12,11 +7,11 @@ Para padronizar a documentação de capabilities, cada operação usa estes pap�
 - `Provider`: participante que expõe a interface da operação (endpoint, ferramenta ou canal de eventos).
 - `Consumer`: participante que invoca, assina ou consome essa interface.
 
-Orientação normativa:
+Orientação de documentação:
 
-- Toda operação DEVE declarar um Provider e um Consumer.
-- Um participante PODE atuar como Provider em uma operação e Consumer em outra.
-- A classificação Provider/Consumer é específica por operação e NÃO DEVE ser tratada como identidade global do sistema.
+- Toda operação documentada declara um Provider e um Consumer.
+- Um participante pode atuar como Provider em uma operação e Consumer em outra.
+- A classificação Provider/Consumer é específica por operação e não é identidade global do sistema.
 
 ---
 
@@ -88,23 +83,22 @@ Orientação normativa:
 
 ---
 
-## CRM Software Service
+## Software CRM (host de Customer)
 
-**Quem é:** Plataforma de CRM, automação de marketing, sistema de fidelidade.
+**Quem é:** Plataforma de CRM, automação de marketing ou sistema de fidelidade que usa a capability **Customer**.
 
 **Responsabilidades:**
 
-- Receber e deduplicar dados de clientes.
-- Receber pedidos vinculados a clientes para análise e fidelidade.
-- Gerenciar programas de fidelidade, pontos, resgates e cupons.
-- Emitir eventos de ciclo de vida do cliente.
+- Receber e deduplicar dados do cliente.
+- Receber pedidos no contexto de relacionamento (sem alterar o ciclo operacional de Orders).
+- Opcionalmente hospedar módulos Reviews e/ou Loyalty.
+- Emitir eventos de relacionamento e de fidelidade quando for a autoridade.
 
 **Capabilities típicas:**
 
 | Capability | Papel |
 |---|---|
-| Customer | Provider |
-| Loyalty | Provider |
+| Customer (núcleo + módulos Reviews/Loyalty conforme suporte) | Provider |
 
 ---
 
@@ -115,3 +109,13 @@ Um hub PODE atuar como Ordering Application em um lado da integração e como So
 Implementações DEVEM preservar o comportamento específico do papel para cada papel que assumem.
 
 **Exemplo:** Um marketplace que gerencia múltiplos restaurantes atua como Ordering Application para o consumidor final e como intermediário para o Software Service de cada restaurante.
+
+<div class="od-related">
+  <p class="od-related__label">Relacionado</p>
+  <ul class="od-related__list">
+    <li><a href="../guide/by-role.md">Trilhas por papel</a> — checklist por produto</li>
+    <li><a href="../guide/getting-started.md">Primeiros Passos</a></li>
+    <li><a href="principles.md">Princípios</a></li>
+    <li><a href="../reference/index.md">Referência da API</a></li>
+  </ul>
+</div>

@@ -1,14 +1,12 @@
 # Autenticação
 
 <p class="od-meta">
-  <span class="od-badge od-badge--core">Infraestrutura</span>
-  <span class="od-badge od-badge--code">authentication</span>
+ <span class="od-badge od-badge--core">Infraestrutura</span>
+ <span class="od-badge od-badge--code">authentication</span>
 </p>
 
-<div class="od-api-callout">
-  <p>Modelos OAuth e regras nesta página. Contrato OpenAPI <strong>somente em inglês</strong>.</p>
-  <a href="../reference/authentication/">Abrir referência OpenAPI →</a>
-</div>
+!!! note "Especificação da API"
+    O contrato implementável (endpoints, campos, erros e exemplos) está na **[especificação de Autenticação](../reference/authentication.md)** — somente em inglês.
 
 Autenticação não é um domínio de capability.
 
@@ -20,6 +18,11 @@ O ODP v2 suporta três modelos de autenticação OAuth 2.0. O protocolo não imp
 
 | modelo | identificador | status |
 |---|---|---|
+
+!!! tip "Migracao V1 -> V2"
+  Para novas integracoes, adote preferencialmente `by_app`.
+  O modelo `by_merchant` continua suportado para compatibilidade legada durante a transicao.
+  Se `authorization_code` for suportado, ele DEVE ser declarado no Discovery.
 | Client Credentials por Estabelecimento | `client_credentials_merchant` | Suportado — compatibilidade legada |
 | Client Credentials por Aplicação | `client_credentials_application` | Suportado — recomendado para novas integrações |
 | Authorization Code | `authorization_code` | Suportado — opcional, casos de uso avançados |
@@ -165,11 +168,11 @@ Toda implementação ODP v2 DEVE expor um [endpoint de Discovery](discovery.md) 
 
 ```yaml
 authentication:
-  supportedGrantTypes:
-    - client_credentials
-    - authorization_code
-  clientIdGeneration:
-    - by_app
+ supportedGrantTypes:
+ - client_credentials
+ - authorization_code
+ clientIdGeneration:
+ - by_app
 ```
 
 ## Declaração por Operação
@@ -190,11 +193,12 @@ A autenticação não define lógica de coordenação de negócio. É um pré-re
 
 ---
 
-<div class="od-next-step">
-  <div class="od-next-step__label">Próximo passo</div>
-  <div class="od-next-step__links">
-    <a href="../reference/authentication/">Abrir referência OpenAPI</a>
-    <a href="discovery/">Discovery</a>
-    <a href="../guide/getting-started/">Primeiros Passos</a>
-  </div>
+<div class="od-related">
+  <p class="od-related__label">Relacionado</p>
+  <ul class="od-related__list">
+    <li><a href="../reference/authentication.md">Especificação de Autenticação</a> — OAuth, tokens, webhooks</li>
+    <li><a href="discovery.md">Discovery</a> — declaração de modelos e escopos</li>
+    <li><a href="../reference/discovery.md">Especificação de Discovery</a></li>
+    <li><a href="../reference/conventions.md">Regras gerais</a></li>
+  </ul>
 </div>

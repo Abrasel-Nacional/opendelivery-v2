@@ -1,13 +1,11 @@
 # Authentication
 
 <p class="od-meta">
-  <span class="od-badge od-badge--code">authentication</span>
+ <span class="od-badge od-badge--code">authentication</span>
 </p>
 
-<div class="od-api-callout">
-  <p>OAuth models and rules on this page. HTTP contract is OpenAPI <strong>in English only</strong>.</p>
-  <a href="../reference/authentication/">Open OpenAPI reference →</a>
-</div>
+!!! note "API Spec"
+    The implementable contract (endpoints, fields, errors, and examples) is in the **[Authentication API Spec](../reference/authentication.md)** — English only.
 
 Authentication is not a capability domain.
 
@@ -22,6 +20,11 @@ ODP v2 supports three OAuth 2.0 models. The protocol does not mandate a single m
 | Client credentials by merchant | `client_credentials` + merchant-scoped credentials | Supported — legacy compatibility |
 | Client credentials by application | `client_credentials` + `by_app` | Supported — **recommended for new integrations** |
 | Authorization code | `authorization_code` | Supported — optional, advanced use cases |
+
+!!! tip "V1 -> V2 migration"
+  For new integrations, prefer `by_app`.
+  The `by_merchant` model remains supported as legacy compatibility during transition.
+  If `authorization_code` is supported, it MUST be declared in Discovery.
 
 ## Common requirements
 
@@ -84,15 +87,16 @@ Bidirectional request/response signing may be offered as a security feature. It 
 
 Authentication configuration **MUST** be discoverable via the well-known manifest so partners do not rely only on bilateral email/setup docs.
 
-See [Discovery](discovery.md) and the [Authentication OpenAPI](../reference/authentication.md) (English).
+See [Discovery](discovery.md) and the [Authentication API Spec](../reference/authentication.md) (English).
 
 ---
 
-<div class="od-next-step">
-  <div class="od-next-step__label">Next step</div>
-  <div class="od-next-step__links">
-    <a href="../reference/authentication/">OpenAPI Authentication (EN)</a>
-    <a href="discovery/">Discovery</a>
-    <a href="../guide/getting-started/">Getting started</a>
-  </div>
+<div class="od-related">
+  <p class="od-related__label">Related</p>
+  <ul class="od-related__list">
+    <li><a href="../reference/authentication.md">Authentication API Spec</a> — OAuth, tokens, webhooks</li>
+    <li><a href="discovery.md">Discovery</a> — grant models and scopes</li>
+    <li><a href="../reference/discovery.md">Discovery API Spec</a></li>
+    <li><a href="../reference/conventions.md">General rules</a></li>
+  </ul>
 </div>

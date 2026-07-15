@@ -1,0 +1,46 @@
+Ata de Reunião 19/03/2026
+Comitê Técnico Arquitetura ­ Open Delivery V2.0.0
+Data: 19 de março de 2026 (quinta-feira) Início: 10:00 Formato: Microsoft Teams
+1) Contexto e objetivo da sessão A reunião deu continuidade aos trabalhos de definição da arquitetura da V2.0.0 do Open Delivery, com foco em:
+· Revisar e finalizar o modelo de eventos e status de pedidos. · Diferenciar claramente eventos x status projetados. · Avaliar a permanência, mudança ou remoção de eventos atuais (como
+picked_up, dispatch, ready_for_pickup, delivery etc.). · Avançar na construção do endpoint de Manifesto, que descreverá as
+capacidades de cada plataforma (originador/PDV), permitindo compatibilidade automática. · Preparar terreno para as próximas etapas: revisão do payload do pedido e padronização de campos. Guilherme reforçou que o objetivo é reduzir ambiguidades da V1, trazendo mais clareza, previsibilidade e interoperabilidade.
+2) Participantes (com base nos nomes que aparecem na transcrição)
+1. Guilherme Camargo -- Abrasel Nacional 2. Ana Santos -- Abrasel Nacional 3. Carlos Eduardo Rodrigues de Almeida ­ 3S Checkout 4. Gabriel Haddad -- Food To Save 5. Leandro -- Eclética
+
+6. Isabelly Vitoria Pignatari ­ 3S Checkout 7. Flavio Silva ­ Colibri | RS 8. Enzo Madalena ­ Keeta 9. Murilo ­ Keeta 10. Evandro Duarte de Castro Filho ­ 3S Checkout
+3) Comunicados e alinhamentos iniciais · Guilherme alinhou que não há novos comunicados gerais para o comitê. · O trabalho de engajamento continua e novos participantes seguem entrando nos grupos. · Haverá uma conversa entre Guilherme, Cadu e Célio sobre estratégias de comunicação e engajamento. · Próxima reunião: mantida normalmente.
+4) Pauta técnica -- Eventos e Status na V2 Os principais pontos discutidos:  Separação clara entre:
+· Evento: notificação enviada entre originador  PDV. · Status projetado: estado esperado do pedido após determinado evento.  Estruturação de tabelas por tipo de pedido: · Delivery · Takeout · Indoor  Regras propostas: · Eventos obrigatórios continuam sendo created e confirmed.
+
+· Eventos intermediários passam a ser classificados como opcionais (MEI), porém o Manifesto definirá se serão must, may ou must not para cada plataforma.
+· Status projetado poderá aparecer tanto no evento quanto no GET do pedido.
+ Uso de eventos logísticos: Solicitação da Akita para suporte a eventos:
+· pickup_ongoing · arrived (chegada do entregador ao local)
+ Esses eventos não alteram o status do pedido.  Revisão dos eventos de coleta e entrega: Houve debate intenso sobre picked_up, order_collected, dispatch e delivery. A proposta final encaminhada:
+· Picked_up será removido da V2 (por gerar ambiguidade). · Delivery será usado em todos os casos de entrega ao consumidor,
+inclusive: o entrega na casa do cliente (delivery), o retirada no balcão (takeout), o entrega na mesa (indoor).
+· Order_collected será mantido apenas para cenário full service  quando o originador recebe informação do entregador.
+· Dispatch pode ser mantido somente quando a entrega é da própria loja, mas tendência é deprecar também.
+ Manifesto O endpoint de Manifesto descreverá:
+· Tipos de pedido suportados. · Tipos de integração: originador, PDV, ambos. · Protocolos suportados: webhook, polling, assinatura, ACK, etc.
+
+· Eventos que a plataforma envia e recebe, com os níveis: o must (obrigatório) o may (aceito, mas não necessário) o must not (não envie!)
+5) Dores e necessidades levantadas 1. Ambiguidade no evento picked_up · Usado em cenários completamente diferentes (takeout vs coleta logística). · Gera confusão entre entregador x cliente.  Solução: remover da V2 e substituir por eventos claros.
+2. Eventos duplicados e confusos (picked_up x order_collected x dispatch) · Falta clareza entre logística e operação do restaurante. · Alguns cenários exigiam double check (entregador + loja).
+ Tendência: unificar ou deprecar eventos, reduzindo ruído.
+3. Inconsistência do Ready for Pickup (RFP) · Embora opcional na V1, alguns originadores tratam como obrigatório. · Falta alinhamento entre quem precisa receber e quem sabe enviar.
+ Manifesto resolverá exigindo compatibilidade explícita.
+4. Falta de clareza sobre ACK e ocorrência de eventos duplicados · Muita gente ignora ACK no polling. · Eventos ficam acumulados.
+ Necessidade de documentar melhor e permitir flexibilidade via Manifesto.
+
+5. Campos desnecessários e complexidade no payload do pedido · Parte de preços é confusa. · Campos pouco utilizados permanecem na V1.
+ Planejada revisão completa na próxima etapa.
+6. Indoor não precisa da maioria dos eventos intermediários · Para pedidos consumidos dentro do salão, só interessa:
+o pedido chegou, o pedido entregue, o encerramento.
+ Modelagem será mais simples para esse tipo.
+6) Encaminhamentos e acordos · Evento picked_up será removido da V2. · Delivery será o evento padrão de entrega ao cliente para todos os tipos de pedido. · Dispatch possivelmente será depreciado, aguardando confirmação final. · Manifesto será expandido para incluir: o eventos enviados (originador), o eventos suportados (PDV), o obrigatoriedades por integração. · Guilherme trará documentação revisada + modelos atualizados na próxima reunião. · Próximo passo técnico: revisão do payload do pedido (campos, estrutura e melhorias).
+
+7) Próximos encontros · Reunião semanal mantida na próxima semana, sem alterações. · Próximo tópico principal: revisão dos campos do pedido na V2.
+
+

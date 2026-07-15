@@ -1,28 +1,21 @@
 # Indoor / Salão
 
 <p class="od-meta">
-  <span class="od-badge od-badge--ext">Extensão</span>
-  <span class="od-badge od-badge--code">indoor</span>
-  <span class="od-badge">pai: Orders</span>
-  <span class="od-badge od-badge--new">Novo na V2</span>
+ <span class="od-badge od-badge--ext">Extensão</span>
+ <span class="od-badge od-badge--code">indoor</span>
+ <span class="od-badge">pai: Orders</span>
+ <span class="od-badge od-badge--new">Novo na V2</span>
 </p>
 
-<div class="od-api-callout">
-  <p><strong>Guia auxiliar</strong> — conceitos, papéis e fluxos. A normativa completa (campos, endpoints, erros e exemplos JSON) está na OpenAPI; um implementador experiente pode integrar só pela spec.</p>
-  <a href="../reference/indoor/">Implementar pela OpenAPI Indoor →</a>
-</div>
+!!! note "Especificação da API"
+    O contrato implementável (endpoints, campos, erros e exemplos) está na **[especificação de Indoor](../reference/indoor.md)** — somente em inglês.
 
 A capability **Indoor** padroniza as operações de consumo no local — mesa, comanda e balcão — cobrindo tanto atendimento mediado por garçom quanto **autoatendimento completo** via totem, QR Code ou tablet. Ela cobre o ciclo completo de uma sessão de salão: agrupar os pedidos numa **conta**, registrar pagamentos (inclusive parciais), emitir documento fiscal e fechar a conta — tudo sincronizado entre o sistema de gestão do restaurante e a aplicação de pedido.
 
-Esta página é o **guia de leitura**: o que é a capability, os conceitos que você precisa dominar, os fluxos de interação e checklists por papel. **Campos, schemas, códigos de erro e exemplos de payload** vivem na [OpenAPI Indoor](../reference/indoor.md) (ReDoc) — a fonte normativa e auto-suficiente.
+Esta página é o **guia de leitura**: conceitos, papéis, **conta x pedido**, fluxos e checklists. O contrato de campos e endpoints está na especificação da API (nota acima).
 
-!!! note "Idioma"
-    O contrato OpenAPI é **sempre em inglês**. Os guias de protocolo são bilíngues (esta página em PT + versão EN).
-
-| Camada | O que contém | Quando usar |
-|---|---|---|
-| **Este guia** | Visão de negócio, papéis, fluxos Mermaid, checklists | Você está conhecendo o domínio ou montando a integração pela primeira vez |
-| **[OpenAPI Indoor](../reference/indoor.md)** | Endpoints, campos, MUST/MAY, erros, exemplos JSON | Você vai codar ou validar o contrato HTTP |
+!!! note "Chamada repetida no ciclo da conta"
+    Se a operação **já foi aplicada** (ex.: pre-close com conta já `IN_PAYMENT`, close com conta já `CLOSED`), o host **retorna `202`** — não `409` só por duplicidade. Ver [Convenções](../reference/conventions.md#duplicidade-de-operacoes-de-ciclo-de-vida) e [especificação Indoor](../reference/indoor.md).
 
 ---
 
@@ -34,21 +27,40 @@ Sem um padrão, cada integração entre PDV e aplicação de salão precisava ne
 
 ---
 
+## O que muda da V1 para a V2
+
+!!! important "Breaking - leia antes de migrar"
+    O Indoor da V2 transforma um conjunto comum de integrações bilaterais em um contrato normativo. Se a sua empresa já opera salao com fluxos proprietarios, estes sao os pontos mais importantes para migracao.
+
+| Tema | V1 / integracoes legadas | V2 |
+|---|---|---|
+| **Modelo da capability** | Normalmente proprietario ou acoplado ao PDV | Capability **Indoor** explicita, com contrato normativo |
+| **Entrada de itens** | Muitas vezes descrita como abertura local de conta | Sempre via **Orders**: evento `CREATED` + `GET /orders/{id}` com `fulfillment.orderType: INDOOR` |
+| **Entidade central** | Pedido, conta ou ticket variavam por integrador | **Conta** e a entidade operacional para agrupamento, pagamento, fechamento e fiscal |
+| **Eventos da conta** | Formato e transporte proprietarios | Eventos `ACCOUNT_*`, `PAYMENT_*` e `FISCAL_*` padronizados |
+| **Entrega de eventos** | Polling, webhook ou integracoes proprietarias | **Webhook-only** |
+| **Mutacao repetida** | Repeticao de `pre-close` / `close` frequentemente tratada como erro | **`202`** se o estado alvo ja tiver sido aplicado |
+| **Momento do pagamento** | Frequentemente acoplado ao checkout final | Pagamento pode acontecer em `IN_USE` ou `IN_PAYMENT` |
+
+Nao existe `POST /orders` para criar pedido no protocolo - nem para Indoor. O pedido nasce em Orders e a conta nasce a partir dele.
+
+---
+
 ## Pré-requisito: protocolo de Orders
 
 !!! warning "Indoor é uma extensão de Orders, não uma capability autônoma"
-    Ambas as partes **DEVEM** implementar o **protocolo de Orders** antes de Indoor. A **conta de salão é aberta a partir de um pedido**: quando o Orders processa um pedido com `orderType: INDOOR` para uma chave operacional sem conta aberta, o Software Service cria a conta. Pedidos INDOOR seguintes na mesma chave só acumulam itens.
+    Ambas as partes **DEVEM** implementar o **protocolo de Orders** antes de Indoor. A **conta de salão é aberta a partir de um pedido**: quando o Software Service processa um pedido com `fulfillment.orderType: INDOOR` (evento `CREATED` + `GET /orders/{id}` — **não há `POST /orders`**) para uma chave operacional sem conta aberta, cria a conta. Pedidos INDOOR seguintes na mesma chave só acumulam itens.
 
     Detalhes de ciclo de vida e eventos do **pedido** ficam só em Orders — não se redefinem aqui. Implementações sem Orders ativo **não podem** usar esta capability.
 
     - Guia: [Orders](orders.md)
-    - Contrato: [OpenAPI Orders](../reference/orders.md)
+    - Contrato: [especificação Orders](../reference/orders.md)
 
 O pedido é o **canal de entrada de itens**; a conta é o **agrupador operacional** desses pedidos para fins de pagamento, fechamento e integração fiscal.
 
 ---
 
-## Os dois lados da integração
+## Papeis
 
 | Papel | Responsabilidade |
 |---|---|
@@ -59,11 +71,31 @@ Em todas as operações desta capability o Software Service é o servidor e a Or
 
 ---
 
+## Conta vs eventos
+
+Este é o ponto mais importante para não misturar Indoor com Orders.
+
+| Conceito | O que é | Onde está a verdade |
+|---|---|---|
+| **Pedido INDOOR** | Canal de entrada dos itens | [Orders](orders.md) |
+| **Conta** | Agrupador operacional da sessão | `GET /accounts` / `GET /accounts/{accountId}` |
+| **Evento da conta** | Fato imutável notificado sobre a conta | Webhook `accountEvent` |
+
+**Regras:**
+
+1. O pedido continua seguindo o lifecycle de Orders; Indoor **não** redefine `order.status`.
+2. A conta é a fonte de verdade para agrupamento, pagamentos, lock e fechamento.
+3. `202 Accepted` nas mutações de conta não significa resultado final; a confirmação de negócio fecha com evento e/ou reconciliação por GET.
+4. Eventos de conta são notificações, não comandos.
+5. Deduplique por `eventId` e não assuma ordenação estrita de entrega.
+
+---
+
 ## Discovery
 
-Participantes que expõem Indoor **DEVEM** declarar a extensão no manifesto well-known (`GET /.well-known/opendelivery`), sob a capability pai **Orders** (ou conforme o binding de Discovery da implementação).
+Participantes que expõem Indoor **DEVEM** declarar `capabilities.indoor` no manifesto well-known (`GET /.well-known/opendelivery`), conforme a [especificação de Discovery](../reference/discovery.md). Indoor continua sendo uma **extensão de Orders no domínio**, mas sua declaração pública em Discovery é feita como objeto próprio.
 
-Campos típicos da declaração Indoor no Discovery (detalhe normativo na [OpenAPI Discovery](../reference/discovery.md)):
+Campos típicos da declaração Indoor no Discovery (detalhe normativo na [especificação Discovery](../reference/discovery.md)):
 
 | Campo | Significado |
 |---|---|
@@ -73,29 +105,28 @@ Campos típicos da declaração Indoor no Discovery (detalhe normativo na [OpenA
 
 ```json
 "capabilities": {
-  "orders": {
-    "endpoint": "https://api.example.com/od/v2"
-  },
-  "indoor": {
-    "endpoint": "https://api.example.com/od/v2",
-    "invoiceIssuer": "pos",
-    "invoiceIssueMoment": "account_closing",
-    "usesAccountId": true
-  }
+ "indoor": {
+ "version": "1.0.0",
+ "supported": true,
+ "endpoint": "https://api.example.com/od/v2",
+ "invoiceIssuer": "pos",
+ "invoiceIssueMoment": "account_closing",
+ "usesAccountId": true
+ }
 }
 ```
 
-Guia geral: [Discovery](discovery.md). Contrato: [OpenAPI Discovery](../reference/discovery.md).
+Guia geral: [Discovery](discovery.md). Contrato: [especificação Discovery](../reference/discovery.md).
 
 ---
 
-## Mapa: o que fazer → operação na OpenAPI
+## Mapa: o que fazer → operação na especificação da API
 
-Use esta tabela para ir do fluxo de negócio ao contrato HTTP. Todos os links abrem a [Referência OpenAPI Indoor](../reference/indoor.md).
+Use esta tabela para ir do fluxo de negócio ao contrato HTTP. Todos os links abrem a [Especificação da API Indoor](../reference/indoor.md).
 
 | Objetivo | Operação | Onde na spec |
 |---|---|---|
-| Abrir conta / adicionar itens | `POST /orders` com `orderType: INDOOR` | [Orders](../reference/orders.md) (pré-requisito) |
+| Abrir conta / adicionar itens | Evento `CREATED` + `GET /orders/{id}` com `fulfillment.orderType: INDOOR` | [Orders](../reference/orders.md) (pré-requisito) |
 | Consultar conta (mesa/comanda) | `GET /accounts?operationMode&identifier` | `getAccount` |
 | Consultar conta por ID | `GET /accounts/{accountId}` | `getAccountById` |
 | Pré-fechar (lock) | `POST /accounts/pre-close` | `preCloseAccount` |
@@ -143,20 +174,59 @@ O `operationMode` define como a conta é **agrupada** — mas não diz por onde 
 
 `operationMode` e `originChannel` são independentes: uma mesma conta pode acumular pedidos de **canais diferentes** ao longo da sessão. Por exemplo, o cliente abre a conta pelo QR Code (`originChannel: QR_CODE`) e, depois, o garçom lança um item adicional pelo tablet (`originChannel: WAITER_TABLET`) — ambos os pedidos caem na mesma conta porque compartilham a chave operacional (`operationMode` + `identifier`). O canal é só um metadado do pedido, não afeta a identidade da conta.
 
+### Objeto `fulfillment.indoor` no pedido
+
+No pedido de Orders, o payload de Indoor fica em `order.fulfillment.indoor`.
+
+Valores canônicos da V2 (identificadores técnicos) são sempre em inglês:
+
+- `operationMode`: `TABLE`, `TAB`, `COUNTER`
+- `consumptionType`: `DINE_IN`, `TAKEAWAY`
+- `originChannel.type`: `TOTEM`, `QR_CODE`, `CUSTOMER_TABLET`, `WAITER_TABLET`, `FRONT_DESK`, `POS`, `APP`, `WHATSAPP`, `OTHER`
+
+Mapeamento comum de labels legadas: `MESA -> TABLE`, `COMANDA -> TAB`, `BALCAO -> COUNTER`, `CONSUMIR_NO_LOCAL -> DINE_IN`, `LEVAR -> TAKEAWAY`.
+
+| Campo | Tipo | Obrigatório | Descrição / enum |
+|---|---|---|---|
+| `operationMode` | `string` | Sim | Modo operacional da conta: `TABLE`, `TAB`, `COUNTER` |
+| `identifier` | `string` | Sim | Identificador operacional (mesa/comanda/balcão) |
+| `account.id` | `string` | Não | Id da conta quando já conhecido |
+| `originChannel.type` | `string` | Sim | Canal de origem do pedido |
+| `originChannel.id` | `string` | Não | Id específico de dispositivo/canal/origem |
+| `originChannel.notes` | `string` | Não | Observação livre sobre o canal |
+| `consumptionType` | `string` | Sim | Intenção de consumo: `DINE_IN`, `TAKEAWAY` |
+| `fulfillment.type` | `string` | Condicional | Handoff local: `DISPATCH` ou `CALL` |
+| `fulfillment.call.notifyOriginator` | `boolean` | Condicional | Notificar originador no fluxo de chamada |
+| `fulfillment.call.type` | `string` | Condicional | Tipo de chamada: `TICKET_NUMBER`, `PAGER`, `CALL_NAME`, `WHATSAPP`, `OTHER` |
+| `fulfillment.call.label` | `string` | Condicional | Valor exibido ao cliente (senha/nome/pager etc.) |
+| `fulfillment.dispatch.id` | `string` | Condicional | Id do ponto de despacho |
+| `fulfillment.dispatch.label` | `string` | Condicional | Nome amigável do ponto de despacho |
+| `fulfillment.dispatch.sector` | `string` | Condicional | Setor/área operacional |
+| `fulfillment.dispatch.seat.id` | `string` | Condicional | Identificador do assento/posição |
+| `fulfillment.dispatch.seat.label` | `string` | Condicional | Nome amigável do assento/posição |
+| `service.waiterCode` | `string` | Não | Código do atendente/garçom |
+| `service.waiterName` | `string` | Não | Nome do atendente/garçom |
+| `service.peopleCount` | `integer` | Não | Número de pessoas na sessão |
+| `notifications.whatsAppId` | `string` | Não | Identificador de WhatsApp para notificações |
+| `fiscal.shouldIssueDocument` | `boolean` | Condicional | Se deve emitir documento fiscal |
+| `fiscal.documentStatus` | `string` | Não | Estado fiscal conhecido: `NOT_ISSUED`, `ISSUED`, `PENDING` |
+| `fiscal.printDocument` | `boolean` | Não | Se deve imprimir documento |
+| `fiscal.paymentNSURequiredForNFCE` | `boolean` | Não | Se NSU de pagamento é exigido para NFC-e |
+
 ### Como a conta nasce
 
-A conta **não é criada por nenhum endpoint desta spec**. Ela nasce automaticamente no Software Service quando o protocolo de Orders processa um pedido com `orderType: INDOOR` para uma chave operacional que ainda não tem conta aberta — seja esse pedido originado por um garçom, um totem ou um QR Code. A partir daí, novos pedidos INDOOR para a mesma chave **acumulam itens** na conta existente, independente do canal de origem de cada um.
+A conta **não é criada por nenhum endpoint desta spec**. Ela nasce automaticamente no Software Service quando o protocolo de Orders processa um pedido com `fulfillment.orderType: INDOOR` (entrada via evento `CREATED` e snapshot em `GET /orders/{id}` — **sem `POST /orders`**) para uma chave operacional que ainda não tem conta aberta — seja esse pedido originado por um garçom, um totem ou um QR Code. A partir daí, novos pedidos INDOOR para a mesma chave **acumulam itens** na conta existente, independente do canal de origem de cada um.
 
 ### Status da conta
 
 ```mermaid
 stateDiagram-v2
-    direction LR
-    [*] --> IN_USE : 1º pedido INDOOR
-    IN_USE --> IN_PAYMENT : pré-fechamento
-    IN_PAYMENT --> IN_USE : desbloqueio
-    IN_PAYMENT --> CLOSED : fechamento
-    CLOSED --> [*]
+ direction LR
+ [*] --> IN_USE: 1º pedido INDOOR
+ IN_USE --> IN_PAYMENT: pré-fechamento
+ IN_PAYMENT --> IN_USE: desbloqueio
+ IN_PAYMENT --> CLOSED: fechamento
+ CLOSED --> [*]
 ```
 
 | Status | Significado |
@@ -194,9 +264,9 @@ A cada transição relevante, o Software Service **DEVE** notificar a Ordering A
 #### Matriz de eventos da conta {#matriz-de-eventos-da-conta}
 
 <div class="od-matrix__legend">
-  <span><span class="od-badge od-badge--must">MUST</span> emitir no fluxo core</span>
-  <span><span class="od-badge od-badge--may">MAY</span> conforme cenário</span>
-  <span>Status da conta após o evento (quando aplicável)</span>
+ <span><span class="od-badge od-badge--must">MUST</span> emitir no fluxo core</span>
+ <span><span class="od-badge od-badge--may">MAY</span> conforme cenário</span>
+ <span>Status da conta após o evento (quando aplicável)</span>
 </div>
 
 <div class="od-matrix" markdown>
@@ -224,7 +294,7 @@ A cada transição relevante, o Software Service **DEVE** notificar a Ordering A
     O ciclo de vida do **pedido** INDOOR (CREATED → CONFIRMED → …) está na [matriz Orders — perfil INDOOR](orders.md#perfil-indoor). A matriz acima é só da **conta** (Account).
 
 !!! note "Payloads de webhook e exemplos JSON"
-    Exemplos de cada `EventType` e do contrato `EventNotification` estão na OpenAPI, operação [`receiveAccountEvent`](../reference/indoor.md) — não são duplicados aqui para evitar drift.
+    Exemplos de cada `EventType` e do contrato `EventNotification` estão na especificação da API, operação [`receiveAccountEvent`](../reference/indoor.md) — não são duplicados aqui para evitar drift.
 
 ---
 
@@ -254,44 +324,45 @@ Ciclo completo de uma sessão de salão: abertura via pedido INDOOR, adição de
 
 ```mermaid
 sequenceDiagram
-    participant OA as Ordering Application
-    participant SS as Software Service
+ participant OA as Ordering Application
+ participant SS as Software Service
 
-    Note over OA,SS: Abertura
-    OA->>SS: POST /orders (orderType: INDOOR)
-    SS-->>OA: 201 Created
-    SS-)OA: event: ACCOUNT_OPENED — status: IN_USE
+ Note over OA,SS: Abertura — pedido entra via Orders (sem POST /orders)
+ OA->>SS: evento CREATED type=INDOOR (webhook ou polling)
+ SS->>OA: GET /orders/{orderId}
+ OA-->>SS: Order type=INDOOR
+ SS-)OA: event: ACCOUNT_OPENED — status: IN_USE
 
-    Note over OA,SS: Adição de itens
-    OA->>SS: POST /orders (novo pedido INDOOR)
-    SS-->>OA: 201 Created
-    SS-)OA: event: ACCOUNT_ITEM_ADDED
+ Note over OA,SS: Adição de itens — novo pedido INDOOR
+ OA->>SS: evento CREATED (novo orderId)
+ SS->>OA: GET /orders/{orderId}
+ SS-)OA: event: ACCOUNT_ITEM_ADDED
 
-    opt Pagamento antecipado (opcional, a qualquer momento em IN_USE)
-        OA->>SS: POST /accounts/{id}/payments
-        SS-->>OA: 200 OK
-        SS-)OA: event: PAYMENT_CREATED
-    end
+ opt Pagamento antecipado (opcional, a qualquer momento em IN_USE)
+ OA->>SS: POST /accounts/{id}/payments
+ SS-->>OA: 200 OK
+ SS-)OA: event: PAYMENT_CREATED
+ end
 
-    Note over OA,SS: Pré-fechamento — lock para checkout
-    OA->>SS: POST /accounts/{id}/pre-close
-    SS-->>OA: 202 Accepted
-    SS-)OA: event: ACCOUNT_PRE_CLOSED — status: IN_PAYMENT
+ Note over OA,SS: Pré-fechamento — lock para checkout
+ OA->>SS: POST /accounts/{id}/pre-close
+ SS-->>OA: 202 Accepted
+ SS-)OA: event: ACCOUNT_PRE_CLOSED — status: IN_PAYMENT
 
-    Note over OA,SS: Quitação final
-    OA->>SS: POST /accounts/{id}/payments
-    SS-->>OA: 200 OK
-    SS-)OA: event: PAYMENT_CREATED
+ Note over OA,SS: Quitação final
+ OA->>SS: POST /accounts/{id}/payments
+ SS-->>OA: 200 OK
+ SS-)OA: event: PAYMENT_CREATED
 
-    Note over OA,SS: Emissão fiscal
-    OA->>SS: POST /accounts/{id}/fiscal
-    SS-->>OA: 202 Accepted
-    SS-)OA: event: FISCAL_ISSUED (assíncrono)
+ Note over OA,SS: Emissão fiscal
+ OA->>SS: POST /accounts/{id}/fiscal
+ SS-->>OA: 202 Accepted
+ SS-)OA: event: FISCAL_ISSUED (assíncrono)
 
-    Note over OA,SS: Fechamento
-    OA->>SS: POST /accounts/{id}/close
-    SS-->>OA: 202 Accepted
-    SS-)OA: event: ACCOUNT_CLOSED — status: CLOSED
+ Note over OA,SS: Fechamento
+ OA->>SS: POST /accounts/{id}/close
+ SS-->>OA: 202 Accepted
+ SS-)OA: event: ACCOUNT_CLOSED — status: CLOSED
 ```
 
 ### Desbloqueio (unlock)
@@ -300,21 +371,21 @@ A Ordering Application pode reverter um pré-fechamento, devolvendo a conta ao e
 
 ```mermaid
 sequenceDiagram
-    participant OA as Ordering Application
-    participant SS as Software Service
+ participant OA as Ordering Application
+ participant SS as Software Service
 
-    OA->>SS: POST /accounts/{id}/pre-close
-    SS-->>OA: 202 Accepted
-    SS-)OA: event: ACCOUNT_PRE_CLOSED — status: IN_PAYMENT
+ OA->>SS: POST /accounts/{id}/pre-close
+ SS-->>OA: 202 Accepted
+ SS-)OA: event: ACCOUNT_PRE_CLOSED — status: IN_PAYMENT
 
-    Note over OA,SS: Operador decide adicionar mais itens
-    OA->>SS: POST /accounts/{id}/unlock
-    SS-->>OA: 202 Accepted
-    SS-)OA: event: ACCOUNT_UNLOCKED — status: IN_USE
+ Note over OA,SS: Operador decide adicionar mais itens
+ OA->>SS: POST /accounts/{id}/unlock
+ SS-->>OA: 202 Accepted
+ SS-)OA: event: ACCOUNT_UNLOCKED — status: IN_USE
 
-    OA->>SS: POST /orders (novo pedido INDOOR)
-    SS-->>OA: 201 Created
-    SS-)OA: event: ACCOUNT_ITEM_ADDED
+ OA->>SS: evento CREATED (novo pedido INDOOR)
+ SS->>OA: GET /orders/{orderId}
+ SS-)OA: event: ACCOUNT_ITEM_ADDED
 ```
 
 ### Pagamentos parciais
@@ -323,31 +394,31 @@ Uma conta pode receber múltiplos pagamentos ao longo de toda a sua vida útil, 
 
 ```mermaid
 sequenceDiagram
-    participant OA as Ordering Application
-    participant SS as Software Service
+ participant OA as Ordering Application
+ participant SS as Software Service
 
-    Note over OA,SS: Pagamento parcial — ex.: cartão de crédito, conta ainda em uso
-    OA->>SS: POST /accounts/{id}/payments
-    SS-->>OA: 200 OK
-    SS-)OA: event: PAYMENT_CREATED (valor parcial)
+ Note over OA,SS: Pagamento parcial — ex.: cartão de crédito, conta ainda em uso
+ OA->>SS: POST /accounts/{id}/payments
+ SS-->>OA: 200 OK
+ SS-)OA: event: PAYMENT_CREATED (valor parcial)
 
-    Note over OA,SS: Conta continua aberta — novos itens são adicionados normalmente
-    OA->>SS: POST /orders (novo pedido INDOOR)
-    SS-->>OA: 201 Created
-    SS-)OA: event: ACCOUNT_ITEM_ADDED
+ Note over OA,SS: Conta continua aberta — novos itens são adicionados normalmente
+ OA->>SS: evento CREATED (novo pedido INDOOR)
+ SS->>OA: GET /orders/{orderId}
+ SS-)OA: event: ACCOUNT_ITEM_ADDED
 
-    OA->>SS: POST /accounts/{id}/pre-close
-    SS-->>OA: 202 Accepted
-    SS-)OA: event: ACCOUNT_PRE_CLOSED — status: IN_PAYMENT
+ OA->>SS: POST /accounts/{id}/pre-close
+ SS-->>OA: 202 Accepted
+ SS-)OA: event: ACCOUNT_PRE_CLOSED — status: IN_PAYMENT
 
-    Note over OA,SS: Quitação final — ex.: dinheiro (saldo restante)
-    OA->>SS: POST /accounts/{id}/payments
-    SS-->>OA: 200 OK
-    SS-)OA: event: PAYMENT_CREATED (saldo quitado)
+ Note over OA,SS: Quitação final — ex.: dinheiro (saldo restante)
+ OA->>SS: POST /accounts/{id}/payments
+ SS-->>OA: 200 OK
+ SS-)OA: event: PAYMENT_CREATED (saldo quitado)
 
-    OA->>SS: POST /accounts/{id}/close
-    SS-->>OA: 202 Accepted
-    SS-)OA: event: ACCOUNT_CLOSED — status: CLOSED
+ OA->>SS: POST /accounts/{id}/close
+ SS-->>OA: 202 Accepted
+ SS-)OA: event: ACCOUNT_CLOSED — status: CLOSED
 ```
 
 ### Emissão fiscal
@@ -356,25 +427,25 @@ A emissão é **assíncrona** — o Software Service retorna `202 Accepted` e em
 
 ```mermaid
 sequenceDiagram
-    participant OA as Ordering Application
-    participant SS as Software Service
+ participant OA as Ordering Application
+ participant SS as Software Service
 
-    OA->>SS: POST /accounts/{id}/fiscal
-    SS-->>OA: 202 Accepted
+ OA->>SS: POST /accounts/{id}/fiscal
+ SS-->>OA: 202 Accepted
 
-    alt Emissão bem-sucedida
-        SS-)OA: event: FISCAL_ISSUED
-        OA->>SS: GET /accounts/{id}/fiscal
-        SS-->>OA: 200 OK (documento disponível)
-    else Falha na emissão
-        SS-)OA: event: FISCAL_ERROR
-        Note over OA: Operador registra falha
-    end
+ alt Emissão bem-sucedida
+ SS-)OA: event: FISCAL_ISSUED
+ OA->>SS: GET /accounts/{id}/fiscal
+ SS-->>OA: 200 OK (documento disponível)
+ else Falha na emissão
+ SS-)OA: event: FISCAL_ERROR
+ Note over OA: Operador registra falha
+ end
 
-    Note over OA,SS: Conta pode ser fechada independente do resultado fiscal
-    OA->>SS: POST /accounts/{id}/close
-    SS-->>OA: 202 Accepted
-    SS-)OA: event: ACCOUNT_CLOSED — status: CLOSED
+ Note over OA,SS: Conta pode ser fechada independente do resultado fiscal
+ OA->>SS: POST /accounts/{id}/close
+ SS-->>OA: 202 Accepted
+ SS-)OA: event: ACCOUNT_CLOSED — status: CLOSED
 ```
 
 ### Cancelamento de item
@@ -383,15 +454,15 @@ Cancela um item específico dentro de uma conta `IN_USE`. A conta permanece aber
 
 ```mermaid
 sequenceDiagram
-    participant OA as Ordering Application
-    participant SS as Software Service
+ participant OA as Ordering Application
+ participant SS as Software Service
 
-    Note over OA,SS: Item já adicionado à conta via pedido INDOOR
-    OA->>SS: POST /accounts/items/{itemId}/cancel
-    SS-->>OA: 200 OK
-    SS-)OA: event: ACCOUNT_ITEM_CANCELLED
+ Note over OA,SS: Item já adicionado à conta via pedido INDOOR
+ OA->>SS: POST /accounts/items/{itemId}/cancel
+ SS-->>OA: 200 OK
+ SS-)OA: event: ACCOUNT_ITEM_CANCELLED
 
-    Note over OA,SS: Conta permanece IN_USE — demais itens inalterados
+ Note over OA,SS: Conta permanece IN_USE — demais itens inalterados
 ```
 
 ### Transferência entre contas
@@ -400,18 +471,18 @@ Move itens de uma conta para outra — ex.: mesa muda de lugar, grupos se separa
 
 ```mermaid
 sequenceDiagram
-    participant OA as Ordering Application
-    participant SS as Software Service
+ participant OA as Ordering Application
+ participant SS as Software Service
 
-    Note over OA,SS: Conta A (origem) e Conta B (destino) estão IN_USE
+ Note over OA,SS: Conta A (origem) e Conta B (destino) estão IN_USE
 
-    OA->>SS: POST /accounts/transfers
-    Note over OA,SS: body: targetAccountId + lista de itens
-    SS-->>OA: 200 OK
-    SS-)OA: event: ACCOUNT_ITEM_REMOVED — Conta A (origem)
-    SS-)OA: event: ACCOUNT_ITEM_ADDED — Conta B (destino)
+ OA->>SS: POST /accounts/transfers
+ Note over OA,SS: body: targetAccountId + lista de itens
+ SS-->>OA: 200 OK
+ SS-)OA: event: ACCOUNT_ITEM_REMOVED — Conta A (origem)
+ SS-)OA: event: ACCOUNT_ITEM_ADDED — Conta B (destino)
 
-    Note over OA,SS: Ambas as contas permanecem IN_USE
+ Note over OA,SS: Ambas as contas permanecem IN_USE
 ```
 
 ---
@@ -420,7 +491,7 @@ sequenceDiagram
 
 Se você hospeda os endpoints e gerencia as contas, atente para:
 
-**Abra a conta na recepção do primeiro pedido INDOOR.** Quando o protocolo de Orders processar um pedido `orderType: INDOOR` para uma chave operacional sem conta ativa, crie a conta e emita `ACCOUNT_OPENED`. Pedidos seguintes para a mesma chave acumulam itens (`ACCOUNT_ITEM_ADDED`) em vez de abrir uma conta nova.
+**Abra a conta na recepção do primeiro pedido INDOOR.** Quando o protocolo de Orders processar um pedido `fulfillment.orderType: INDOOR` (evento `CREATED` + GET — sem `POST /orders`) para uma chave operacional sem conta ativa, crie a conta e emita `ACCOUNT_OPENED`. Pedidos seguintes para a mesma chave acumulam itens (`ACCOUNT_ITEM_ADDED`) em vez de abrir uma conta nova.
 
 **Emita um evento para cada transição.** Toda mudança de estado relevante precisa gerar o evento correspondente, notificado via webhook (`accountEvent`). A Ordering Application depende exclusivamente desses eventos para se sincronizar — uma transição sem evento é uma transição invisível. Não há fallback de polling: se o webhook falhar, use o campo `lastEvent` da conta para reconciliar o estado.
 
@@ -470,18 +541,12 @@ Se você consome os endpoints e exibe a conta ao operador ou cliente, atente par
     - Emissão fiscal tratada como assíncrona (aguarda o evento).
     - Cancelamentos e transferências refletidos na interface em tempo real.
 
----
-
-**Contrato normativo (campos, endpoints, erros, exemplos):** [OpenAPI Indoor →](../reference/indoor.md)
-
----
-
-<div class="od-next-step">
-  <div class="od-next-step__label">Próximo passo</div>
-  <div class="od-next-step__links">
-    <a href="../reference/indoor/">Implementar pela OpenAPI Indoor</a>
-    <a href="orders/">Protocolo Orders (pré-requisito)</a>
-    <a href="../reference/orders/">OpenAPI Orders</a>
-    <a href="discovery/">Discovery</a>
-  </div>
+<div class="od-related">
+  <p class="od-related__label">Relacionado</p>
+  <ul class="od-related__list">
+    <li><a href="../reference/indoor.md">Especificação de Indoor</a> — conta, pagamentos, fiscal</li>
+    <li><a href="../reference/orders.md">Especificação de Orders</a> — pré-requisito</li>
+    <li><a href="orders.md">Orders</a> — guia do domínio</li>
+    <li><a href="discovery.md">Discovery</a></li>
+  </ul>
 </div>

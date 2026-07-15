@@ -1,10 +1,5 @@
 # Customer Endpoints
 
-<div class="od-api-callout">
-  <p>Binding REST Customer. Continue a jornada ou abra o contrato técnico.</p>
-  <a href="../reference/customer/">OpenAPI Customer →</a>
-</div>
-
 Normative source: [Customer Capability](../protocol/customer.md).
 
 This page defines the REST/HTTP transport contract for Customer Capability operations.
@@ -62,21 +57,21 @@ All endpoints in this binding MUST use HTTPS and `application/json` payloads.
 
 ```json
 {
-  "customer": {
-    "id": "customer-123",
-    "externalIds": ["app:123", "crm:ABC-9"],
-    "name": "Maria Souza",
-    "contacts": {
-      "email": "maria@example.com",
-      "phone": "+55-11-99999-0000"
-    },
-    "consent": {
-      "marketing": true,
-      "updatedAt": "2026-03-24T12:00:00Z"
-    },
-    "createdAt": "2026-03-01T10:00:00Z",
-    "updatedAt": "2026-03-24T12:00:00Z"
-  }
+ "customer": {
+ "id": "customer-123",
+ "externalIds": ["app:123", "crm:ABC-9"],
+ "name": "Maria Souza",
+ "contacts": {
+ "email": "maria@example.com",
+ "phone": "+55-11-99999-0000"
+ },
+ "consent": {
+ "marketing": true,
+ "updatedAt": "2026-03-24T12:00:00Z"
+ },
+ "createdAt": "2026-03-01T10:00:00Z",
+ "updatedAt": "2026-03-24T12:00:00Z"
+ }
 }
 ```
 
@@ -84,15 +79,15 @@ All endpoints in this binding MUST use HTTPS and `application/json` payloads.
 
 ```json
 {
-  "event": {
-    "eventType": "customer.updated",
-    "entityType": "customer",
-    "occurredAt": "2026-03-24T12:00:00Z",
-    "payload": {
-      "customerId": "customer-123",
-      "changedFields": ["contacts.email", "consent.marketing"]
-    }
-  }
+ "event": {
+ "eventType": "customer.updated",
+ "entityType": "customer",
+ "occurredAt": "2026-03-24T12:00:00Z",
+ "payload": {
+ "customerId": "customer-123",
+ "changedFields": ["contacts.email", "consent.marketing"]
+ }
+ }
 }
 ```
 
@@ -127,6 +122,6 @@ Error payloads SHOULD follow [Error Model](../protocol/error-handling.md).
     - External identifiers MUST be supported for deduplication.
     - Customer-centric order view MUST NOT replace operational order lifecycle semantics.
 
-## OpenAPI Artifact
+## especificação da API Artifact
 
 - Download: [customer.openapi.yaml](../reference/v2/customer.openapi.yaml)

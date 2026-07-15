@@ -4,18 +4,27 @@ title: API reference
 
 # API reference
 
-This section contains the normative **OpenAPI** specifications for each Open Delivery V2 capability.
-Each page renders the full REST contract with **ReDoc** — endpoints, schemas, request/response examples, and error codes.
+!!! warning "Release Candidate (V2.0.0-rc)"
+    The API Specs below are **V2.0.0-rc**. They are published for **ecosystem validation** (company review and implementation pilots). They may still change based on feedback. A stable release will be published only after that phase; **V1 remains active** during the transition.
+
+    Status and lifecycle: [Protocol evolution](../protocol/evolution.md) · [Changelog](../guide/changelog.md).
+
+This section is the **normative implementation source** for Open Delivery V2: the **API Specs** (REST/HTTP) — endpoints, schemas, examples, and errors.
+
+!!! note "Specification format"
+    All API Specs are written in **[OpenAPI](https://www.openapis.org/)** (YAML). The site presents them in a readable form; the OpenAPI file is the canonical artifact for each capability.
 
 !!! note "Contract language"
-    OpenAPI specs are **English only**. Conceptual rules and flows are in the **Protocol** section (available in PT and EN).
+    API Specs are **English only**. Domain concepts and flows are in the **Protocol** tab (PT and EN).
 
-For conceptual explanations, flows, and implementation guidance, see **Protocol**.
+The **Protocol** tab explains the domain; this tab defines the **implementable contract**. On conflict, the **API Spec wins**.
 
-<div class="od-api-callout">
-  <p>New to the hybrid model? Read Protocol vs binding first.</p>
-  <a href="../PROTOCOL_VS_BINDING/">Understand protocol vs API →</a>
-</div>
+## Conventions
+
+| Page | Description |
+|---|---|
+| [General rules](conventions.md) | Interoperability, timestamps, pagination, duplicate lifecycle ops |
+| [Error handling](error-handling.md) | Error envelope and HTTP status codes |
 
 ## Infrastructure
 
@@ -30,8 +39,8 @@ Start here for every new integration.
 
 | Spec | Description | Protocol |
 |---|---|---|
+| [Orders](orders.md) | Lifecycle, status vs events, polling and webhooks | [Rules](../protocol/orders.md) |
+| [Indoor](indoor.md) | Dine-in accounts (Orders extension), payments, fiscal | [Rules](../protocol/indoor.md) |
 | [Merchant](merchant.md) | Establishment, catalog, services, availability | [Overview](../protocol/merchant.md) · [Store data](../protocol/merchant-store.md) · [Menus](../protocol/menu.md) |
-| [Orders](orders.md) | Order lifecycle, states, and events | [Rules](../protocol/orders.md) |
 | [Logistics](logistics.md) | Delivery coordination, tracking, problems | [Rules](../protocol/logistics.md) |
-| [Customer & Loyalty](customer.md) | CRM, leads, reviews, loyalty, events | [Customer](../protocol/customer.md) · [Reviews](../extensions/reviews.md) · [Loyalty](../extensions/loyalty.md) |
-| [Indoor](indoor.md) | Dine-in accounts, orders, payments, fiscal | [Rules](../protocol/indoor.md) |
+| [Customer](customer.md) | Customer data, leads, reviews, loyalty, events | [Customer](../protocol/customer.md) · [Reviews](../protocol/reviews.md) · [Loyalty](../protocol/loyalty.md) |

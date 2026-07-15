@@ -1,0 +1,44 @@
+Ata de Reunião 26/03/2026
+Comitê Técnico Arquitetura ­ Open Delivery V2.0.0
+Data: 26 de março de 2026 (quinta-feira) Início: 10:00 Formato: Microsoft Teams
+1) Contexto e objetivo da sessão A reunião teve como objetivo dar continuidade às discussões do Comitê de Arquitetura da Versão 2.0.0 do Open Delivery, com foco em:
+· Revisão dos eventos e status de pedido reorganizados na semana anterior.
+· Avaliação das regras de duplicidade de chamadas e comportamento dos endpoints (ex.: confirm).
+· Início da revisão do payload do pedido (JSON) visando organização, clareza e eliminação de ambiguidades acumuladas na V1.
+· Preparação para discussão futura sobre cancelamentos, tracking, múltiplos níveis de opcionais e pontos de integração com outros comitês.
+A reunião destacou a necessidade de: · Reduzir ambiguidades da V1. · Reforçar que o fluxo do Open Delivery é assíncrono por padrão, evitando decisões baseadas exclusivamente nas respostas dos endpoints. · Manter consistência entre os padrões e garantir uma transição suave para a V2.0.
+2) Participantes Conforme detectado pela transcrição:
+· Guilherme Camargo Abrasel Nacional (facilitador) · Enzo Madalena - Keeta · Carlos Eduardo Rodrigues De Almeida
+
+· Hiago's AI Notetaker (tldv.io) (não verificado ­ gravador automático) A transcrição não registra verbalizações de outros participantes, embora possam ter estado presentes na reunião.
+3) Comunicados e alinhamentos iniciais · Não houve comunicados estruturados. · Guilherme Camargo Abrasel Nacional informou que estará presente na feira Autocom na semana seguinte e se colocou à disposição para conversas presenciais. · Reforço de que a reunião da semana seguinte ocorre normalmente.
+4) Pauta técnica 4.1 Revisão dos eventos e status do pedido
+· Retomada da matriz criada na reunião anterior, organizando eventos por tipo de pedido (Delivery, Takeout, Indoor).
+· Eventos podem ser obrigatórios (must) ou opcionais (may), definidos por originador via endpoint de configuração.
+· Separação clara entre status e eventos para eliminar ambiguidades da V1.
+4.2 Duplicidade de chamadas (ex.: /confirm) · Problema relatado pela Keeta:
+o PDVs geram confirmação automática simultânea com o sistema da Keeta, criando conflitos.
+o O retorno 422 (atual padrão da V1) causa quebra de fluxo pois muitos PDVs tratam como erro real.
+
+· Debate sobre idempotência: o Desejável retornar 202 ou 200 quando o pedido já está confirmado. o Possibilidade de reenviar o evento via polling em caso de duplicidade.
+· Conclusão preliminar: o Manter padrão assíncrono na V2. o Remover ambiguidades da documentação. o Orientar que respostas dos endpoints não devem ser usadas para validar o processamento, e sim os eventos.
+4.3 Revisão do payload do pedido (JSON) Objetivos:
+· Reduzir campos redundantes. · Agrupar campos relacionados para maior clareza. · Avaliar campos pouco utilizados ou incoerentes historicamente. · Corrigir nomes, organização e resquícios antigos da V1. Pontos citados: · Campos de datas, como preparation_start_date_time, têm alto índice de
+erro por parte dos sistemas. · merchant poderia ser simplificado para apenas o ID. · Campos repetidos de preço (subtotal_price, total_price, option_price, etc.)
+se tornaram confusos e pouco padronizados. · indoor terá grande reformulação por demanda do comitê de Salão. · Sugestão de reorganização estruturada para facilitar homologação.
+5) Dores e necessidades levantadas
+
+5.1 Keeta (Enzo Madalena - Keeta) · PDVs que usam simultaneamente o sistema interno e o sistema da Keeta tendem a gerar confirmações duplicadas, quebrando o fluxo devido ao retorno 422. · Desejo de que chamadas duplicadas retornem 200/202, mantendo o fluxo.
+5.2 Padrão e documentação (pontuado por Guilherme Camargo Abrasel Nacional e Carlos Eduardo Rodrigues De Almeida)
+· A V1 induz ao erro por sugerir uso obrigatório do 422, mesmo quando idempotência é possível e desejada.
+· Falta clareza no tratamento síncrono vs assíncrono. · Os sistemas tratam respostas síncronas de maneiras divergentes,
+gerando comportamentos inesperados.
+5.3 Estrutura do JSON (citada por vários) · Campos redundantes e antigos dificultam homologações. · Necessidade de melhor identificação de opcionais e option groups (ex.: combos com preços variáveis). · Necessidade de rever "totais" no item -- raramente usados e frequentemente inconsistentes.
+6) Encaminhamentos e acordos · Ajustar documentação para esclarecer: o Endpoints são assíncronos por padrão. o 422 não é obrigatório; implementações podem optar por comportamento idempotente. o Reforço: respostas dos endpoints não devem ser usadas para fechamento de lógica -- usar eventos.
+
+· Para duplicidade de chamadas: o Aceita-se retorno 202 com reenvio do evento no polling OU manter 422 sem novas ações.
+· Revisar o JSON do pedido na próxima reunião, trazendo uma proposta reorganizada.
+· Revisar futuramente: o Cancelamento parcial e completo. o Tracking de entrega. o Múltiplos níveis de opcionais. o Impactos no comitê de cardápio.
+7) Próximos encontros · Próxima reunião do Comitê de Arquitetura: semana seguinte (data não especificada na transcrição). · Reunião do Comitê de Cardápio acontecerá no dia seguinte às 10h, com foco em sincronismo e entidades de cardápio.
+
+

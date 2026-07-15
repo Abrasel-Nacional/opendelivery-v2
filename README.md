@@ -79,9 +79,8 @@ Open Delivery v2 is organized around independent protocol capabilities and exten
 - Orders
 - Merchant
 - Logistics
-- CRM
-- Indoor Extension
-- Loyalty Extension
+- Customer (including Reviews and Loyalty modules — not separate extensions)
+- Indoor Extension (of Orders)
 - Core protocol and security
 
 Each capability is designed to be:
@@ -90,7 +89,7 @@ Each capability is designed to be:
 - Versioned explicitly
 - Loosely coupled to other capabilities
 
-Transport bindings (such as REST / OpenAPI) are treated as **implementation details**, not as the protocol itself.
+The implementable contract is published as **API Spec** (REST/HTTP) under the API reference. Guide and Protocol pages explain the domain; API Spec is the normative source for integration.
 
 ---
 
@@ -105,12 +104,12 @@ At this stage, participation happens primarily through **GitHub Issues**, which 
 - Questions and clarifications
 - Specification proposals
 
-👉 **Open a new issue:**  
+👉 **Open a new issue:**
 https://github.com/Abrasel-Nacional/opendelivery-v2/issues/new
 
 The project backlog and ongoing work can be followed through the official GitHub Project:
 
-👉 **Open Delivery – Project Board:**  
+👉 **Open Delivery – Project Board:**
 https://github.com/orgs/Abrasel-Nacional/projects/5
 
 Contribution guidelines will be refined as the protocol stabilizes.
