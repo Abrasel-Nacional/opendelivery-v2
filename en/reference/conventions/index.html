@@ -2843,6 +2843,7 @@
 <p>Exact parameters and defaults: see each API Spec operation.</p>
 <hr />
 <h2 id="duplicate-lifecycle-operations">Duplicate lifecycle operations<a class="headerlink" href="#duplicate-lifecycle-operations" title="Permanent link">&para;</a></h2>
+<p><a id="duplicidade-de-operacoes-de-ciclo-de-vida"></a></p>
 <p>Rule aligned with the Architecture Committee (2026-03-26) and the Keeta case: repeated calls <strong>must not break the flow</strong> when the target state is <strong>already reached</strong>.</p>
 <p>In V1, docs suggested <code>HTTP 422</code> for synchronous reprocessing of the same fact and, on the async path, re-presenting the event via polling. V2 is <strong>async-first</strong> (<code>202 Accepted</code>).</p>
 <h3 id="universal-default-v2">Universal default (V2)<a class="headerlink" href="#universal-default-v2" title="Permanent link">&para;</a></h3>

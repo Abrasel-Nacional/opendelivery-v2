@@ -2839,22 +2839,21 @@
 </thead>
 <tbody>
 <tr>
-<td>Client Credentials por Estabelecimento</td>
-<td><code>client_credentials_merchant</code></td>
-<td>Suportado — compatibilidade legada</td>
-</tr>
-<tr>
-<td>Client Credentials por Aplicação</td>
-<td><code>client_credentials_application</code></td>
-<td>Suportado — recomendado para novas integrações</td>
-</tr>
-<tr>
-<td>Authorization Code</td>
-<td><code>authorization_code</code></td>
-<td>Suportado — opcional, casos de uso avançados</td>
+<td></td>
+<td></td>
+<td></td>
 </tr>
 </tbody>
 </table>
+<div class="admonition tip">
+<p class="admonition-title">Migracao V1 -&gt; V2</p>
+</div>
+<p>Para novas integracoes, adote preferencialmente <code>by_app</code>.
+  O modelo <code>by_merchant</code> continua suportado para compatibilidade legada durante a transicao.
+  Se <code>authorization_code</code> for suportado, ele DEVE ser declarado no Discovery.
+| Client Credentials por Estabelecimento | <code>client_credentials_merchant</code> | Suportado — compatibilidade legada |
+| Client Credentials por Aplicação | <code>client_credentials_application</code> | Suportado — recomendado para novas integrações |
+| Authorization Code | <code>authorization_code</code> | Suportado — opcional, casos de uso avançados |</p>
 <h2 id="requisitos-comuns">Requisitos Comuns<a class="headerlink" href="#requisitos-comuns" title="Permanent link">&para;</a></h2>
 <p>Independentemente do modelo de autenticação selecionado, toda implementação DEVE seguir estas regras:</p>
 <ol>
