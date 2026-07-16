@@ -55,6 +55,15 @@ tags:
     | Duplicate lifecycle call | Often `422` if treated as sync reprocess | **`202` if already in target state** |
     | Authoritative status field (`order.status`) | No authoritative status field; many integrations inferred state from events (`lastEvent`) | **Added** on `GET /orders/{orderId}` as source of truth |
     | Status vs events semantics | Frequently confused | **Status** on GET is authoritative; events are notifications |
+    | Unified timing block | Root-level timing concepts | **Moved** under `order.timing` (`orderTiming`, `schedule`, `preparationStartDateTime`, `orderPriority`) |
+    | Scheduled order constraint | Often implicit/implementation-specific | `order.timing.schedule` **required** when `order.timing.orderTiming = SCHEDULED` |
+    | Delivery customer requirement | Varies by integration | `order.customer` is **required** for `fulfillment.orderType = DELIVERY` |
+    | Sales channel location | Root-level / implementation-specific metadata | Standardized in `order.context.salesChannel` |
+    | Order-level notes | Usually item-level only or proprietary fields | Standardized in `order.observations` |
+    | Item catalog link | Not standardized | Optional `order.items[*].itemOfferId` |
+    | Option default included quantity | Not standardized | Optional `order.items[*].options[*].defaultQuantity` |
+    | Multi-level options | Usually single-level | Nested options supported in `order.items[*].options[*].options` |
+    | Customer CRM/Loyalty attributes | Not part of Orders payload | Optional `order.customer.birthDate` and `order.customer.gender` |
     | Merchant id on order | Often PDV-generated | Originator-owned merchant id + PDV `externalCode` (see Merchant) |
 - name: CapabilityOverview
   x-displayName: Overview
@@ -593,49 +602,42 @@ paths:
                 $ref: '#/components/schemas/Order'
               examples:
                 deliveryCreated:
-                  summary: DELIVERY order in CREATED
+                  summary: DELIVERY order with all fields
                   value:
                     id: order-abc123
                     displayId: A123
-                    status: CREATED
-                    lastEvent: CREATED
+                    status: CONFIRMED
+                    lastEvent: CONFIRMED
                     createdAt: '2026-07-01T14:30:00Z'
-                    orderTiming: INSTANT
+                    sourceAppId: 11111111-1111-1111-1111-111111111111
+                    timing:
+                      orderTiming: SCHEDULED
+                      schedule:
+                        scheduledDateTimeStart: '2026-07-01T15:10:00Z'
+                        scheduledDateTimeEnd: '2026-07-01T15:20:00Z'
+                      preparationStartDateTime: '2026-07-01T14:30:00Z'
+                      orderPriority: PRIORITY2
                     merchant:
                       id: merchant-originator-001
                       externalCode: pdv-loja-42
                       name: Pizza Plaza
-                    items:
-                      - id: item-1
-                        name: Classic Burger
-                        externalCode: SKU-BURGER-01
-                        quantity: 2
-                        unity_price: 2500
-                        total_price: 5000
-                        options:
-                          - id: opt-1
-                            name: Extra cheese
-                            quantity: 1
-                            option_price: 0
-                    total:
-                      value: 5500
-                      currency: BRL
-                      subtotal: 5000
-                      deliveryFee: 500
-                      discount: 0
                     customer:
                       id: cust-1
                       name: Ana Silva
-                      phone: '+5511999990000'
-                    payments:
-                      - method: CREDIT_CARD
-                        value: 5500
-                        prepaid: true
+                      documentNumber: '12345678900'
+                      phone:
+                        number: '+5511999990000'
+                        extension: '101'
+                      email: ana.silva@example.com
+                      ordersCountOnMerchant: 7
+                      birthDate: '1992-05-20'
+                      gender: FEMALE
                     fulfillment:
                       orderType: DELIVERY
                       delivery:
                         address:
                           street: Rua das Flores 100
+                          complement: BL 2 AP 31
                           neighborhood: Centro
                           city: São Paulo
                           state: SP
@@ -643,27 +645,120 @@ paths:
                           coordinates:
                             latitude: -23.55
                             longitude: -46.63
+                        estimatedDeliveryDateTime: '2026-07-01T15:10:00Z'
+                        observations: Leave at concierge desk
+                    items:
+                      - id: item-1
+                        name: Classic Burger
+                        externalCode: SKU-BURGER-01
+                        itemOfferId: io-1001
+                        quantity: 2
+                        unit: UN
+                        pricing:
+                          unitPrice: { value: 2500, currency: BRL }
+                          originalPrice: { value: 2800, currency: BRL }
+                          optionsPrice: { value: 600, currency: BRL }
+                          totalPrice: { value: 5600, currency: BRL }
+                        options:
+                          - id: opt-1
+                            optionGroupId: og-1
+                            optionGroupName: Extras
+                            name: Extra cheese
+                            quantity: 1
+                            defaultQuantity: 0
+                            pricing:
+                              unitPrice: { value: 300, currency: BRL }
+                              originalPrice: { value: 300, currency: BRL }
+                              totalPrice: { value: 300, currency: BRL }
+                            options:
+                              - id: opt-1a
+                                optionGroupId: og-1a
+                                optionGroupName: Cheese type
+                                name: Cheddar
+                                quantity: 1
+                                defaultQuantity: 0
+                                pricing:
+                                  unitPrice: { value: 300, currency: BRL }
+                                  originalPrice: { value: 300, currency: BRL }
+                                  totalPrice: { value: 300, currency: BRL }
+                        observations: No onions
+                    total:
+                      itemsPrice: { value: 5600, currency: BRL }
+                      otherFees: { value: 600, currency: BRL }
+                      discount: { value: 700, currency: BRL }
+                      orderAmount: { value: 5500, currency: BRL }
+                    otherFees:
+                      - name: Delivery fee
+                        type: DELIVERY_FEE
+                        receivedBy: MERCHANT
+                        price: { value: 500, currency: BRL }
+                      - name: Service fee
+                        type: SERVICE_FEE
+                        receivedBy: MARKETPLACE
+                        price: { value: 100, currency: BRL }
+                    discounts:
+                      - amount: { value: 700, currency: BRL }
+                        target: ITEM
+                        targetId: item-1
+                        sponsorshipValues:
+                          - name: MARKETPLACE
+                            amount: { value: 500, currency: BRL }
+                            discountCode: CUPOM500
+                          - name: MERCHANT
+                            amount: { value: 200, currency: BRL }
+                    payments:
+                      prepaid: 3000
+                      pending: 2500
+                      methods:
+                        - type: PREPAID
+                          method: CREDIT
+                          brand: VISA
+                          methodInfo: Gateway auth 904512
+                          value: 5500
+                          currency: BRL
+                          transaction:
+                            authorizationCode: AUTH-904512
+                            acquirerDocument: '12345678000190'
+                        - type: PENDING
+                          method: CASH
+                          value: 2500
+                          currency: BRL
+                          changeFor: 3000
+                    taxInvoice:
+                      issued: true
+                      taxInvoiceURL: https://merchant.example.com/invoices/nfce-12345.pdf
+                    context:
+                      salesChannel: APP
+                    observations: Customer requested contactless delivery
+                    extraInfo: VIP customer, prioritize careful packaging
                 indoorOrder:
-                  summary: INDOOR order (feeds account)
+                  summary: INDOOR order with all fields
                   value:
                     id: order-indoor-1001
                     displayId: M5-01
                     status: CONFIRMED
                     lastEvent: CONFIRMED
                     createdAt: '2026-07-01T19:02:11Z'
-                    orderTiming: INSTANT
+                    sourceAppId: 22222222-2222-2222-2222-222222222222
+                    timing:
+                      orderTiming: ONDEMAND
+                      preparationStartDateTime: '2026-07-01T19:02:11Z'
+                      orderPriority: PRIORITY3
                     merchant:
                       id: merchant-originator-001
                       externalCode: pdv-loja-42
-                    items:
-                      - id: item-1
-                        name: Classic Burger
-                        quantity: 2
-                        unity_price: 3290
-                        total_price: 6580
-                    total:
-                      value: 6580
-                      currency: BRL
+                      name: Pizza Plaza
+                    customer:
+                      id: cust-2
+                      name: Bruno Rocha
+                      documentNumber: '98765432100'
+                      phone:
+                        number: '+5511988887777'
+                        extension: '10'
+                      email: bruno.rocha@example.com
+                      ordersCountOnMerchant: 3
+                      birthDate: '1989-09-10'
+                      gender: MALE
                     fulfillment:
                       orderType: INDOOR
                       indoor:
@@ -693,6 +788,63 @@ paths:
                           documentStatus: PENDING
                           printDocument: true
                           paymentNSURequiredForNFCE: true
+                    items:
+                      - id: item-1
+                        name: Classic Burger
+                        externalCode: SKU-BURGER-01
+                        itemOfferId: io-1001
+                        quantity: 2
+                        unit: UN
+                        pricing:
+                          unitPrice: { value: 3290, currency: BRL }
+                          originalPrice: { value: 3290, currency: BRL }
+                          optionsPrice: { value: 500, currency: BRL }
+                          totalPrice: { value: 7080, currency: BRL }
+                        options:
+                          - id: opt-2
+                            optionGroupId: og-2
+                            optionGroupName: Side dish
+                            name: Fries
+                            quantity: 1
+                            defaultQuantity: 0
+                            pricing:
+                              unitPrice: { value: 500, currency: BRL }
+                              originalPrice: { value: 500, currency: BRL }
+                              totalPrice: { value: 500, currency: BRL }
+                            options: []
+                        observations: No pickles
+                    total:
+                      itemsPrice: { value: 7080, currency: BRL }
+                      otherFees: { value: 200, currency: BRL }
+                      discount: { value: 300, currency: BRL }
+                      orderAmount: { value: 6980, currency: BRL }
+                    otherFees:
+                      - name: Service fee
+                        type: SERVICE_FEE
+                        receivedBy: MERCHANT
+                        price: { value: 200, currency: BRL }
+                    discounts:
+                      - amount: { value: 300, currency: BRL }
+                        target: CART
+                        sponsorshipValues:
+                          - name: CHAIN
+                            amount: { value: 300, currency: BRL }
+                            discountCode: FIDELIDADE300
+                    payments:
+                      prepaid: 0
+                      pending: 6980
+                      methods:
+                        - type: PENDING
+                          method: CASH
+                          value: 6980
+                          currency: BRL
+                          changeFor: 7000
+                    taxInvoice:
+                      issued: false
+                    context:
+                      salesChannel: QR_TABLE
+                    observations: Account shared with table guests
+                    extraInfo: Birthday table, include complimentary candle
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -1691,265 +1843,525 @@ components:
           maxItems: 100
     Order:
       type: object
-      required: [id, displayId, createdAt, orderTiming, status, merchant, items, total, fulfillment]
+      required: [id, displayId, createdAt, merchant, timing, fulfillment, status, items, total, payments]
       properties:
         id:
           type: string
-          description: Unique order identifier (Ordering Application)
+          description: The unique identifier of the order. The order ID is generated by the **Ordering Application**.
           example: order-abc123
         displayId:
           type: string
-          description: Human-readable code shown to merchant and customer
+          description: Order Id shown in the **Ordering Application** interface for the customer.
           example: A123
         createdAt:
           type: string
           format: date-time
-          description: Order creation timestamp (UTC, RFC 3339)
-        orderTiming:
-          type: string
-          enum: [INSTANT, SCHEDULED, ONDEMAND]
-          description: |
-            `INSTANT` — fulfill ASAP.
-            `SCHEDULED` — specific future time (`scheduledFor`).
-            `ONDEMAND` — prepare only after `PREPARATION_REQUESTED`.
-        scheduledFor:
-          type: string
-          format: date-time
-          description: Target fulfillment time for SCHEDULED orders
-        preparationStartDateTime:
-          type: string
-          format: date-time
-          description: Suggested preparation start (UTC)
-        status:
-          $ref: '#/components/schemas/OrderStatus'
-        lastEvent:
-          $ref: '#/components/schemas/OrderEventType'
-          description: Last relevant event type known for this order (debug / sync aid)
+          description: Order creation date and time (UTC date-time in ISO timestamp format).
         sourceAppId:
           type: string
           format: uuid
-          description: Originating Ordering Application id
-        observations:
-          type: string
-          description: >
-            General order-level remarks, not tied to a specific item (distinct from
-            item-level `observations` and fulfillment-context notes).
-        context:
-          type: object
-          description: Optional informational metadata about the order origin, not required for processing.
-          properties:
-            salesChannel:
-              type: string
-              description: Optional sales channel label
+          description: This field must be filled in with the AppId of the **Ordering Application** that originated the order.
         merchant:
           type: object
+          description: '**[V2 CHANGED]** Merchant information for this order. In V2, `merchant.id` is originator-owned and `merchant.externalCode` is used for Software Service/PDV correlation.'
           required: [id]
           properties:
             id:
               type: string
-              description: Merchant id owned by the originator (V2)
+              description: |-
+                **[V2 CHANGED]** Unique Identifier for merchant correlation in the order.
+                In V2, this id is generated and owned by the **Ordering Application** (originator), not by the merchant's **Software Service**.
+
+                The **Software Service** should use `merchant.externalCode` to map this identifier to its internal merchant registry.
             externalCode:
               type: string
-              description: PDV / Software Service internal merchant code
+              description: '**[V2 NEW]** Merchant code in the Software Service/PDV used to correlate the originator merchant id with the internal merchant record.'
             name:
               type: string
-              description: Public merchant name (debug / display)
+              description: Merchant Public Name.
+        fulfillment:
+          allOf:
+            - $ref: '#/components/schemas/OrderFulfillment'
+          description: '**[V2 CHANGED]** Information for DELIVERY, TAKEOUT, or INDOOR orders. In V2, profile and context moved from root fields to `fulfillment`.'
+        status:
+          $ref: '#/components/schemas/OrderStatus'
+          description: '**[V2 NEW]** Authoritative order status in the current snapshot. Consumers MUST use this field as source of truth for lifecycle state.'
+        lastEvent:
+          $ref: '#/components/schemas/OrderEventType'
+          description: The last valid event polled (whether acknowledged or not) or sent via webhook.
+        customer:
+          $ref: '#/components/schemas/OrderCustomer'
+          description: Customer related information.
+        timing:
+          $ref: '#/components/schemas/OrderTimingContext'
+          description: '**[V2 CHANGED]** Unified timing and scheduling context for this order. Consolidates V1 `orderTiming`, `schedule`, `preparationStartDateTime`, and `orderPriority` under one object.'
         items:
           type: array
           minItems: 1
+          description: '**[V2 CHANGED]** Order items. Each item now groups price fields under `item.pricing`.'
           items:
             $ref: '#/components/schemas/OrderItem'
-        total:
-          $ref: '#/components/schemas/OrderTotal'
-        customer:
-          $ref: '#/components/schemas/OrderCustomer'
-        payments:
-          type: array
-          items:
-            $ref: '#/components/schemas/OrderPayment'
-        fulfillment:
-          $ref: '#/components/schemas/OrderFulfillment'
         otherFees:
           type: array
-          description: Additional fees (e.g. minimum order fee)
+          description: Other fees that may apply.
           items:
             type: object
+            required: [name, type, price]
             properties:
-              name: { type: string }
+              name:
+                type: string
+                description: Name related to the other fees.
               type:
                 type: string
-                description: Fee type token (e.g. MIN_ORDER_FEE, SERVICE_FEE)
-              value: { type: integer, description: Amount in minor units }
+                description: |-
+                  Type of fee.
+
+                  - `DELIVERY_FEE`: Fee charged for delivering the order to the customer's address.
+                  - `SERVICE_FEE`: Fee charged for the service provided by the Ordering Application platform or merchant.
+                  - `TIP`: Gratuity amount given to the delivery person or service staff.
+                  - `MIN_ORDER_FEE`: Additional fee charged when the order value is below the minimum required amount.
+                enum: [DELIVERY_FEE, SERVICE_FEE, TIP, MIN_ORDER_FEE]
+              receivedBy:
+                type: string
+                description: Indicates who is the final recipient of the fee amount.
+                enum: [MARKETPLACE, MERCHANT, LOGISTIC_SERVICES]
+              price:
+                $ref: '#/components/schemas/Price'
+                description: The fee price.
         discounts:
           type: array
-          description: >
-            Discounts applied to the order. A payment method MUST NOT be represented as a
-            discount — discounts subtract from the order value; to avoid double counting, a
-            value declared here MUST NOT also be declared under `payments`.
+          description: |-
+            Any discounts that may apply.
+
+            **IMPORTANT: A payment method MUST NOT be used as a discount. Discounts are amounts that subtract a portion of the final order value. To avoid duplication, if a value is declared in this object it MUST NOT be declared in the `payments` object.**
           items:
             type: object
             required: [amount, target, sponsorshipValues]
             properties:
               amount:
-                type: integer
-                description: Discount amount in minor units
+                $ref: '#/components/schemas/Price'
+                description: Amount value of the discount.
               target:
                 type: string
+                description: Discount target.
                 enum: [CART, DELIVERY_FEE, ITEM]
               targetId:
                 type: string
-                description: Only mandatory when target is ITEM
+                description: Only mandatory for `target` = `ITEM`.
               sponsorshipValues:
                 type: array
-                description: >
-                  Values sponsored by each party. The sum MUST match `amount` above.
+                description: Values sponsored by either party. The sum of the amounts listed in this attribute must match `amount`.
                 items:
                   type: object
                   required: [name, amount]
                   properties:
                     name:
                       type: string
+                      description: Sponsoring party.
                       enum: [MARKETPLACE, MERCHANT, CHAIN]
                     amount:
-                      type: integer
-                      description: Discount amount given by this sponsor, in minor units
+                      $ref: '#/components/schemas/Price'
+                      description: Discount amount given by the sponsor.
                     discountCode:
                       type: string
-                      description: Coupon or marketing campaign identification code
+                      description: Code related to the discount applied.
+        total:
+          $ref: '#/components/schemas/OrderTotal'
+          description: Set of fields with the sum of the values previously described in the order.
+        payments:
+          $ref: '#/components/schemas/OrderPayments'
+          description: |-
+            Payment details for the order.
+
+            **IMPORTANT: A discount MUST NOT be used as a payment method. It is important that the sum of all values declared as payment methods is exactly equal to `total.orderAmount`. To avoid duplication, do not declare a payment method as a discount as well.**
+        taxInvoice:
+          $ref: '#/components/schemas/OrderTaxInvoice'
+          description: Tax invoice information.
+        context:
+          type: object
+          description: '**[V2 NEW]** Optional informational metadata about the order origin, not required for processing.'
+          properties:
+            salesChannel:
+              type: string
+              description: '**[V2 CHANGED]** You can indicate through which sales channel this order originated. In V2 this value is carried under `context.salesChannel`.'
+        observations:
+          type: string
+          description: >
+            **[V2 NEW]** General order-level remarks, not tied to a specific item (distinct from
+            item-level `observations` and fulfillment-context notes).
+        extraInfo:
+          type: string
+          description: Extra information shared by the originator for operational context.
     OrderItem:
       type: object
-      required: [id, name, quantity, unity_price, total_price]
+      required: [id, name, quantity, pricing]
+      description: '**[V2 CHANGED]** Order items. Item pricing fields were consolidated into `pricing` in V2.'
       properties:
         id:
           type: string
-          description: Line item identifier within this order
-        externalCode:
-          type: string
-          description: PDV / catalog external code
-        itemOfferId:
-          type: string
-          description: Catalog item offer reference when available
+          description: A unique identifier of the item.
         name:
           type: string
-          description: Item name at order time (snapshot)
+          description: Product name.
           example: Classic Burger
+        externalCode:
+          type: string
+          description: External product code.
+        itemOfferId:
+          type: string
+          description: '**[V2 NEW]** Catalog item offer reference when available.'
         quantity:
           type: number
           minimum: 0
-          description: Quantity (fractional units allowed for KG/L etc.)
+          description: |-
+            Amount of items.
+
+            > Use fractional values for quantities smaller than the unit of measure:
+            > Example: 500 grams = 0.5 KG
         unit:
           type: string
           enum: [UN, KG, L, OZ, LB, GAL]
-          description: Unit of measure
+          description: |
+            Item's Unit of Measurement.
+
+            Possible values:
+            - `UN` - Unit
+            - `KG` - Kilogram
+            - `L` - Liter
+            - `OZ` - Ounce
+            - `LB` - Pound
+            - `GAL` - Gallon
+
+            > Use fractional values for quantities smaller than the unit of measure:
+            > Example: 500 grams = 0.5 KG
           default: UN
-        unity_price:
-          type: integer
-          description: Unit base price in minor units (centavos), without options
-          example: 2500
-        total_price:
-          type: integer
-          description: Line total including options and quantity, minor units
-          example: 5000
-        observations:
-          type: string
-          description: Item-level special instructions
+        pricing:
+          $ref: '#/components/schemas/OrderItemPricing'
+          description: '**[V2 CHANGED]** Set of pricing fields for this item. Replaces flat V1 item price fields with a grouped pricing object.'
         options:
           type: array
+          description: The optional extras chosen by the consumer, related to this item.
           items:
             $ref: '#/components/schemas/OrderItemOption'
+        observations:
+          type: string
+          description: '**[V2 CHANGED]** Special instructions about the items. Equivalent to V1 `specialInstructions`.'
+    OrderItemPricing:
+      type: object
+      required: [unitPrice, totalPrice]
+      description: '**[V2 CHANGED]** Set of prices for an item grouped under `item.pricing`.'
+      properties:
+        unitPrice:
+          allOf:
+            - $ref: '#/components/schemas/Price'
+          description: Price per unit. This is the price the customer is paying and will be considered for order totals calculations.
+        originalPrice:
+          allOf:
+            - $ref: '#/components/schemas/Price'
+          description: |-
+            Original price of the product.
+            This price **is for information purposes only** and should be used to inform the price of an item before applying markdowns on the list price.
+
+            Discounts applied during the order such as coupons and vouchers should not be considered here. These must be reported in the `discounts` object.
+
+            **THIS PRICE WILL NOT BE CONSIDERED FOR ORDER TOTALS CALCULATIONS.**
+        optionsPrice:
+          allOf:
+            - $ref: '#/components/schemas/Price'
+          description: The sum of the total prices of all options of the item.
+        totalPrice:
+          allOf:
+            - $ref: '#/components/schemas/Price'
+          description: Total Price of the item. **(quantity * (unitPrice + optionsPrice))**
     OrderItemOption:
       type: object
-      required: [id, name, quantity, option_price]
+      required: [id, name, quantity, pricing]
+      description: '**[V2 CHANGED]** Option selected for an item. Option pricing fields were consolidated into `pricing` in V2.'
       properties:
-        id: { type: string }
-        optionGroupId: { type: string }
-        optionGroupName: { type: string }
-        name: { type: string, example: Medium rare }
-        quantity: { type: integer, minimum: 1 }
+        id:
+          type: string
+          description: A unique identifier of the item.
+        name:
+          type: string
+          description: Options name.
+          example: Medium rare
+        optionGroupId:
+          type: string
+          description: Unique option group identifier.
+        optionGroupName:
+          type: string
+          description: Option group name.
+        quantity:
+          type: integer
+          minimum: 1
+          description: Amount of options selected.
         defaultQuantity:
           type: integer
           minimum: 0
           description: >
-            Quantity of this option already included by default in the item (e.g. a free
+            **[V2 NEW]** Quantity of this option already included by default in the item (e.g. a free
             ingredient). Quantity beyond this value is billable. Distinguishes standard
             (already-included) selections from add-ons.
-        option_price:
-          type: integer
-          description: Additional price per unit of this option in minor units
-          example: 0
+        pricing:
+          $ref: '#/components/schemas/OrderItemOptionPricing'
+          description: '**[V2 CHANGED]** Set of pricing fields for this option. Replaces flat V1 option price fields with a grouped pricing object.'
         options:
           type: array
-          description: Nested options for multi-level customization
+          description: '**[V2 NEW]** Nested options for multi-level customization.'
           items:
             $ref: '#/components/schemas/OrderItemOption'
+    OrderItemOptionPricing:
+      type: object
+      required: [unitPrice, totalPrice]
+      description: '**[V2 CHANGED]** Set of prices for an option grouped under `option.pricing`.'
+      properties:
+        unitPrice:
+          allOf:
+            - $ref: '#/components/schemas/Price'
+          description: Price per unit. This is the price the customer is paying and will be considered for order totals calculations.
+        originalPrice:
+          allOf:
+            - $ref: '#/components/schemas/Price'
+          description: |-
+            Original price of the option.
+            This price **is for information purposes only** and should be used to inform the price of an option before applying markdowns on the list price.
+
+            Discounts applied during the order such as coupons and vouchers should not be considered here. These must be reported in the `discounts` object.
+
+            **THIS PRICE WILL NOT BE CONSIDERED FOR ORDER TOTALS CALCULATIONS.**
+        totalPrice:
+          allOf:
+            - $ref: '#/components/schemas/Price'
+          description: Total Price of the option. **(quantity * unitPrice)**
     OrderTotal:
       type: object
-      required: [value, currency]
+      required: [itemsPrice, otherFees, discount, orderAmount]
+      description: Set of fields with the sum of the values previously described in the order.
       properties:
-        value:
-          type: integer
-          description: Total order value in minor units
-          example: 5500
-        currency:
-          type: string
-          description: ISO 4217 currency code
-          example: BRL
-        subtotal:
-          type: integer
-          description: Items subtotal before fees and discounts
-          example: 5000
-        deliveryFee:
-          type: integer
-          description: Delivery fee in minor units
-          example: 500
+        itemsPrice:
+          $ref: '#/components/schemas/Price'
+          description: Sum of the total price of the items listed in the `items` attribute.
+        otherFees:
+          $ref: '#/components/schemas/Price'
+          description: Sum of the total value of other fees listed in the `otherFees` attribute. If there isn't one, use 0.
         discount:
-          type: integer
-          description: Total discount in minor units
-          example: 0
+          $ref: '#/components/schemas/Price'
+          description: Sum of any discounts that may be listed in the `discounts` attribute. If there isn't one, use 0.
+        orderAmount:
+          $ref: '#/components/schemas/Price'
+          description: The final value of the order (itemsPrice + otherFees - discounts).
     OrderCustomer:
       type: object
-      description: |
-        Customer context on the order. Customer capability may exchange orders through
-        its own endpoints later; this shape remains the shared order customer fragment.
+      required: [id, phone, name, ordersCountOnMerchant]
+      description: |-
+        Customer related information.
+
+        **[V2 CHANGED]** This object is **REQUIRED** when `fulfillment.orderType` is `DELIVERY`.
       properties:
-        id: { type: string }
-        name: { type: string }
-        phone: { type: string }
-        email: { type: string }
-        documentNumber: { type: string }
+        id:
+          type: string
+          description: A unique identifier related to the consumer. If the Ordering Application does not have an Id for the customer, this Id can be generated when creating the order.
+        name:
+          type: string
+          description: Customer name.
+        documentNumber:
+          type: string
+          description: Customer document.
+        phone:
+          type: object
+          required: [number]
+          description: |-
+            Customer's phone. Here you can enter the customer's phone number directly (provided that the customer has given permission for this data to be shared, according to local policies) or another phone number (such as the Ordering Application call center phone number) where the merchant can communicate about order issues that affect the customer.
+
+            **Please note**: The telephone number is considered an identification field and therefore the customer's advance consent is required.
+          properties:
+            number:
+              type: string
+              description: Main customer phone number.
+            extension:
+              type: string
+              description: Optional phone extension.
+        email:
+          type: string
+          description: Customer email.
         ordersCountOnMerchant:
           type: integer
-          description: Total number of orders this customer has already placed with this merchant.
+          description: Total number of orders that the customer already placed within the merchant.
         birthDate:
           type: string
           format: date
-          description: Optional customer birth date — demographic field requested for CRM/Loyalty segmentation.
+          description: '**[V2 NEW]** Optional customer birth date used for CRM/Loyalty segmentation and age-based campaigns.'
         gender:
           type: string
-          description: Optional customer gender — demographic field requested for CRM/Loyalty segmentation.
-    OrderPayment:
+          description: '**[V2 NEW]** Optional customer gender used for CRM/Loyalty segmentation and communication personalization.'
+    OrderTimingContext:
       type: object
-      required: [method]
+      required: [orderTiming]
+      description: |
+        **[V2 CHANGED]** Unified timing block for order execution strategy.
+
+        This object consolidates the V1 `orderTiming`, `orderPriority`, and `schedule`
+        concepts in a single location while preserving the same semantics.
       properties:
+        orderTiming:
+          type: string
+          description: |
+            Indicates the timing for initiating the order:
+
+            `INSTANT`: for orders that must be prepared immediately.
+            `SCHEDULED`: for orders scheduled for a specific date and time. It is used with `schedule`.
+            `ONDEMAND`: for orders that should start after `PREPARATION_REQUESTED`.
+
+            **[V2 CHANGED]** When `orderTiming` is `SCHEDULED`, `timing.schedule` is required.
+          enum: [INSTANT, SCHEDULED, ONDEMAND]
+        schedule:
+          $ref: '#/components/schemas/OrderSchedule'
+          description: '**[V2 CHANGED]** Information for scheduled orders moved under `timing.schedule`.'
+        preparationStartDateTime:
+          type: string
+          format: date-time
+          description: '**[V2 CHANGED]** Suggestion for the preparation start time after order creation. In V2, this field lives under `timing`.'
+        orderPriority:
+          type: string
+          description: |
+            **[V2 CHANGED]** Defines the priority of preparation and delivery of this order in relation to other
+            orders from the same Ordering Application. The lower the priority, the faster this
+            order should be fulfilled.
+
+            This field was moved under `timing` in V2 to keep all time/urgency decisions in one place.
+          enum: [PRIORITY1, PRIORITY2, PRIORITY3, PRIORITY4, PRIORITY5]
+    OrderSchedule:
+      type: object
+      required: [scheduledDateTimeStart, scheduledDateTimeEnd]
+      description: |-
+        Information for scheduled orders.
+
+        **[V2 CHANGED]** This object is **REQUIRED** when `timing.orderTiming` is `SCHEDULED`.
+      properties:
+        scheduledDateTimeStart:
+          type: string
+          format: date-time
+          description: |-
+            Date and time for when the order is ready (start of scheduled window).
+            It can be calculated by the **Ordering Application** using the average preparation time of the dishes.
+            Default is the same time as order creation time.
+        scheduledDateTimeEnd:
+          type: string
+          format: date-time
+          description: |-
+            Date and time for when the order is ready (end of scheduled window).
+            It can be calculated by the **Ordering Application** using the average preparation time of the dishes.
+            Default is the same time as order creation time.
+    OrderPayments:
+      type: object
+      required: [prepaid, pending, methods]
+      description: |
+        All the description of the payment, such as methods, pre-payments, change, etc.
+
+        **IMPORTANT: A discount MUST NOT be used as a payment method. It is important that the sum of all values declared as payment methods is exactly equal to `total.orderAmount`. To avoid duplication, do not declare a payment method as a discount as well.**
+      properties:
+        prepaid:
+          type: number
+          format: decimal
+          description: Amount paid in advance.
+        pending:
+          type: number
+          format: decimal
+          description: Amount that is still to be paid.
+        methods:
+          type: array
+          description: The payment method used. Whether it was online, on delivery, credit card, voucher, cash, etc.
+          items:
+            $ref: '#/components/schemas/OrderPaymentMethod'
+    OrderPaymentMethod:
+      type: object
+      required: [value, currency, type, method]
+      description: Payment method entry.
+      properties:
+        type:
+          type: string
+          description: '`PREPAID` if the payment was made through some platform, or `PENDING` if it is going to be paid on delivery or in cash, for example.'
+          enum: [PREPAID, PENDING]
         method:
           type: string
-          description: Payment method identifier
-          example: CREDIT_CARD
+          description: Payment method type.
+          enum: [CREDIT, DEBIT, MEAL_VOUCHER, FOOD_VOUCHER, DIGITAL_WALLET, PIX, CASH, CREDIT_DEBIT, COUPON, REDEEM, PREPAID_REDEEM, OTHER]
+        brand:
+          type: string
+          description: |-
+            Indicates the brand of the card selected in the `method` field.
+
+            This field must only be filled in if `method` is `CREDIT`, `DEBIT`, `CREDIT_DEBIT`, `MEAL_VOUCHER` or `FOOD_VOUCHER`.
+
+            If `OTHER` is chosen, it is recommended that you describe the brand name in the `methodInfo` field.
+          enum: [VISA, MASTERCARD, DINERS, AMEX, HIPERCARD, ELO, AURA, DISCOVER, VR_BENEFICIOS, SODEXO, TICKET, GOOD_CARD, BANESCARD, SOROCARD, POLICARD, VALECARD, AGICARD, JCB, CREDSYSTEM, CABAL, GREEN_CARD, VEROCHEQUE, AVISTA, OTHER]
+        methodInfo:
+          type: string
+          description: |-
+            Additional information regarding the payment method.
+            It can be used to indicate useful information for the chosen payment method, such as wallet name or an authorization number.
+
+            This field can be used for any `method`, but it is highly recommended when `method` is `OTHER`.
         value:
-          type: integer
-          description: Amount in minor units
+          type: number
+          format: decimal
+          description: Price value. 4 decimals places are accepted.
+        currency:
+          type: string
+          pattern: '^[A-Z]{3}$'
+          description: The 3-letter ISO 4217 currency code.
+          example: BRL
         changeFor:
-          type: integer
-          description: Cash change requested (CASH)
-        prepaid:
+          type: number
+          format: decimal
+          description: |-
+            Indicates the total that will be paid in cash by the customer and that should be considered for change calculation.
+
+            Only mandatory when `method` is `CASH`.
+        transaction:
+          $ref: '#/components/schemas/OrderPaymentTransaction'
+    OrderPaymentTransaction:
+      type: object
+      description: Authorization details and intermediary identification for payment transactions.
+      properties:
+        authorizationCode:
+          type: string
+          description: Credit card and/or subsidy transaction authorization number.
+        acquirerDocument:
+          type: string
+          description: Document of the transaction intermediary (agency, delivery platform, marketplace, and similar).
+    OrderTaxInvoice:
+      type: object
+      description: Tax invoice status and retrieval information.
+      properties:
+        issued:
           type: boolean
-          description: Whether payment was collected online before fulfillment
+          description: Inform if a tax invoice has already been issued for this order.
+          default: false
+        taxInvoiceURL:
+          type: string
+          description: The address to download the tax invoice issued.
+    Price:
+      type: object
+      required: [value, currency]
+      description: Price object.
+      properties:
+        value:
+          type: number
+          format: decimal
+          description: Price value. 4 decimals places are accepted
+          example: 55
+        currency:
+          type: string
+          pattern: '^[A-Z]{3}$'
+          description: The 3-letter ISO 4217 currency code.
+          example: BRL
     OrderFulfillment:
       type: object
       additionalProperties: false
       required: [orderType]
       description: |
-        Fulfillment envelope and order profile selector.
+        **[V2 CHANGED]** Fulfillment envelope and order profile selector.
 
         `orderType` is the single source of truth for the order profile in V2.
         The selected profile determines which fulfillment context object MUST be
@@ -1965,7 +2377,9 @@ components:
           type: string
           enum: [DELIVERY, TAKEOUT, INDOOR]
           description: |
-            Order profile discriminator within fulfillment.
+            **[V2 CHANGED]** Order profile discriminator within fulfillment.
+
+            In V1, profile was represented by root field `order.type`. In V2, it moved to `fulfillment.orderType`.
 
             Normative rules:
             - MUST always be provided.
@@ -2003,7 +2417,9 @@ components:
           type: string
           enum: [DELIVERY]
         delivery:
-          $ref: '#/components/schemas/DeliveryContext'
+          allOf:
+            - $ref: '#/components/schemas/DeliveryContext'
+          description: Delivery context payload for DELIVERY orders.
     OrderFulfillmentTakeout:
       title: Takeout
       description: TAKEOUT profile payload
@@ -2014,7 +2430,9 @@ components:
           type: string
           enum: [TAKEOUT]
         takeout:
-          $ref: '#/components/schemas/TakeoutContext'
+          allOf:
+            - $ref: '#/components/schemas/TakeoutContext'
+          description: Takeout context payload for TAKEOUT orders.
     OrderFulfillmentIndoor:
       title: Indoor
       description: INDOOR profile payload
@@ -2025,39 +2443,68 @@ components:
           type: string
           enum: [INDOOR]
         indoor:
-          $ref: '#/components/schemas/IndoorContext'
+          allOf:
+            - $ref: '#/components/schemas/IndoorContext'
+          description: Indoor context payload for INDOOR orders.
     DeliveryContext:
       type: object
-      description: Delivery-specific context (when fulfillment.orderType is DELIVERY)
+      description: '**[V2 CHANGED]** Delivery-specific context (when `fulfillment.orderType` is `DELIVERY`). Moved from root `order.delivery` in V1.'
       properties:
         address:
           type: object
+          description: The address to which the order will be delivered.
           properties:
-            street: { type: string }
-            complement: { type: string }
-            neighborhood: { type: string }
-            city: { type: string }
-            state: { type: string }
-            postalCode: { type: string }
+            street:
+              type: string
+              description: Street name.
+            complement:
+              type: string
+              description: Address complement.
+            neighborhood:
+              type: string
+              description: Neighborhood or district.
+            city:
+              type: string
+              description: City name.
+            state:
+              type: string
+              description: State or country subdivision.
+            postalCode:
+              type: string
+              description: Postal Code.
             coordinates:
               type: object
+              description: Geographic coordinates of the delivery address.
               properties:
-                latitude: { type: number, format: double }
-                longitude: { type: number, format: double }
-        observations: { type: string }
+                latitude:
+                  type: number
+                  format: double
+                  description: Latitude in degrees. Values are restricted to the range [-90, 90].
+                longitude:
+                  type: number
+                  format: double
+                  description: Longitude in degrees. Values are restricted to the range [-180, 180].
         estimatedDeliveryDateTime:
           type: string
           format: date-time
+          description: Estimated delivery date and time shown to the customer.
+        observations:
+          type: string
+          description: Additional delivery observations.
     TakeoutContext:
       type: object
-      description: Takeout-specific context (when fulfillment.orderType is TAKEOUT)
+      description: '**[V2 CHANGED]** Takeout-specific context (when `fulfillment.orderType` is `TAKEOUT`). Moved from root `order.takeout` in V1.'
       properties:
-        observations: { type: string }
-        pickupCode: { type: string }
+        pickupCode:
+          type: string
+          description: Pickup verification code when applicable.
+        observations:
+          type: string
+          description: Additional takeout observations.
     IndoorContext:
       type: object
       description: |
-        Indoor context on an order with `fulfillment.orderType: INDOOR`.
+        **[V2 CHANGED]** Indoor context on an order with `fulfillment.orderType: INDOOR`.
         Aligns with the Indoor extension operational key (`operationMode` + `identifier`) and
         carries operational hints for channel, service, fulfillment, and fiscal behavior.
 
@@ -2086,30 +2533,30 @@ components:
             id:
               type: string
               description: Existing account identifier (`account.id` in payload notation).
-        originChannel:
-          allOf:
-            - $ref: '#/components/schemas/IndoorOriginChannel'
-          description: Order origin channel metadata.
         consumptionType:
           allOf:
             - $ref: '#/components/schemas/IndoorConsumptionType'
           description: Consumption intent for this indoor order.
-        fulfillment:
+        originChannel:
           allOf:
-            - $ref: '#/components/schemas/IndoorFulfillmentInfo'
-          description: On-premise handoff strategy (`CALL` or `DISPATCH`).
+            - $ref: '#/components/schemas/IndoorOriginChannel'
+          description: Order origin channel metadata.
         service:
           allOf:
             - $ref: '#/components/schemas/IndoorServiceInfo'
           description: Service metadata such as waiter and party size.
-        notifications:
+        fulfillment:
           allOf:
-            - $ref: '#/components/schemas/IndoorNotifications'
-          description: Notification channels tied to this order/account.
+            - $ref: '#/components/schemas/IndoorFulfillmentInfo'
+          description: On-premise handoff strategy (`CALL` or `DISPATCH`).
         fiscal:
           allOf:
             - $ref: '#/components/schemas/IndoorOrderFiscalInfo'
           description: Fiscal preferences informed at order time.
+        notifications:
+          allOf:
+            - $ref: '#/components/schemas/IndoorNotifications'
+          description: Notification channels tied to this order/account.
     IndoorOperationMode:
       type: string
       enum: [TABLE, TAB, COUNTER]
@@ -2166,21 +2613,18 @@ components:
             Indoor handoff mode.
             - `DISPATCH`: order is taken to a place/seat/table
             - `CALL`: customer is called to collect/receive
-        call:
-          allOf:
-            - $ref: '#/components/schemas/IndoorCallInfo'
-          description: Call strategy when `type = CALL`.
         dispatch:
           allOf:
             - $ref: '#/components/schemas/IndoorDispatchInfo'
           description: Dispatch metadata when `type = DISPATCH`.
+        call:
+          allOf:
+            - $ref: '#/components/schemas/IndoorCallInfo'
+          description: Call strategy when `type = CALL`.
     IndoorCallInfo:
       type: object
       description: How the customer is called for pickup/service.
       properties:
-        notifyOriginator:
-          type: boolean
-          description: Whether the originator should be notified about call progress.
         type:
           type: string
           enum: [TICKET_NUMBER, PAGER, CALL_NAME, WHATSAPP, OTHER]
@@ -2190,6 +2634,9 @@ components:
         label:
           type: string
           description: Visible call label (ticket number, pager label, name, etc).
+        notifyOriginator:
+          type: boolean
+          description: Whether the originator should be notified about call progress.
     IndoorDispatchInfo:
       type: object
       description: Dispatch destination metadata.
@@ -2273,8 +2720,13 @@ components:
           example: Cannot confirm an order in CANCELLED status
         details:
           type: array
+          description: Optional list with field-level validation details.
           items:
             type: object
             properties:
-              field: { type: string }
-              issue: { type: string }
+              field:
+                type: string
+                description: Name/path of the field related to the issue.
+              issue:
+                type: string
+                description: Human-readable description of the validation issue.

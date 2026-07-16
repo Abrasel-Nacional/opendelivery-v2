@@ -10,7 +10,7 @@
       
       
       
-        <link rel="canonical" href="https://abrasel-nacional.github.io/opendelivery-v2/en/guide/migration-v1-v2/">
+        <link rel="canonical" href="https://docs.opendelivery.com.br/en/guide/migration-v1-v2/">
       
       
         <link rel="prev" href="../changelog/">
@@ -1360,6 +1360,17 @@
     <span class="md-ellipsis">
       
         Essential migration rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#orders-v2-fields-that-must-be-in-the-migration-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Orders V2 fields that must be in the migration plan
       
     </span>
   </a>
@@ -3312,6 +3323,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#orders-v2-fields-that-must-be-in-the-migration-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Orders V2 fields that must be in the migration plan
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#discovery-for-orders-critical-migration-point" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3776,6 +3798,9 @@ Authorization: Bearer {application_token}
 <li><strong>Breaking</strong>: <code>PICKED_UP</code> event removed.</li>
 <li><strong>Breaking</strong>: <code>Order.type</code> leaves root and becomes <code>Order.fulfillment.orderType</code>.</li>
 <li><strong>Breaking</strong>: <code>Order.delivery</code> / <code>Order.takeout</code> / <code>Order.indoor</code> move under <code>Order.fulfillment.*</code>.</li>
+<li><strong>Breaking</strong>: item/option pricing fields move under <code>pricing</code> in <code>Order.items[*]</code> and <code>Order.items[*].options[*]</code>.</li>
+<li><strong>Breaking</strong>: price format returns to the V1 model (<code>Price { value, currency }</code>) for item, option, discounts, fees, and totals.</li>
+<li><strong>Breaking</strong>: <code>subtotalPrice</code> no longer exists for item and option pricing.</li>
 <li><strong>Consumer breaking change</strong>: <code>Order.status</code> in <code>GET /orders/{id}</code> becomes source of truth.</li>
 </ul>
 <h3 id="essential-migration-rules">Essential migration rules<a class="headerlink" href="#essential-migration-rules" title="Permanent link">&para;</a></h3>
@@ -3784,6 +3809,85 @@ Authorization: Bearer {application_token}
 <li>Treat events as notifications; reconcile lifecycle state via GET.</li>
 <li>Return <code>202</code> for already-applied duplicate lifecycle calls (no new transition).</li>
 </ul>
+<h3 id="orders-v2-fields-that-must-be-in-the-migration-plan">Orders V2 fields that must be in the migration plan<a class="headerlink" href="#orders-v2-fields-that-must-be-in-the-migration-plan" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Migration action</th>
+<th>Impact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Order.timing</code></td>
+<td>object</td>
+<td>Move <code>orderTiming</code>, <code>schedule</code>, <code>preparationStartDateTime</code>, and <code>orderPriority</code> to the unified block</td>
+<td>Structural payload breaking change</td>
+</tr>
+<tr>
+<td><code>Order.timing.schedule</code></td>
+<td>object</td>
+<td>Enforce required rule when <code>orderTiming = SCHEDULED</code></td>
+<td>Mandatory conditional validation</td>
+</tr>
+<tr>
+<td><code>Order.context.salesChannel</code></td>
+<td>string</td>
+<td>Map sales channel to <code>context.salesChannel</code></td>
+<td>Field location change</td>
+</tr>
+<tr>
+<td><code>Order.observations</code></td>
+<td>string</td>
+<td>Separate order-level notes from item/context observations</td>
+<td>New functional field</td>
+</tr>
+<tr>
+<td><code>Order.items[*].itemOfferId</code></td>
+<td>string</td>
+<td>Send catalog item-offer reference when available</td>
+<td>New optional field</td>
+</tr>
+<tr>
+<td><code>Order.items[*].observations</code></td>
+<td>string</td>
+<td>Migrate from <code>specialInstructions</code> to <code>items[*].observations</code></td>
+<td>Semantic rename</td>
+</tr>
+<tr>
+<td><code>Order.items[*].options[*].defaultQuantity</code></td>
+<td>integer</td>
+<td>Inform default included quantity before paid add-ons</td>
+<td>New pricing-related field</td>
+</tr>
+<tr>
+<td><code>Order.items[*].options[*].options</code></td>
+<td>array[OrderItemOption]</td>
+<td>Support multi-level option trees</td>
+<td>New structural behavior</td>
+</tr>
+<tr>
+<td><code>Order.customer.birthDate</code></td>
+<td>string(date)</td>
+<td>Map when available for CRM/Loyalty scenarios</td>
+<td>New optional field</td>
+</tr>
+<tr>
+<td><code>Order.customer.gender</code></td>
+<td>string</td>
+<td>Map when available for segmentation/communication</td>
+<td>New optional field</td>
+</tr>
+<tr>
+<td><code>Order.customer</code> (when <code>fulfillment.orderType = DELIVERY</code>)</td>
+<td>object</td>
+<td>Make mandatory for delivery orders</td>
+<td>Validation breaking change</td>
+</tr>
+</tbody>
+</table>
 <h3 id="discovery-for-orders-critical-migration-point">Discovery for Orders (critical migration point)<a class="headerlink" href="#discovery-for-orders-critical-migration-point" title="Permanent link">&para;</a></h3>
 <p>In V2, supported Orders events must be read from discovery before activating the flow.</p>
 <table>
@@ -4183,41 +4287,41 @@ Authorization: Bearer {application_token}
       title: "Guide",
       children: [{
       title: "Home",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/",
+      url: "https://docs.opendelivery.com.br/en/",
       active: false
     },{
       title: "Getting started",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/guide/getting-started/",
+      url: "https://docs.opendelivery.com.br/en/guide/getting-started/",
       active: false
     },{
       title: "Paths by role",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/guide/by-role/",
+      url: "https://docs.opendelivery.com.br/en/guide/by-role/",
       active: false
     },{
       title: "Concepts",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/documentation/core-concepts/",
+      url: "https://docs.opendelivery.com.br/en/documentation/core-concepts/",
       active: false
     },{
       title: "Protocol overview",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/overview/",
+      url: "https://docs.opendelivery.com.br/en/overview/",
       active: false
     },{
       title: "Roles and responsibilities",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/roles-and-responsibilities/",
+      url: "https://docs.opendelivery.com.br/en/protocol/roles-and-responsibilities/",
       active: false
     },{
       title: "Migration and history",
       children: [{
       title: "Changelog",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/guide/changelog/",
+      url: "https://docs.opendelivery.com.br/en/guide/changelog/",
       active: false
     },{
       title: "Migration V1\u2192V2",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/guide/migration-v1-v2/",
+      url: "https://docs.opendelivery.com.br/en/guide/migration-v1-v2/",
       active: true
     },{
       title: "Roadmap",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/documentation/roadmap/",
+      url: "https://docs.opendelivery.com.br/en/documentation/roadmap/",
       active: false
     }]
     }]
@@ -4229,26 +4333,26 @@ Authorization: Bearer {application_token}
       title: "Fundamentals",
       children: [{
       title: "Principles",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/principles/",
+      url: "https://docs.opendelivery.com.br/en/protocol/principles/",
       active: false
     },{
       title: "Flows",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/flows/",
+      url: "https://docs.opendelivery.com.br/en/protocol/flows/",
       active: false
     },{
       title: "Evolution",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/evolution/",
+      url: "https://docs.opendelivery.com.br/en/protocol/evolution/",
       active: false
     }]
     },{
       title: "Infrastructure",
       children: [{
       title: "Discovery",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/discovery/",
+      url: "https://docs.opendelivery.com.br/en/protocol/discovery/",
       active: false
     },{
       title: "Authentication",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/authentication/",
+      url: "https://docs.opendelivery.com.br/en/protocol/authentication/",
       active: false
     }]
     },{
@@ -4257,45 +4361,45 @@ Authorization: Bearer {application_token}
       title: "Orders",
       children: [{
       title: "Overview",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/orders/",
+      url: "https://docs.opendelivery.com.br/en/protocol/orders/",
       active: false
     },{
       title: "Indoor",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/indoor/",
+      url: "https://docs.opendelivery.com.br/en/protocol/indoor/",
       active: false
     }]
     },{
       title: "Merchant",
       children: [{
       title: "Overview",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/merchant/",
+      url: "https://docs.opendelivery.com.br/en/protocol/merchant/",
       active: false
     },{
       title: "Store data",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/merchant-store/",
+      url: "https://docs.opendelivery.com.br/en/protocol/merchant-store/",
       active: false
     },{
       title: "Menus",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/menu/",
+      url: "https://docs.opendelivery.com.br/en/protocol/menu/",
       active: false
     }]
     },{
       title: "Logistics",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/logistics/",
+      url: "https://docs.opendelivery.com.br/en/protocol/logistics/",
       active: false
     },{
       title: "Customer",
       children: [{
       title: "Overview",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/customer/",
+      url: "https://docs.opendelivery.com.br/en/protocol/customer/",
       active: false
     },{
       title: "Reviews",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/reviews/",
+      url: "https://docs.opendelivery.com.br/en/protocol/reviews/",
       active: false
     },{
       title: "Loyalty",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/protocol/loyalty/",
+      url: "https://docs.opendelivery.com.br/en/protocol/loyalty/",
       active: false
     }]
     }]
@@ -4308,26 +4412,26 @@ Authorization: Bearer {application_token}
       title: "Conventions",
       children: [{
       title: "Overview",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/reference/",
+      url: "https://docs.opendelivery.com.br/en/reference/",
       active: false
     },{
       title: "General rules",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/reference/conventions/",
+      url: "https://docs.opendelivery.com.br/en/reference/conventions/",
       active: false
     },{
       title: "Error handling",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/reference/error-handling/",
+      url: "https://docs.opendelivery.com.br/en/reference/error-handling/",
       active: false
     }]
     },{
       title: "Infrastructure",
       children: [{
       title: "Discovery",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/reference/discovery/",
+      url: "https://docs.opendelivery.com.br/en/reference/discovery/",
       active: false
     },{
       title: "Authentication",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/reference/authentication/",
+      url: "https://docs.opendelivery.com.br/en/reference/authentication/",
       active: false
     }]
     },{
@@ -4336,24 +4440,24 @@ Authorization: Bearer {application_token}
       title: "Orders",
       children: [{
       title: "Overview",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/reference/orders/",
+      url: "https://docs.opendelivery.com.br/en/reference/orders/",
       active: false
     },{
       title: "Indoor",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/reference/indoor/",
+      url: "https://docs.opendelivery.com.br/en/reference/indoor/",
       active: false
     }]
     },{
       title: "Merchant",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/reference/merchant/",
+      url: "https://docs.opendelivery.com.br/en/reference/merchant/",
       active: false
     },{
       title: "Logistics",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/reference/logistics/",
+      url: "https://docs.opendelivery.com.br/en/reference/logistics/",
       active: false
     },{
       title: "Customer",
-      url: "https://abrasel-nacional.github.io/opendelivery-v2/en/reference/customer/",
+      url: "https://docs.opendelivery.com.br/en/reference/customer/",
       active: false
     }]
     }]
