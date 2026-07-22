@@ -154,12 +154,17 @@ Referencias: [Protocolo Discovery](../protocol/discovery.md) · [API Discovery](
 - **Breaking**: `merchantId` passa a ser gerado pelo originador.
 - **Breaking**: `merchantType` removido.
 - **Breaking**: service deixa de ter id proprio e passa a ser identificado por tipo (`DELIVERY`, `TAKEOUT`, `INDOOR`).
+- **Breaking**: shape de `Service` mudou na V2 (sem `id` de service; com `type` e `status` como base; horarios no bloco `operatingHours`).
+- **Breaking**: endpoints legados de onboarding/status da V1 (`/v1/merchantOnboarding`, `/v1/merchantStatus`) nao fazem parte do contrato normativo de Merchant V2.
 
 ### O que adaptar
 
 - Ajustar ownership do identificador em cadastro e sincronizacao.
 - Garantir de/para interno via `externalCode` no Software Service.
 - Atualizar validadores para novo modelo de services por tipo.
+- Migrar consumidores para o novo shape de service (inclusive regras de status e horarios).
+- Remover dependencia dos endpoints legados de onboarding/status e adotar discovery + operacoes normativas de Merchant.
+- Tratar `GET .../snapshot` como caminho de bootstrap/reconciliacao e CRUD como caminho incremental.
 
 ### Campos de Discovery relevantes
 
@@ -173,7 +178,7 @@ Referencias: [Protocolo Merchant](../protocol/merchant.md) · [API Merchant](../
 
 ---
 
-## Menu
+## Menu (modulo dentro da capability Merchant)
 
 ### Mudancas principais
 
@@ -188,7 +193,7 @@ Referencias: [Protocolo Merchant](../protocol/merchant.md) · [API Merchant](../
 - Atualizar validacoes de preco para `option_price` e `unity_price`.
 - Implementar reconciliacao por snapshot quando detectar drift de dados.
 
-Referencias: [Protocolo Menu](../protocol/menu.md)
+Referencias: [Protocolo Menu](../protocol/menu.md) · [API Merchant](../reference/merchant.md)
 
 ---
 
@@ -210,6 +215,22 @@ Referencias: [Protocolo Menu](../protocol/menu.md)
 - Nao implementar `POST /orders` para entrada de pedido.
 - Tratar eventos como notificacao; reconciliar estado via GET.
 - Tratar operacao duplicada ja aplicada com `202` (sem nova transicao).
+
+### Campos V2 de Orders que devem entrar no plano
+
+| Campo | Tipo | Acao de migracao | Impacto |
+|---|---|---|---|
+| `Order.timing` | object | Migrar `orderTiming`, `schedule`, `preparationStartDateTime`, `orderPriority` para o bloco unificado | Quebra estrutural de payload |
+| `Order.timing.schedule` | object | Validar obrigatoriedade quando `orderTiming = SCHEDULED` | Regra condicional obrigatoria |
+| `Order.context.salesChannel` | string | Mapear canal de venda para `context.salesChannel` | Mudanca de local do campo |
+| `Order.observations` | string | Separar observacao geral de pedido das observacoes de item/contexto | Novo campo funcional |
+| `Order.items[*].itemOfferId` | string | Enviar referencia de oferta de catalogo quando existir | Novo campo opcional |
+| `Order.items[*].observations` | string | Migrar de `specialInstructions` para `items[*].observations` | Renomeacao semantica |
+| `Order.items[*].options[*].defaultQuantity` | integer | Informar quantidade incluida por padrao antes de adicional cobrado | Novo campo de precificacao |
+| `Order.items[*].options[*].options` | array[OrderItemOption] | Suportar arvore de opcoes em multiplos niveis | Novo comportamento estrutural |
+| `Order.customer.birthDate` | string(date) | Mapear quando disponivel para casos de CRM/Loyalty | Novo campo opcional |
+| `Order.customer.gender` | string | Mapear quando disponivel para segmentacao/comunicacao | Novo campo opcional |
+| `Order.customer` (quando `fulfillment.orderType = DELIVERY`) | object | Tornar obrigatorio para pedidos delivery | Quebra de validacao |
 
 ### Discovery para Orders (ponto critico)
 

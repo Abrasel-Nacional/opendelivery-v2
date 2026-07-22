@@ -55,6 +55,15 @@ tags:
     | Duplicate lifecycle call | Often `422` if treated as sync reprocess | **`202` if already in target state** |
     | Authoritative status field (`order.status`) | No authoritative status field; many integrations inferred state from events (`lastEvent`) | **Added** on `GET /orders/{orderId}` as source of truth |
     | Status vs events semantics | Frequently confused | **Status** on GET is authoritative; events are notifications |
+    | Unified timing block | Root-level timing concepts | **Moved** under `order.timing` (`orderTiming`, `schedule`, `preparationStartDateTime`, `orderPriority`) |
+    | Scheduled order constraint | Often implicit/implementation-specific | `order.timing.schedule` **required** when `order.timing.orderTiming = SCHEDULED` |
+    | Delivery customer requirement | Varies by integration | `order.customer` is **required** for `fulfillment.orderType = DELIVERY` |
+    | Sales channel location | Root-level / implementation-specific metadata | Standardized in `order.context.salesChannel` |
+    | Order-level notes | Usually item-level only or proprietary fields | Standardized in `order.observations` |
+    | Item catalog link | Not standardized | Optional `order.items[*].itemOfferId` |
+    | Option default included quantity | Not standardized | Optional `order.items[*].options[*].defaultQuantity` |
+    | Multi-level options | Usually single-level | Nested options supported in `order.items[*].options[*].options` |
+    | Customer CRM/Loyalty attributes | Not part of Orders payload | Optional `order.customer.birthDate` and `order.customer.gender` |
     | Merchant id on order | Often PDV-generated | Originator-owned merchant id + PDV `externalCode` (see Merchant) |
 - name: CapabilityOverview
   x-displayName: Overview
@@ -593,59 +602,42 @@ paths:
                 $ref: '#/components/schemas/Order'
               examples:
                 deliveryCreated:
-                  summary: DELIVERY order in CREATED
+                  summary: DELIVERY order with all fields
                   value:
                     id: order-abc123
                     displayId: A123
-                    status: CREATED
-                    lastEvent: CREATED
+                    status: CONFIRMED
+                    lastEvent: CONFIRMED
                     createdAt: '2026-07-01T14:30:00Z'
-                    orderTiming: INSTANT
+                    sourceAppId: 11111111-1111-1111-1111-111111111111
+                    timing:
+                      orderTiming: SCHEDULED
+                      schedule:
+                        scheduledDateTimeStart: '2026-07-01T15:10:00Z'
+                        scheduledDateTimeEnd: '2026-07-01T15:20:00Z'
+                      preparationStartDateTime: '2026-07-01T14:30:00Z'
+                      orderPriority: PRIORITY2
                     merchant:
                       id: merchant-originator-001
                       externalCode: pdv-loja-42
                       name: Pizza Plaza
-                    items:
-                      - id: item-1
-                        name: Classic Burger
-                        externalCode: SKU-BURGER-01
-                        quantity: 2
-                        pricing:
-                          unitPrice: { value: 2500, currency: BRL }
-                          originalPrice: { value: 2500, currency: BRL }
-                          optionsPrice: { value: 0, currency: BRL }
-                          totalPrice: { value: 5000, currency: BRL }
-                        options:
-                          - id: opt-1
-                            name: Extra cheese
-                            quantity: 1
-                            pricing:
-                              unitPrice: { value: 0, currency: BRL }
-                              originalPrice: { value: 0, currency: BRL }
-                              totalPrice: { value: 0, currency: BRL }
-                    total:
-                      itemsPrice: { value: 5000, currency: BRL }
-                      otherFees: { value: 500, currency: BRL }
-                      discount: { value: 0, currency: BRL }
-                      orderAmount: { value: 5500, currency: BRL }
-                    otherFees:
-                      - name: Delivery fee
-                        type: DELIVERY_FEE
-                        price: { value: 500, currency: BRL }
-                    discounts: []
                     customer:
                       id: cust-1
                       name: Ana Silva
-                      phone: '+5511999990000'
-                    payments:
-                      - method: CREDIT_CARD
-                        value: { value: 5500, currency: BRL }
-                        prepaid: true
+                      documentNumber: '12345678900'
+                      phone:
+                        number: '+5511999990000'
+                        extension: '101'
+                      email: ana.silva@example.com
+                      ordersCountOnMerchant: 7
+                      birthDate: '1992-05-20'
+                      gender: FEMALE
                     fulfillment:
                       orderType: DELIVERY
                       delivery:
                         address:
                           street: Rua das Flores 100
+                          complement: BL 2 AP 31
                           neighborhood: Centro
                           city: São Paulo
                           state: SP
@@ -653,34 +645,120 @@ paths:
                           coordinates:
                             latitude: -23.55
                             longitude: -46.63
+                        estimatedDeliveryDateTime: '2026-07-01T15:10:00Z'
+                        observations: Leave at concierge desk
+                    items:
+                      - id: item-1
+                        name: Classic Burger
+                        externalCode: SKU-BURGER-01
+                        itemOfferId: io-1001
+                        quantity: 2
+                        unit: UN
+                        pricing:
+                          unitPrice: { value: 2500, currency: BRL }
+                          originalPrice: { value: 2800, currency: BRL }
+                          optionsPrice: { value: 600, currency: BRL }
+                          totalPrice: { value: 5600, currency: BRL }
+                        options:
+                          - id: opt-1
+                            optionGroupId: og-1
+                            optionGroupName: Extras
+                            name: Extra cheese
+                            quantity: 1
+                            defaultQuantity: 0
+                            pricing:
+                              unitPrice: { value: 300, currency: BRL }
+                              originalPrice: { value: 300, currency: BRL }
+                              totalPrice: { value: 300, currency: BRL }
+                            options:
+                              - id: opt-1a
+                                optionGroupId: og-1a
+                                optionGroupName: Cheese type
+                                name: Cheddar
+                                quantity: 1
+                                defaultQuantity: 0
+                                pricing:
+                                  unitPrice: { value: 300, currency: BRL }
+                                  originalPrice: { value: 300, currency: BRL }
+                                  totalPrice: { value: 300, currency: BRL }
+                        observations: No onions
+                    total:
+                      itemsPrice: { value: 5600, currency: BRL }
+                      otherFees: { value: 600, currency: BRL }
+                      discount: { value: 700, currency: BRL }
+                      orderAmount: { value: 5500, currency: BRL }
+                    otherFees:
+                      - name: Delivery fee
+                        type: DELIVERY_FEE
+                        receivedBy: MERCHANT
+                        price: { value: 500, currency: BRL }
+                      - name: Service fee
+                        type: SERVICE_FEE
+                        receivedBy: MARKETPLACE
+                        price: { value: 100, currency: BRL }
+                    discounts:
+                      - amount: { value: 700, currency: BRL }
+                        target: ITEM
+                        targetId: item-1
+                        sponsorshipValues:
+                          - name: MARKETPLACE
+                            amount: { value: 500, currency: BRL }
+                            discountCode: CUPOM500
+                          - name: MERCHANT
+                            amount: { value: 200, currency: BRL }
+                    payments:
+                      prepaid: 3000
+                      pending: 2500
+                      methods:
+                        - type: PREPAID
+                          method: CREDIT
+                          brand: VISA
+                          methodInfo: Gateway auth 904512
+                          value: 5500
+                          currency: BRL
+                          transaction:
+                            authorizationCode: AUTH-904512
+                            acquirerDocument: '12345678000190'
+                        - type: PENDING
+                          method: CASH
+                          value: 2500
+                          currency: BRL
+                          changeFor: 3000
+                    taxInvoice:
+                      issued: true
+                      taxInvoiceURL: https://merchant.example.com/invoices/nfce-12345.pdf
+                    context:
+                      salesChannel: APP
+                    observations: Customer requested contactless delivery
+                    extraInfo: VIP customer, prioritize careful packaging
                 indoorOrder:
-                  summary: INDOOR order (feeds account)
+                  summary: INDOOR order with all fields
                   value:
                     id: order-indoor-1001
                     displayId: M5-01
                     status: CONFIRMED
                     lastEvent: CONFIRMED
                     createdAt: '2026-07-01T19:02:11Z'
-                    orderTiming: INSTANT
+                    sourceAppId: 22222222-2222-2222-2222-222222222222
+                    timing:
+                      orderTiming: ONDEMAND
+                      preparationStartDateTime: '2026-07-01T19:02:11Z'
+                      orderPriority: PRIORITY3
                     merchant:
                       id: merchant-originator-001
                       externalCode: pdv-loja-42
-                    items:
-                      - id: item-1
-                        name: Classic Burger
-                        quantity: 2
-                        pricing:
-                          unitPrice: { value: 3290, currency: BRL }
-                          originalPrice: { value: 3290, currency: BRL }
-                          optionsPrice: { value: 0, currency: BRL }
-                          totalPrice: { value: 6580, currency: BRL }
-                    total:
-                      itemsPrice: { value: 6580, currency: BRL }
-                      otherFees: { value: 0, currency: BRL }
-                      discount: { value: 0, currency: BRL }
-                      orderAmount: { value: 6580, currency: BRL }
-                    otherFees: []
-                    discounts: []
+                      name: Pizza Plaza
+                    customer:
+                      id: cust-2
+                      name: Bruno Rocha
+                      documentNumber: '98765432100'
+                      phone:
+                        number: '+5511988887777'
+                        extension: '10'
+                      email: bruno.rocha@example.com
+                      ordersCountOnMerchant: 3
+                      birthDate: '1989-09-10'
+                      gender: MALE
                     fulfillment:
                       orderType: INDOOR
                       indoor:
@@ -710,6 +788,63 @@ paths:
                           documentStatus: PENDING
                           printDocument: true
                           paymentNSURequiredForNFCE: true
+                    items:
+                      - id: item-1
+                        name: Classic Burger
+                        externalCode: SKU-BURGER-01
+                        itemOfferId: io-1001
+                        quantity: 2
+                        unit: UN
+                        pricing:
+                          unitPrice: { value: 3290, currency: BRL }
+                          originalPrice: { value: 3290, currency: BRL }
+                          optionsPrice: { value: 500, currency: BRL }
+                          totalPrice: { value: 7080, currency: BRL }
+                        options:
+                          - id: opt-2
+                            optionGroupId: og-2
+                            optionGroupName: Side dish
+                            name: Fries
+                            quantity: 1
+                            defaultQuantity: 0
+                            pricing:
+                              unitPrice: { value: 500, currency: BRL }
+                              originalPrice: { value: 500, currency: BRL }
+                              totalPrice: { value: 500, currency: BRL }
+                            options: []
+                        observations: No pickles
+                    total:
+                      itemsPrice: { value: 7080, currency: BRL }
+                      otherFees: { value: 200, currency: BRL }
+                      discount: { value: 300, currency: BRL }
+                      orderAmount: { value: 6980, currency: BRL }
+                    otherFees:
+                      - name: Service fee
+                        type: SERVICE_FEE
+                        receivedBy: MERCHANT
+                        price: { value: 200, currency: BRL }
+                    discounts:
+                      - amount: { value: 300, currency: BRL }
+                        target: CART
+                        sponsorshipValues:
+                          - name: CHAIN
+                            amount: { value: 300, currency: BRL }
+                            discountCode: FIDELIDADE300
+                    payments:
+                      prepaid: 0
+                      pending: 6980
+                      methods:
+                        - type: PENDING
+                          method: CASH
+                          value: 6980
+                          currency: BRL
+                          changeFor: 7000
+                    taxInvoice:
+                      issued: false
+                    context:
+                      salesChannel: QR_TABLE
+                    observations: Account shared with table guests
+                    extraInfo: Birthday table, include complimentary candle
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -1708,7 +1843,7 @@ components:
           maxItems: 100
     Order:
       type: object
-      required: [id, displayId, createdAt, merchant, timing, fulfillment, items, total, payments]
+      required: [id, displayId, createdAt, merchant, timing, fulfillment, status, items, total, payments]
       properties:
         id:
           type: string
@@ -1744,12 +1879,6 @@ components:
             name:
               type: string
               description: Merchant Public Name.
-        customer:
-          $ref: '#/components/schemas/OrderCustomer'
-          description: Customer related information.
-        timing:
-          $ref: '#/components/schemas/OrderTimingContext'
-          description: '**[V2 CHANGED]** Unified timing and scheduling context for this order. Consolidates V1 `orderTiming`, `schedule`, `preparationStartDateTime`, and `orderPriority` under one object.'
         fulfillment:
           allOf:
             - $ref: '#/components/schemas/OrderFulfillment'
@@ -1760,6 +1889,12 @@ components:
         lastEvent:
           $ref: '#/components/schemas/OrderEventType'
           description: The last valid event polled (whether acknowledged or not) or sent via webhook.
+        customer:
+          $ref: '#/components/schemas/OrderCustomer'
+          description: Customer related information.
+        timing:
+          $ref: '#/components/schemas/OrderTimingContext'
+          description: '**[V2 CHANGED]** Unified timing and scheduling context for this order. Consolidates V1 `orderTiming`, `schedule`, `preparationStartDateTime`, and `orderPriority` under one object.'
         items:
           type: array
           minItems: 1

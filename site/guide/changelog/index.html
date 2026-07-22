@@ -1107,10 +1107,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#menu" class="md-nav__link">
+  <a href="#menu-modulo-dentro-da-capability-merchant" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Menu
+        Menu (modulo dentro da capability Merchant)
       
     </span>
   </a>
@@ -2780,10 +2780,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#menu" class="md-nav__link">
+  <a href="#menu-modulo-dentro-da-capability-merchant" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Menu
+        Menu (modulo dentro da capability Merchant)
       
     </span>
   </a>
@@ -2942,10 +2942,13 @@
 <li><strong>Breaking</strong>: <code>merchantId</code> passa a ser gerado pelo originador; PDV usa <code>externalCode</code> para correlacao interna.</li>
 <li><strong>Breaking</strong>: <code>merchantType</code> removido.</li>
 <li><strong>Breaking</strong>: servicos passam a ser identificados por tipo (<code>DELIVERY</code>, <code>TAKEOUT</code>, <code>INDOOR</code>), sem id separado.</li>
+<li><strong>Breaking</strong>: shape de <code>Service</code> foi simplificado (sem <code>id</code> de service; foco em <code>type</code> + <code>status</code>; <code>operatingHours</code> no lugar do modelo antigo de horarios).</li>
+<li><strong>Breaking</strong>: endpoints legados de onboarding/status da V1 (<code>/v1/merchantOnboarding</code>, <code>/v1/merchantStatus</code>) deixam de compor o contrato normativo de Merchant V2.</li>
 <li><strong>Melhoria</strong>: pausa por servico explicita no modelo da capability.</li>
+<li><strong>Melhoria</strong>: bootstrap e reconciliacao de catalogo por <code>GET .../snapshot</code>; <code>merchantUpdate/menuUpdated</code> deixa de ser caminho central.</li>
 </ul>
 <p>Referencias: <a href="../../protocol/merchant/">Protocolo Merchant</a> · <a href="../../reference/merchant/">API Merchant</a></p>
-<h4 id="menu">Menu<a class="headerlink" href="#menu" title="Permanent link">&para;</a></h4>
+<h4 id="menu-modulo-dentro-da-capability-merchant">Menu (modulo dentro da capability Merchant)<a class="headerlink" href="#menu-modulo-dentro-da-capability-merchant" title="Permanent link">&para;</a></h4>
 <ul>
 <li><strong>Breaking</strong>: fim do webhook monolitico <code>merchantUpdate</code> da V1.</li>
 <li><strong>Breaking</strong>: adocao de CRUD granular por entidade de catalogo.</li>
@@ -2953,16 +2956,21 @@
 <li><strong>Melhoria</strong>: opcionais recursivos com OptionGroups aninhados.</li>
 <li><strong>Melhoria</strong>: <code>quantity_available</code> em ItemOffer para disponibilidade operacional.</li>
 </ul>
-<p>Referencias: <a href="../../protocol/menu/">Protocolo Menu</a></p>
+<p>Referencias: <a href="../../protocol/menu/">Protocolo Menu</a> · <a href="../../reference/merchant/">API Merchant</a></p>
 <h4 id="orders">Orders<a class="headerlink" href="#orders" title="Permanent link">&para;</a></h4>
 <ul>
 <li><strong>Breaking</strong>: handshake de cancelamento do originador (<code>ORDER_CANCELLATION_REQUEST</code> + accept/deny) removido; cancelamento mandatorio via <code>CANCELLED</code>.</li>
 <li><strong>Breaking</strong>: evento <code>PICKED_UP</code> removido.</li>
 <li><strong>Breaking</strong>: <code>Order.type</code> removido da raiz; perfil passa para <code>Order.fulfillment.orderType</code>.</li>
 <li><strong>Breaking</strong>: <code>Order.delivery</code>, <code>Order.takeout</code> e <code>Order.indoor</code> movidos para <code>Order.fulfillment.*</code>.</li>
+<li><strong>Breaking</strong>: bloco de tempo foi unificado em <code>Order.timing</code> (<code>orderTiming</code>, <code>schedule</code>, <code>preparationStartDateTime</code>, <code>orderPriority</code>) e <code>schedule</code> passa a ser obrigatorio quando <code>orderTiming = SCHEDULED</code>.</li>
 <li><strong>Breaking</strong>: campos de preco de item/opcao foram agrupados em <code>pricing</code> dentro de <code>Order.items[*]</code> e <code>Order.items[*].options[*]</code>, mantendo formato da V1 (<code>Price { value, currency }</code>).</li>
 <li><strong>Breaking</strong>: <code>subtotalPrice</code> foi removido de item e opcao em Orders V2.</li>
 <li><strong>Breaking</strong>: <code>Order.status</code> vira campo autoritativo em <code>GET /orders/{id}</code>.</li>
+<li><strong>Breaking</strong>: para pedidos <code>DELIVERY</code>, <code>Order.customer</code> passa a ser obrigatorio no payload.</li>
+<li><strong>Novo</strong>: metadados de origem no pedido com <code>Order.context.salesChannel</code> e observacoes gerais em <code>Order.observations</code>.</li>
+<li><strong>Novo</strong>: <code>Order.items[*].itemOfferId</code>, <code>Order.items[*].options[*].defaultQuantity</code> e suporte a opcoes aninhadas (<code>Order.items[*].options[*].options</code>).</li>
+<li><strong>Novo</strong>: dados opcionais de CRM/Loyalty em cliente (<code>Order.customer.birthDate</code> e <code>Order.customer.gender</code>).</li>
 <li><strong>Melhoria</strong>: separacao explicita entre status e eventos.</li>
 <li><strong>Melhoria</strong>: repeticao de operacao ja aplicada segue padrao async com <code>202 Accepted</code> (sem transicao adicional).</li>
 </ul>

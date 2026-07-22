@@ -1294,15 +1294,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#menu" class="md-nav__link">
+  <a href="#menu-modulo-dentro-da-capability-merchant" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Menu
+        Menu (modulo dentro da capability Merchant)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Menu">
+    <nav class="md-nav" aria-label="Menu (modulo dentro da capability Merchant)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1360,6 +1360,17 @@
     <span class="md-ellipsis">
       
         Regras de migracao essenciais
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#campos-v2-de-orders-que-devem-entrar-no-plano" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Campos V2 de Orders que devem entrar no plano
       
     </span>
   </a>
@@ -3239,15 +3250,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#menu" class="md-nav__link">
+  <a href="#menu-modulo-dentro-da-capability-merchant" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Menu
+        Menu (modulo dentro da capability Merchant)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Menu">
+    <nav class="md-nav" aria-label="Menu (modulo dentro da capability Merchant)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -3305,6 +3316,17 @@
     <span class="md-ellipsis">
       
         Regras de migracao essenciais
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#campos-v2-de-orders-que-devem-entrar-no-plano" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Campos V2 de Orders que devem entrar no plano
       
     </span>
   </a>
@@ -3717,12 +3739,17 @@ Authorization: Bearer {token_da_aplicacao}
 <li><strong>Breaking</strong>: <code>merchantId</code> passa a ser gerado pelo originador.</li>
 <li><strong>Breaking</strong>: <code>merchantType</code> removido.</li>
 <li><strong>Breaking</strong>: service deixa de ter id proprio e passa a ser identificado por tipo (<code>DELIVERY</code>, <code>TAKEOUT</code>, <code>INDOOR</code>).</li>
+<li><strong>Breaking</strong>: shape de <code>Service</code> mudou na V2 (sem <code>id</code> de service; com <code>type</code> e <code>status</code> como base; horarios no bloco <code>operatingHours</code>).</li>
+<li><strong>Breaking</strong>: endpoints legados de onboarding/status da V1 (<code>/v1/merchantOnboarding</code>, <code>/v1/merchantStatus</code>) nao fazem parte do contrato normativo de Merchant V2.</li>
 </ul>
 <h3 id="o-que-adaptar">O que adaptar<a class="headerlink" href="#o-que-adaptar" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Ajustar ownership do identificador em cadastro e sincronizacao.</li>
 <li>Garantir de/para interno via <code>externalCode</code> no Software Service.</li>
 <li>Atualizar validadores para novo modelo de services por tipo.</li>
+<li>Migrar consumidores para o novo shape de service (inclusive regras de status e horarios).</li>
+<li>Remover dependencia dos endpoints legados de onboarding/status e adotar discovery + operacoes normativas de Merchant.</li>
+<li>Tratar <code>GET .../snapshot</code> como caminho de bootstrap/reconciliacao e CRUD como caminho incremental.</li>
 </ul>
 <h3 id="campos-de-discovery-relevantes">Campos de Discovery relevantes<a class="headerlink" href="#campos-de-discovery-relevantes" title="Permanent link">&para;</a></h3>
 <table>
@@ -3753,7 +3780,7 @@ Authorization: Bearer {token_da_aplicacao}
 </table>
 <p>Referencias: <a href="../../protocol/merchant/">Protocolo Merchant</a> · <a href="../../reference/merchant/">API Merchant</a></p>
 <hr />
-<h2 id="menu">Menu<a class="headerlink" href="#menu" title="Permanent link">&para;</a></h2>
+<h2 id="menu-modulo-dentro-da-capability-merchant">Menu (modulo dentro da capability Merchant)<a class="headerlink" href="#menu-modulo-dentro-da-capability-merchant" title="Permanent link">&para;</a></h2>
 <h3 id="mudancas-principais_1">Mudancas principais<a class="headerlink" href="#mudancas-principais_1" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Breaking</strong>: fim do webhook monolitico <code>merchantUpdate</code>.</li>
@@ -3767,7 +3794,7 @@ Authorization: Bearer {token_da_aplicacao}
 <li>Atualizar validacoes de preco para <code>option_price</code> e <code>unity_price</code>.</li>
 <li>Implementar reconciliacao por snapshot quando detectar drift de dados.</li>
 </ul>
-<p>Referencias: <a href="../../protocol/menu/">Protocolo Menu</a></p>
+<p>Referencias: <a href="../../protocol/menu/">Protocolo Menu</a> · <a href="../../reference/merchant/">API Merchant</a></p>
 <hr />
 <h2 id="orders">Orders<a class="headerlink" href="#orders" title="Permanent link">&para;</a></h2>
 <h3 id="mudancas-principais_2">Mudancas principais<a class="headerlink" href="#mudancas-principais_2" title="Permanent link">&para;</a></h3>
@@ -3787,6 +3814,85 @@ Authorization: Bearer {token_da_aplicacao}
 <li>Tratar eventos como notificacao; reconciliar estado via GET.</li>
 <li>Tratar operacao duplicada ja aplicada com <code>202</code> (sem nova transicao).</li>
 </ul>
+<h3 id="campos-v2-de-orders-que-devem-entrar-no-plano">Campos V2 de Orders que devem entrar no plano<a class="headerlink" href="#campos-v2-de-orders-que-devem-entrar-no-plano" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Acao de migracao</th>
+<th>Impacto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Order.timing</code></td>
+<td>object</td>
+<td>Migrar <code>orderTiming</code>, <code>schedule</code>, <code>preparationStartDateTime</code>, <code>orderPriority</code> para o bloco unificado</td>
+<td>Quebra estrutural de payload</td>
+</tr>
+<tr>
+<td><code>Order.timing.schedule</code></td>
+<td>object</td>
+<td>Validar obrigatoriedade quando <code>orderTiming = SCHEDULED</code></td>
+<td>Regra condicional obrigatoria</td>
+</tr>
+<tr>
+<td><code>Order.context.salesChannel</code></td>
+<td>string</td>
+<td>Mapear canal de venda para <code>context.salesChannel</code></td>
+<td>Mudanca de local do campo</td>
+</tr>
+<tr>
+<td><code>Order.observations</code></td>
+<td>string</td>
+<td>Separar observacao geral de pedido das observacoes de item/contexto</td>
+<td>Novo campo funcional</td>
+</tr>
+<tr>
+<td><code>Order.items[*].itemOfferId</code></td>
+<td>string</td>
+<td>Enviar referencia de oferta de catalogo quando existir</td>
+<td>Novo campo opcional</td>
+</tr>
+<tr>
+<td><code>Order.items[*].observations</code></td>
+<td>string</td>
+<td>Migrar de <code>specialInstructions</code> para <code>items[*].observations</code></td>
+<td>Renomeacao semantica</td>
+</tr>
+<tr>
+<td><code>Order.items[*].options[*].defaultQuantity</code></td>
+<td>integer</td>
+<td>Informar quantidade incluida por padrao antes de adicional cobrado</td>
+<td>Novo campo de precificacao</td>
+</tr>
+<tr>
+<td><code>Order.items[*].options[*].options</code></td>
+<td>array[OrderItemOption]</td>
+<td>Suportar arvore de opcoes em multiplos niveis</td>
+<td>Novo comportamento estrutural</td>
+</tr>
+<tr>
+<td><code>Order.customer.birthDate</code></td>
+<td>string(date)</td>
+<td>Mapear quando disponivel para casos de CRM/Loyalty</td>
+<td>Novo campo opcional</td>
+</tr>
+<tr>
+<td><code>Order.customer.gender</code></td>
+<td>string</td>
+<td>Mapear quando disponivel para segmentacao/comunicacao</td>
+<td>Novo campo opcional</td>
+</tr>
+<tr>
+<td><code>Order.customer</code> (quando <code>fulfillment.orderType = DELIVERY</code>)</td>
+<td>object</td>
+<td>Tornar obrigatorio para pedidos delivery</td>
+<td>Quebra de validacao</td>
+</tr>
+</tbody>
+</table>
 <h3 id="discovery-para-orders-ponto-critico">Discovery para Orders (ponto critico)<a class="headerlink" href="#discovery-para-orders-ponto-critico" title="Permanent link">&para;</a></h3>
 <p>Na V2, os eventos de Orders suportados pela contraparte devem ser lidos no discovery antes de ativar o fluxo.</p>
 <table>

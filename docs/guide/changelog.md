@@ -55,11 +55,14 @@ Referencias: [Protocolo Authentication](../protocol/authentication.md) · [API A
 - **Breaking**: `merchantId` passa a ser gerado pelo originador; PDV usa `externalCode` para correlacao interna.
 - **Breaking**: `merchantType` removido.
 - **Breaking**: servicos passam a ser identificados por tipo (`DELIVERY`, `TAKEOUT`, `INDOOR`), sem id separado.
+- **Breaking**: shape de `Service` foi simplificado (sem `id` de service; foco em `type` + `status`; `operatingHours` no lugar do modelo antigo de horarios).
+- **Breaking**: endpoints legados de onboarding/status da V1 (`/v1/merchantOnboarding`, `/v1/merchantStatus`) deixam de compor o contrato normativo de Merchant V2.
 - **Melhoria**: pausa por servico explicita no modelo da capability.
+- **Melhoria**: bootstrap e reconciliacao de catalogo por `GET .../snapshot`; `merchantUpdate/menuUpdated` deixa de ser caminho central.
 
 Referencias: [Protocolo Merchant](../protocol/merchant.md) · [API Merchant](../reference/merchant.md)
 
-#### Menu
+#### Menu (modulo dentro da capability Merchant)
 
 - **Breaking**: fim do webhook monolitico `merchantUpdate` da V1.
 - **Breaking**: adocao de CRUD granular por entidade de catalogo.
@@ -67,7 +70,7 @@ Referencias: [Protocolo Merchant](../protocol/merchant.md) · [API Merchant](../
 - **Melhoria**: opcionais recursivos com OptionGroups aninhados.
 - **Melhoria**: `quantity_available` em ItemOffer para disponibilidade operacional.
 
-Referencias: [Protocolo Menu](../protocol/menu.md)
+Referencias: [Protocolo Menu](../protocol/menu.md) · [API Merchant](../reference/merchant.md)
 
 #### Orders
 
@@ -75,9 +78,14 @@ Referencias: [Protocolo Menu](../protocol/menu.md)
 - **Breaking**: evento `PICKED_UP` removido.
 - **Breaking**: `Order.type` removido da raiz; perfil passa para `Order.fulfillment.orderType`.
 - **Breaking**: `Order.delivery`, `Order.takeout` e `Order.indoor` movidos para `Order.fulfillment.*`.
+- **Breaking**: bloco de tempo foi unificado em `Order.timing` (`orderTiming`, `schedule`, `preparationStartDateTime`, `orderPriority`) e `schedule` passa a ser obrigatorio quando `orderTiming = SCHEDULED`.
 - **Breaking**: campos de preco de item/opcao foram agrupados em `pricing` dentro de `Order.items[*]` e `Order.items[*].options[*]`, mantendo formato da V1 (`Price { value, currency }`).
 - **Breaking**: `subtotalPrice` foi removido de item e opcao em Orders V2.
 - **Breaking**: `Order.status` vira campo autoritativo em `GET /orders/{id}`.
+- **Breaking**: para pedidos `DELIVERY`, `Order.customer` passa a ser obrigatorio no payload.
+- **Novo**: metadados de origem no pedido com `Order.context.salesChannel` e observacoes gerais em `Order.observations`.
+- **Novo**: `Order.items[*].itemOfferId`, `Order.items[*].options[*].defaultQuantity` e suporte a opcoes aninhadas (`Order.items[*].options[*].options`).
+- **Novo**: dados opcionais de CRM/Loyalty em cliente (`Order.customer.birthDate` e `Order.customer.gender`).
 - **Melhoria**: separacao explicita entre status e eventos.
 - **Melhoria**: repeticao de operacao ja aplicada segue padrao async com `202 Accepted` (sem transicao adicional).
 
