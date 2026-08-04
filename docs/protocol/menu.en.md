@@ -23,11 +23,13 @@ This page covers the **catalog**: menus, categories, item-offers, option-groups,
 
 | Field / model | V1 | V2 |
 |---|---|---|
-| Publication | Monolithic webhook | CRUD + snapshot |
-| `option_price` | Optional | **Required** (0 if free) |
+| Publication | Monolithic webhook | **CRUD + snapshot + PUT snapshot** |
+| `optionPrice` | Optional | **Required** (0 if free) |
 | Option `subtotal` | Present / confusing | **Removed** |
-| `unity_price` | Implicit | **Explicit** |
-| `quantity_available` | — | **New** (operational) |
+| `unityPrice` | Implicit | **Explicit** |
+| `quantityAvailable` | — | **New** (operational) |
+| Images in categories | No | **New** |
+| Subcategories | No | **New** (category nesting) |
 
 ---
 
@@ -37,25 +39,51 @@ This page covers the **catalog**: menus, categories, item-offers, option-groups,
 Merchant
 ├── Service (DELIVERY / TAKEOUT / INDOOR) → menuId
 └── Menu
- └── Category
- └── ItemOffer
- └── OptionGroup (recursive)
- └── Option → OptionGroup…
+    └── Category
+        ├── Subcategory (new — category nesting)
+        └── ItemOffer
+            └── OptionGroup (recursive)
+                └── Option → OptionGroup…
 ```
 
 A merchant may have **multiple menus**. Each [Service](merchant-store.md#serviço-service) may reference the active menu via `menuId`.
 
+### Subcategories (new)
+
+Categories can have subcategories (one level of nesting). Useful for structures like:
+- Burgers > Classics, Specials
+- Beverages > Hot, Cold
+
 ---
 
-## Snapshot vs CRUD
+## Snapshot vs CRUD vs PUT
 
 | Scenario | Approach | operationId |
 |---|---|---|
-| Initial load / reconciliation | Full snapshot | `getMenuSnapshot` |
+| Initial load / full reconciliation | Full snapshot | `getMenuSnapshot` |
+| Update entire catalog after major change | PUT full snapshot | `replaceMenuSnapshot` |
 | List menus | Listing | `listMenus` |
-| Price / name / availability | Entity PATCH/PUT | `updateItemOffer`, … |
+| Price / name / availability | PATCH/PUT entity | `updateItemOffer`, … |
 | New item / category / option | POST | `createItemOffer`, `createCategory`, `createOption` |
 | Removal | DELETE (async `202`) | `deleteItemOffer`, … |
+
+**New in V2**: Instead of the V1 pattern "update locally → notify via webhook → OA polling", use **PUT snapshot**:
+
+```mermaid
+sequenceDiagram
+    participant SS as Software Service
+    participant OA as Ordering Application
+
+    Note over SS,OA: V2 — Push snapshot
+    SS->>OA: PUT …/menus/{menuId}/snapshot
+    OA-->>SS: 202 Accepted
+    Note over OA: Process full catalog
+
+    Note over SS,OA: Fallback — Pull snapshot
+    OA->>SS: GET …/menus/{menuId}/snapshot
+    SS-->>OA: 200 MenuSnapshot
+    Note over OA: Bootstrap / error recovery
+```
 
 ```
 GET /merchants/{merchantId}/menus/{menuId}/snapshot
@@ -81,10 +109,11 @@ sequenceDiagram
 
 | Field | Required | Notes |
 |---|---|---|
-| `unity_price` | YES | Base price in minor units |
-| `quantity_available` | NO | **Operational** signal (e.g. 10 portions left). **Not** multi-channel stock. Omitted/`null` = no declared limit; `0` = unavailable |
+| `unityPrice` | YES | Base price in minor units |
+| `quantityAvailable` | NO | **Operational** signal (e.g. 10 portions left). **Not** multi-channel stock. Omitted/`null` = no declared limit; `0` = unavailable |
 | `status` | YES | `AVAILABLE` / `UNAVAILABLE` |
 | `externalCode` | NO | POS internal code |
+| `imageUrl` | NO | Item image URL (new in V2) |
 
 ---
 
@@ -92,8 +121,8 @@ sequenceDiagram
 
 OptionGroups may nest (e.g. size → doneness → sauce). Real-world depth is usually 2–3 levels.
 
-!!! important "`option_price` required in V2"
-    Every `Option` MUST have `option_price`. No extra cost: `0`. V1 option `subtotal` is removed — on the order, use `unity_price` + sum of `option_price` (see [Orders](orders.md)).
+!!! important "`optionPrice` required in V2"
+    Every `Option` MUST have `optionPrice`. No extra cost: `0`. V1 option `subtotal` is removed — on the order, use `unityPrice` + sum of `optionPrice` (see [Orders](orders.md)).
 
 ---
 
@@ -102,8 +131,9 @@ OptionGroups may nest (e.g. size → doneness → sauce). Real-world depth is us
 | Goal | operationId |
 |---|---|
 | List menus | `listMenus` |
-| Snapshot | `getMenuSnapshot` |
+| Snapshot (GET / PUT) | `getMenuSnapshot` · `replaceMenuSnapshot` |
 | Categories | `listCategories` · `createCategory` · `replaceCategory` · `deleteCategory` |
+| Subcategories | `listSubcategories` · `createSubcategory` · `replaceSubcategory` · `deleteSubcategory` |
 | Item offers | `listItemOffers` · `createItemOffer` · `replaceItemOffer` · `updateItemOffer` · `deleteItemOffer` |
 | Option groups | `listOptionGroups` · `createOptionGroup` · `replaceOptionGroup` · `deleteOptionGroup` |
 | Options | `listOptions` · `createOption` · `replaceOption` · `deleteOption` |

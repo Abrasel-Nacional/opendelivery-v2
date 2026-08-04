@@ -45,6 +45,15 @@ Descriptive fields (name, address, contacts, logo, etc.) via:
 | Partial update | `PATCH /merchants/{merchantId}` |
 | List merchants for token | `GET /merchants` |
 
+### PATCH — update store
+
+The `PATCH` endpoint allows updating:
+- `externalCode` — **New in V2**: Software Service can now update the POS's internal store code
+- `name`, `description`, `logoUrl` — basic identity
+- `contacts` — contact info (phone, email, etc.)
+
+Response: **`202`** (async processing).
+
 V1 `merchantType` **does not exist** in V2.
 
 ---

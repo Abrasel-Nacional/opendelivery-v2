@@ -23,11 +23,15 @@ Esta página cobre o **catálogo**: menus, categorias, item-offers, option-group
 
 | Campo / modelo | V1 | V2 |
 |---|---|---|
-| Publicação | Webhook monolítico | CRUD + snapshot |
-| `option_price` | Opcional | **Obrigatório** (0 se grátis) |
+| Publicação | Webhook monolítico | **CRUD + snapshot + PUT snapshot** |
+| `optionPrice` | Opcional | **Obrigatório** (0 se grátis) |
 | `subtotal` em opções | Presente / confuso | **Removido** |
-| `unity_price` | Implícito | **Explícito** |
-| `quantity_available` | — | **Novo** (operacional) |
+| `unityPrice` | Implícito | **Explícito** |
+| `quantityAvailable` | — | **Novo** (operacional) |
+| Imagens em categorias | Não | **Novo** |
+| Subcategorias | Não | **Novo** (nesting de categorias) |
+| Imagens em categorias | Não | **Novo** |
+| Subcategorias | Não | **Novo** (nesting de categorias) |
 
 ---
 
@@ -37,25 +41,51 @@ Esta página cobre o **catálogo**: menus, categorias, item-offers, option-group
 Merchant
 ├── Service (DELIVERY / TAKEOUT / INDOOR) → menuId
 └── Menu
- └── Category
- └── ItemOffer
- └── OptionGroup (recursivo)
- └── Option → OptionGroup…
+    └── Category
+        ├── Subcategory (novo — nesting de categorias)
+        └── ItemOffer
+            └── OptionGroup (recursivo)
+                └── Option → OptionGroup…
 ```
 
 Um estabelecimento pode ter **múltiplos menus**. Cada [Service](merchant-store.md#serviço-service) pode referenciar o menu ativo via `menuId`.
 
+### Subcategorias (novo)
+
+Categorias podem ter subcategorias (um nível de nesting). Útil para estruturas como:
+- Hambúrgueres > Clássicos, Especiais
+- Bebidas > Quentes, Geladas
+
 ---
 
-## Snapshot vs CRUD
+## Snapshot vs CRUD vs PUT
 
 | Cenário | Abordagem | operationId |
 |---|---|---|
 | Carga inicial / reconciliação | Snapshot completo | `getMenuSnapshot` |
+| Atualizar cardápio inteiro após mudança grande | PUT snapshot completo | `replaceMenuSnapshot` |
 | Listar menus | Listagem | `listMenus` |
 | Preço / nome / disponibilidade | PATCH/PUT da entidade | `updateItemOffer`, … |
 | Novo item / categoria / opção | POST | `createItemOffer`, `createCategory`, `createOption` |
 | Remoção | DELETE (async `202`) | `deleteItemOffer`, … |
+
+**Novo em V2**: Ao invés do padrão V1 "atualizar → avisar via webhook → OA polling", use **PUT snapshot**:
+
+```mermaid
+sequenceDiagram
+    participant SS as Software Service
+    participant OA as Ordering Application
+
+    Note over SS,OA: V2 — Push snapshot
+    SS->>OA: PUT …/menus/{menuId}/snapshot
+    OA-->>SS: 202 Accepted
+    Note over OA: Processa cardápio completo
+
+    Note over SS,OA: Fallback — Pull snapshot
+    OA->>SS: GET …/menus/{menuId}/snapshot
+    SS-->>OA: 200 MenuSnapshot
+    Note over OA: Bootstrap local / erro recovery
+```
 
 ```
 GET /merchants/{merchantId}/menus/{menuId}/snapshot
@@ -63,17 +93,6 @@ GET /merchants/{merchantId}/menus/{menuId}/snapshot
 
 O snapshot devolve a hierarquia (categorias → item-offers → option-groups → options). É o substituto prático do “cardápio completo” da V1 **para bootstrap**, não um retorno do webhook monolítico.
 
-```mermaid
-sequenceDiagram
- participant OA as Ordering Application
- participant SS as Software Service
-
- OA->>SS: GET …/menus/{menuId}/snapshot
- SS-->>OA: 200 MenuSnapshot
- Note over OA: bootstrap local
- OA->>SS: PATCH …/item-offers/{id} { unity_price }
- SS-->>OA: 202 Accepted
-```
 
 ---
 
@@ -81,10 +100,11 @@ sequenceDiagram
 
 | Campo | Obrigatório | Notas |
 |---|---|---|
-| `unity_price` | SIM | Preço base em unidades menores (centavos) |
-| `quantity_available` | NÃO | Sinal **operacional** (ex.: 10 porções do prato do dia). **Não** é estoque multi-canal. `null`/omitido = sem limite declarado; `0` = indisponível |
+| `unityPrice` | SIM | Preço base em unidades menores (centavos) |
+| `quantityAvailable` | NÃO | Sinal **operacional** (ex.: 10 porções do prato do dia). **Não** é estoque multi-canal. `null`/omitido = sem limite declarado; `0` = indisponível |
 | `status` | SIM | `AVAILABLE` / `UNAVAILABLE` |
 | `externalCode` | NÃO | Código interno do PDV |
+| `imageUrl` | NÃO | URL da imagem do item (novo em V2) |
 
 ---
 
@@ -92,8 +112,8 @@ sequenceDiagram
 
 OptionGroups podem aninhar (ex.: tamanho → ponto → molho). Uso real costuma ser 2–3 níveis.
 
-!!! important "`option_price` obrigatório na V2"
-    Todo `Option` DEVE ter `option_price`. Sem custo adicional: `0`. O campo `subtotal` de opções da V1 foi removido — no pedido, use `unity_price` + soma dos `option_price` (ver [Orders](orders.md)).
+!!! important "`optionPrice` obrigatório na V2"
+    Todo `Option` DEVE ter `optionPrice`. Sem custo adicional: `0`. O campo `subtotal` de opções da V1 foi removido — no pedido, use `unityPrice` + soma dos `optionPrice` (ver [Orders](orders.md)).
 
 ---
 
@@ -102,8 +122,9 @@ OptionGroups podem aninhar (ex.: tamanho → ponto → molho). Uso real costuma 
 | Objetivo | operationId |
 |---|---|
 | Listar menus | `listMenus` |
-| Snapshot | `getMenuSnapshot` |
+| Snapshot (GET / PUT) | `getMenuSnapshot` · `replaceMenuSnapshot` |
 | Categorias | `listCategories` · `createCategory` · `replaceCategory` · `deleteCategory` |
+| Subcategorias | `listSubcategories` · `createSubcategory` · `replaceSubcategory` · `deleteSubcategory` |
 | Item offers | `listItemOffers` · `createItemOffer` · `replaceItemOffer` · `updateItemOffer` · `deleteItemOffer` |
 | Option groups | `listOptionGroups` · `createOptionGroup` · `replaceOptionGroup` · `deleteOptionGroup` |
 | Options | `listOptions` · `createOption` · `replaceOption` · `deleteOption` |

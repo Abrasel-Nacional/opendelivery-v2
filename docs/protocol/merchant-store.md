@@ -45,6 +45,15 @@ Campos descritivos (nome, endereço, contatos, logo, etc.) via:
 | Atualizar parcial | `PATCH /merchants/{merchantId}` |
 | Listar lojas do token | `GET /merchants` |
 
+### PATCH — atualizar loja
+
+O endpoint `PATCH` permite atualizar:
+- `externalCode` — **Novo em V2**: agora o Software Service pode atualizar o código interno da loja
+- `name`, `description`, `logoUrl` — identidade básica
+- `contacts` — contatos (telefone, email, etc.)
+
+Resposta: **`202`** (processamento assíncrono).
+
 `merchantType` da V1 **não existe** na V2.
 
 ---

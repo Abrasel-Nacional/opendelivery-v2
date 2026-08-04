@@ -3,7 +3,7 @@ x-spectral-ignore:
 - owasp:api4:2023-string-restricted
 info:
   title: Open Delivery V2 — Orders
-  version: 2.0.0-rc
+  version: 2.0.0-rc.2
   summary: Normative Orders contracts — lifecycle, status, events, polling, and webhooks
   description: |-
     This specification is the **normative, self-contained contract** of Open Delivery
@@ -65,6 +65,24 @@ tags:
     | Multi-level options | Usually single-level | Nested options supported in `order.items[*].options[*].options` |
     | Customer CRM/Loyalty attributes | Not part of Orders payload | Optional `order.customer.birthDate` and `order.customer.gender` |
     | Merchant id on order | Often PDV-generated | Originator-owned merchant id + PDV `externalCode` (see Merchant) |
+
+    ## RC Changelog
+
+    Changes within the Release Candidate phase (post-publication, pre-stable).
+    Each entry references the committee session that approved it.
+
+    ### RC.2 — 2026-08-04 (Comitê 2026-07-28)
+
+    **Billing address** — fiscal compliance (CINE-F nº 9/2026):
+    - Added `fulfillment.billingAddress` object (optional) — customer billing address
+      available for all order types (DELIVERY, TAKEOUT, INDOOR).
+    - Required by fiscal regulation for TAKEOUT/INDOOR; for DELIVERY the delivery
+      address may serve as billing address when this field is absent.
+
+    ### RC.1 — 2026-07-15
+
+    Initial Release Candidate publication.
+
 - name: CapabilityOverview
   x-displayName: Overview
   x-traitTag: true
@@ -2385,6 +2403,44 @@ components:
             - MUST always be provided.
             - MUST match exactly one fulfillment context object.
             - MUST be used by consumers to interpret lifecycle/profile-specific rules.
+        billingAddress:
+          type: object
+          description: |
+            **[V2 NEW]** Customer billing address. Added to comply with fiscal regulation
+            (CINE-F nº 9/2026) that requires billing address for all order types,
+            including TAKEOUT and INDOOR.
+
+            This field is **NOT required** — it is populated when the customer provides
+            billing information or when fiscal rules mandate it. For DELIVERY orders,
+            the delivery address may serve as billing address if this field is absent.
+          properties:
+            street:
+              type: string
+              description: Street name.
+            number:
+              type: string
+              description: Street number.
+            complement:
+              type: string
+              description: Address complement.
+            neighborhood:
+              type: string
+              description: Neighborhood or district.
+            city:
+              type: string
+              description: City name.
+            state:
+              type: string
+              description: State or country subdivision.
+            country:
+              type: string
+              pattern: '^[A-Z]{2}$'
+              description: Two-letter ISO 3166-1 alpha-2 country code.
+              example: BR
+            postalCode:
+              type: string
+              description: Postal Code.
+              example: '01310-100'
         delivery:
           $ref: '#/components/schemas/DeliveryContext'
           description: |
