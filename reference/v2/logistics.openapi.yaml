@@ -1,11 +1,38 @@
-openapi: 3.0.3
-
+openapi: 3.1.0
 info:
   title: Open Delivery V2 — Logistics
   version: 2.0.0-rc
-  description: |
-    Logistics Capability API for the Open Delivery Protocol V2.
+  summary: Normative Logistics contracts — delivery lifecycle, tracking, and availability
+  description: |-
+    This specification is the **normative, self-contained contract** of Open Delivery
+    for the **logistics domain**: delivery ordering, tracking events, availability
+    and pricing.
 
+    Recommended reading flow in ReDoc:
+    1. **Release notes** (RC status and V1 continuity)
+    2. **Overview** (logistics model, parties, and flows)
+    3. **Integration** (authentication and Discovery declarations)
+    4. **Delivery** (delivery lifecycle endpoints)
+    5. **Delivery Tracking** (webhooks for event notifications)
+    6. **Availability** (delivery availability and pricing)
+    7. **External docs** (related capabilities and guides)
+
+    An implementer MUST be able to integrate this capability using **only this document**.
+    Related guides are listed under **External docs**.
+servers:
+- url: https://api.example.com/od/v2
+  description: Production environment
+  x-internal: false
+- url: https://sandbox.example.com/od/v2
+  description: Staging / homologation environment
+  x-internal: true
+security:
+- bearerAuth: []
+tags:
+- name: ReleaseNotes
+  x-displayName: Release notes
+  x-traitTag: true
+  description: |-
     ## Release Candidate status
 
     This contract is part of Open Delivery Protocol **V2.0.0-rc** (Release Candidate).
@@ -14,462 +41,1976 @@ info:
     A stable release will follow only after validation completes.
     **V1 remains the production reference** during the transition.
 
-    Logistics Capability defines delivery coordination primitives tied to an order context.
-    Every delivery request MUST reference an existing order identifier.
+    ## V1 continuity
 
-    ## Async-first model
+    V2 Logistics **preserves V1 behavior**. All endpoints, schemas, and flows are
+    functionally identical to V1. The only changes are organizational (tagging,
+    grouping) and the removal of the `/v1/` path prefix.
 
-    All state-change operations return `202 Accepted`. Delivery status updates are
-    delivered via webhooks. Use `GET /logistics/delivery/{orderId}` for reconciliation.
-    Never treat a `202` alone as confirmation of the state change — wait for the
-    corresponding event or poll `GET`.
+- name: CapabilityOverview
+  x-displayName: Overview
+  x-traitTag: true
+  description: |-
+    ## Logistics capability
 
-    ## Duplicate lifecycle operations (universal default)
+    Open Delivery provides a set of standards so that both merchants through their **Software Services** and **Ordering Applications** can request a new delivery to a logistics operator and track this delivery.
 
-    Same rule as Orders (Architecture Committee 2026-03-26 / Keeta case). V1 often
-    suggested `422` for synchronous reprocessing of the same fact; that breaks POS
-    stacks that call the same progression twice.
+    ## Logistics API Usage
 
-    **V2 default for delivery progression mutations** (`create`, ready-for-pickup,
-    collected, delivered, cancel, and equivalent signals):
+    Open Delivery's Logistic API aims to standardize the communication between a **requester** - which can be either a **Software Service** or an **Ordering Application** - and a company's software that provides **Logistic Services** (called here **Logistic Service**).
 
-    | Situation | HTTP | Side effects |
-    |---|---|---|
-    | Transition is **valid** and not yet applied | `202 Accepted` | Process; emit event when done |
-    | Same operation **already applied** (delivery already in the target state, e.g. second `delivered` while status is `DELIVERED`) | **`202 Accepted`** | **No new transition**. Receiver **MAY** re-present the corresponding event |
-    | Transition is **impossible** (e.g. collect after cancel) | `409 Conflict` (or documented error) | No state change; error body |
+    > A **Logistic Service** can be either a company that specializes in delivery services or an **Ordering Application** that also provides delivery services.
 
-    Receivers **MUST NOT** return `422` / `409` solely because a successful lifecycle
-    operation is invoked again after the target state was already reached.
+    > The Open Delivery logistics API only handles communications between the merchant software (or **Ordering Application**) and the software of the logistics operator. Communications and interfaces with the deliverers at the end are not covered in this documentation, leaving it up to the logistics companies to perform this interaction.
 
-    No client idempotency header is defined. Deduplicate **inbound events** by event id
-    when consuming webhooks/polling.
+    The endpoints provided here, cover the following functionalities:
 
-    ## Participants
+    ### Delivery Order
 
-    | Participant | Role |
+    It covers the calling of a new delivery, as well as auxiliary endpoints for reporting the pickup of an order, the completion of the delivery, as well as problem handling and cancellations.
+
+    ### Delivery Tracking
+    Webhook to be available at the **requester's** side of the call, in order to receive all order event updates, as well as delivery information updates.
+
+    ### Delivery Availability and Price
+
+    Endpoint with the function of simulating a new delivery, with the purpose of checking if it is possible to make the delivery as well as its prices and times.
+
+- name: IntegrationProfile
+  x-displayName: 'Auth & Discovery'
+  x-traitTag: true
+  description: |-
+    ## Authentication
+
+    All endpoints require `Authorization: Bearer {token}` unless marked otherwise.
+
+    OAuth 2.0 grant models, scopes, and webhook signature validation (HMAC-SHA256)
+    are defined in the [Authentication specification](../authentication/).
+
+    Preferred scope for this capability: `od.logistics`.
+
+    <SecurityDefinitions />
+
+    ### Webhook headers
+
+    Logistics event webhooks (`newLogisticEvent`, `confirmationCode`) include
+    security headers for verification:
+
+    | Header | Description |
     |---|---|
-    | **Ordering Application** | Sends delivery requests; receives tracking events |
-    | **Software Service (PDV)** | Coordinates merchant-side delivery context |
-    | **Logistics Service** | Executes delivery; emits tracking events |
+    | `X-App-Id` | Unique identifier of the **Logistic Service** |
+    | `X-App-MerchantId` | Unique identifier of the **Merchant** receiving the event |
+    | `X-App-Signature` | HMAC-SHA256 of the request body, using the client secret as key |
 
-    ## Authorization
+    The receiving party MUST validate `X-App-Signature` before processing.
 
-    All endpoints require `Authorization: Bearer {token}` with scope `od.logistics`.
+    ## Discovery declarations
 
-tags:
-  - name: Delivery
-    description: Delivery request and tracking operations
-  - name: Availability
-    description: Logistics availability and pricing checks
+    Implementations MUST publish Logistics capability behavior in
+    [Discovery](../discovery/) so counterparties can integrate predictably.
+
+    At minimum, declare:
+    - `capabilities.logistics.version` and `capabilities.logistics.supported`.
+    - `capabilities.logistics.originator.supportedEvents` — events emitted by the logistics provider.
+    - `capabilities.logistics.originator.supportsWebhook` — whether push delivery of events is available.
+    - `capabilities.logistics.originator.supportsPolling` — whether pull consumption of events is available.
+    - `capabilities.logistics.receiver.supportedOperations` — operations accepted by the receiver.
+
+    ### Example Discovery fragment
+
+    ```json
+    {
+      "capabilities": {
+        "logistics": {
+          "version": "2.0.0-rc",
+          "supported": true,
+          "originator": {
+            "supportedEvents": [
+              "PENDING", "ACCEPTED", "REJECTED", "PICKUP_ONGOING",
+              "ARRIVED_AT_MERCHANT", "ORDER_PICKED", "DELIVERY_ONGOING",
+              "ARRIVED_AT_CUSTOMER", "ORDER_DELIVERED",
+              "RETURNING_TO_MERCHANT", "RETURNED_TO_MERCHANT",
+              "DELIVERY_FINISHED", "CANCELLED"
+            ],
+            "supportsWebhook": true,
+            "supportsPolling": false
+          },
+          "receiver": {
+            "supportedOperations": [
+              "logisticsNewDelivery", "logisticsReadyForPickup",
+              "logisticsPicked", "logisticsFinish",
+              "logisticsProblem", "logisticsCancel",
+              "logisticsAvailability", "logisticDetails"
+            ]
+          }
+        }
+      }
+    }
+    ```
+
+- name: ExternalDocs
+  x-displayName: External docs
+  x-traitTag: true
+  description: |-
+    ## External docs
+
+    | Document | Purpose |
+    |---|---|
+    | [Logistics guide (protocol)](../../protocol/logistics/) | Domain overview, flows, and V1→V2 |
+    | [Orders API Spec](../orders/) | Order lifecycle — logistics is triggered after order dispatch |
+    | [Merchant API Spec](../merchant/) | Store data and services (delivery area, service hours) |
+    | [Authentication](../authentication/) | OAuth 2.0, scopes, and webhook HMAC signing |
+    | [Discovery](../discovery/) | Declaring `logistics` capability in the well-known manifest |
+    | [Migration guide](../../guide/migration-v1-v2/) | V1→V2 migration steps for all capabilities |
+
+- name: Delivery
+  x-displayName: Delivery
+  description: |-
+    ### Events
+
+    This overview summarizes the **Open Delivery** delivery ordering flow and how it interacts with the requester (merchant **Software Services** or **Ordering Applications**) and the **Logistic Services**.
+
+    > The `PICKUP_ONGOING`, `DELIVERY_ONGOING` and `RETURNING_TO_MERCHANT` events are events that occur while the delivery person is on the move, so these events can be sent repeatedly in order to update the delivery person's location. The interval at which these events are sent is defined by each **Logistic Service**.
+
+    > It is important to emphasize that the entire event flow is per Order and even though a delivery may have combined orders (see section below), for all operations in the flow, the id to be used is the `orderId` (initially informed by the requester at the /logistics/delivery endpoint).
+
+     ### Combining Orders
+
+    The Open Delivery logistics API offers the option of combining more than one order into a single delivery.
+    This can be done on both the **Software Service** (or **Ordering Application**) and the **Logistic Service** sides.
+
+    To combine orders its necessary that at least one delivery is currently in progress.
+    When requesting for a new delivery, you need to inform the `orderId` of the ongoing deliveries in the `combinedOrdersIds` field of the new request.
+
+    > This combination will be subject to acceptance by the **Logistic Service**.
+
+    The **Logistic Service** may also perform order combination in its software, using its algorithms and processes (provided that the `canCombine` field is entered as `TRUE` in the delivery request).
+    > For this combination no action is required from the **requester**.
+
+    Regardless of the case, the **Logistic Service** must inform in the event webhook the combined orders of the same merchant, through the `combinedOrdersIds` field.
+
+    > Since all event flow is per Order, then in the case of deliveries that have combined orders, an event message must be sent to each of the orders separately.
+
+    ### Order Rejection and retries for the same order
+
+    If a new delivery order is rejected by the **Logistic Service**, regardless of the reason, the **Software Service** / **Ordering Application** can make a new attempt for the same order (same `orderId` and same `orderDisplayId`). The **Logistic Service** must receive this retry only if the last sent event for this order was the `REJECTED` event. If any other event has already been sent, then the **Logistic Service** will return a duplicate orderId error.
+
+    > The number of retries possible for the same order is defined by each **Logistic Service**.
+
+- name: DeliveryTracking
+  x-displayName: Delivery Tracking
+  description: |-
+    Receiving delivery events via Webhook works as follows:
+
+    ### Webhook Headers
+    **Open Delivery** will include security headers for all requests made to the merchant **Software Service** webhook URL.
+
+    **Header Description**
+
+    | Header            | Description |
+    | ----------------- | ----------- |
+    | X-App-Id          | An Unique Identificator of the **Logistic Service** |
+    | X-App-MerchantId  | An Unique Identificator of the **Merchant** receiving the order event |
+    | X-App-Signature   | SHA256 hash of the request body, using the client secret as the key |
+
+    **Webhook Security**
+
+    Webhook messages are signed so that the merchant **Software Service** (or the **Ordering Application**) can verify that the sender is a valid **Logistic Service**.
+    Webhooks requests contain an X-App-Signature header.
+    The value of this field is a lowercased hexadecimal HMAC signature of the webhook HTTP request body, using the client secret as a key and SHA256 as the hash function.
+
+- name: Availability
+  x-displayName: Delivery Availability and Pricing
+  description: |-
+    Endpoint used to check the availability of a **`Logistic Service`** to make a delivery with addresses and times already defined, as well as to obtain the price for this delivery.
+
+    This endpoint only simulates the acceptance of a new delivery request, using the information available at the time of the call.
+
+    > The call to this endpoint does not generate any commitment to **Logistic Service** and should only be used as an estimate of the delivery values.
+      To make a real delivery request, use the POST /logistics/delivery endpoint.
+
+x-tagGroups:
+- name: Read first
+  tags:
+  - ReleaseNotes
+- name: Overview
+  tags:
+  - CapabilityOverview
+  - ExternalDocs
+- name: Integration
+  tags:
+  - IntegrationProfile
+- name: Delivery Lifecycle
+  tags:
+  - Delivery
+- name: Tracking & Webhooks
+  tags:
+  - DeliveryTracking
+- name: Availability & Pricing
+  tags:
+  - Availability
+
 
 paths:
-
   /logistics/availability:
     post:
-      tags: [Availability]
-      operationId: checkLogisticsAvailability
-      summary: Check delivery availability and estimated cost
-      description: |
-        Queries whether a logistics provider can fulfil a delivery for the given
-        origin and destination. Returns availability status and, when available,
-        estimated cost and delivery time.
-
-        This is typically called before creating an order to validate logistics
-        feasibility and display delivery fee to the customer.
+      operationId: logisticsAvailability
+      security:
+      - bearerAuth: []
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              type: object
-              required: [merchantId, origin, destination]
-              properties:
-                merchantId:
-                  type: string
-                  description: Merchant from which the order originates
-                  example: merchant-550e8400
-                origin:
-                  $ref: '#/components/schemas/Address'
-                destination:
-                  $ref: '#/components/schemas/Address'
-                scheduledFor:
-                  type: string
-                  format: date-time
-                  description: Target delivery time for scheduled orders (UTC)
+              $ref: '#/components/schemas/DeliveryAvailabilityPrice'
+      tags:
+      - Availability
+      summary: Check delivery availability and prices
+      description: |-
+        Simulates a new delivery solicitation to know prices and delivery times.
       responses:
         '200':
-          description: Availability response
+          description: Successfully returns delivery availability and price.
           content:
             application/json:
               schema:
-                type: object
-                required: [available]
-                properties:
-                  available:
-                    type: boolean
-                  estimatedDeliveryMinutes:
-                    type: integer
-                    description: Estimated delivery time in minutes
-                    example: 35
-                  deliveryFee:
-                    type: object
-                    properties:
-                      value:
-                        type: integer
-                        description: Fee in minor units (centavos)
-                        example: 500
-                      currency:
-                        type: string
-                        example: BRL
-                  unavailableReason:
-                    type: string
-                    description: Present when `available` is false
-                    example: "OUT_OF_COVERAGE"
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
+                $ref: '#/components/schemas/DeliveryAvailabilityPriceResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
 
   /logistics/delivery:
     post:
-      tags: [Delivery]
-      operationId: createDelivery
-      summary: Request a delivery
-      description: |
-        Creates a delivery request linked to an existing order.
-        The logistics provider will assign a courier and begin tracking.
-
-        Returns `202 Accepted`. A `delivery.assigned` event is sent when a
-        courier is assigned. Poll `GET /logistics/delivery/{orderId}` for status.
-
-        **Duplicate call:** if a delivery for this `orderId` was **already created**
-        and is still active, return **`202`** without creating a second delivery;
-        MAY re-present the latest relevant event. Do **not** fail only because the
-        request was already accepted (see info “Duplicate lifecycle operations”).
+      operationId: logisticsNewDelivery
+      security:
+      - bearerAuth: []
       requestBody:
+        description: Request for a new delivery order
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required: [orderId, merchantId, origin, destination]
-              properties:
-                orderId:
-                  type: string
-                  description: Existing order identifier this delivery is linked to
-                  example: order-abc123
-                merchantId:
-                  type: string
-                  example: merchant-550e8400
-                origin:
-                  $ref: '#/components/schemas/Address'
-                destination:
-                  $ref: '#/components/schemas/Address'
-                customer:
-                  type: object
-                  description: Customer contact details for the courier
-                  properties:
-                    name: { type: string }
-                    phone: { type: string }
-                scheduledPickupAt:
-                  type: string
-                  format: date-time
-                  description: Requested courier pickup time at origin (UTC)
-                observations:
-                  type: string
-                  description: Delivery instructions for the courier
+              $ref: '#/components/schemas/DeliveryOrder'
+      tags:
+      - Delivery
+      summary: Request new delivery
+      description: Starts the process of calling a new delivery for an order.
       responses:
         '202':
-          description: |
-            Delivery request accepted, **or** delivery already exists for this order
-            (duplicate success path). Reconcile via event / GET.
+          description: Request has been accepted for processing.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  deliveryId:
-                    type: string
-                    description: Delivery identifier assigned by the logistics provider
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
+                $ref: '#/components/schemas/DeliveryOrderResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/AccessDenied'
         '404':
-          description: Order not found
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/Error' }
-        '409':
-          description: |
-            Impossible to create delivery in the current context (not used merely because
-            a delivery was already created successfully).
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
 
   /logistics/delivery/{orderId}:
-    parameters:
+    get:
+      operationId: logisticDetails
+      security:
+      - bearerAuth: []
+      parameters:
       - name: orderId
         in: path
         required: true
-        schema: { type: string }
-        example: order-abc123
+        schema:
+          type: string
+          format: uuid
+          description: The orderId generated by the **`Ordering Application`**.
+          example: '52122852-6626-11ed-9022-0242ac120002'
+      tags:
+      - Delivery
+      summary: Get delivery details
+      description: |-
+        Gets detailed information about the delivery order.
 
-    get:
-      tags: [Delivery]
-      operationId: getDelivery
-      summary: Get delivery details and current status
-      description: |
-        Returns the current state of a delivery linked to an order.
-        Use for reconciliation when events are missed.
+        > Since the same `orderId` may have more than one return (considering that it may have been rejected a few times before being accepted), then the response should return only the last attempt processed by the **Logistics Service**, be it an acceptance or a rejection.
       responses:
         '200':
-          description: Delivery details
+          description: Successfully returns the delivery order details.
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Delivery' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '404': { $ref: '#/components/responses/NotFound' }
+              schema:
+                $ref: '#/components/schemas/DeliveryOrderDetails'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
 
-  /logistics/delivery/{orderId}/ready-for-pickup:
-    parameters:
+  /logistics/readyForPickup/{orderId}:
+    post:
+      operationId: logisticsReadyForPickup
+      security:
+      - bearerAuth: []
+      parameters:
       - name: orderId
         in: path
         required: true
-        schema: { type: string }
+        schema:
+          type: string
+          format: uuid
+          description: The orderId generated by the **`Ordering Application`**.
+          example: '52122852-6626-11ed-9022-0242ac120002'
+      tags:
+      - Delivery
+      summary: Inform Ready for Pickup
+      description: |-
+        Inform the **Logistic Service** that the order is ready for pickup.
 
-    post:
-      tags: [Delivery]
-      operationId: notifyReadyForPickup
-      summary: Notify logistics that order is ready for courier pickup
-      description: |
-        Signals to the logistics provider that the order is packaged and
-        ready to be collected at the store. Triggers courier dispatch if
-        not already assigned.
-
-        Duplicate call after ready-for-pickup was already applied: return `202`
-        (see “Duplicate lifecycle operations”).
+        > **This is a OPTIONAL endpoint and should only be requested if the `notifyReadyForPickup` field has been set to `true` when sending the delivery request via the [POST /logistics/delivery](#operation/logisticsNewDelivery) endpoint.**
       responses:
-        '202':
-          description: Notification accepted, or already notified as ready for pickup
-        '404': { $ref: '#/components/responses/NotFound' }
-        '409':
-          description: Invalid state for this signal (not “already applied”)
+        '200':
+          description: Order is ready for pickup.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/AccessDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
 
-  /logistics/delivery/{orderId}/collected:
-    parameters:
+  /logistics/orderPicked/{orderId}:
+    post:
+      operationId: logisticsPicked
+      security:
+      - bearerAuth: []
+      parameters:
       - name: orderId
         in: path
         required: true
-        schema: { type: string }
-
-    post:
-      tags: [Delivery]
-      operationId: confirmOrderCollected
-      summary: Confirm courier collected the order
-      description: |
-        Signals that the courier picked up the order from the store.
-        Projected delivery status: `IN_TRANSIT`.
-
-        Duplicate call while already `IN_TRANSIT` (or past): return `202`
-        (see “Duplicate lifecycle operations”).
-      responses:
-        '202':
-          description: Accepted for processing, or already collected / in transit
-        '404': { $ref: '#/components/responses/NotFound' }
-        '409':
-          description: Invalid state for this transition (not “already applied”)
-
-  /logistics/delivery/{orderId}/delivered:
-    parameters:
-      - name: orderId
-        in: path
-        required: true
-        schema: { type: string }
-
-    post:
-      tags: [Delivery]
-      operationId: confirmDelivered
-      summary: Confirm order delivered to customer
-      description: |
-        Signals successful delivery to the customer.
-        Projected delivery status: `DELIVERED`.
-
-        Duplicate call while already `DELIVERED`: return `202`
-        (see “Duplicate lifecycle operations”).
-      responses:
-        '202':
-          description: Accepted for processing, or already delivered
-        '404': { $ref: '#/components/responses/NotFound' }
-        '409':
-          description: Invalid state for this transition (not “already applied”)
-
-  /logistics/delivery/{orderId}/problem:
-    parameters:
-      - name: orderId
-        in: path
-        required: true
-        schema: { type: string }
-
-    post:
-      tags: [Delivery]
-      operationId: reportDeliveryProblem
-      summary: Report a delivery problem or incident
+        schema:
+          type: string
+          format: uuid
+          description: The orderId generated by the **`Ordering Application`**.
+          example: '52122852-6626-11ed-9022-0242ac120002'
       requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliveryOrderPicked'
+      tags:
+      - Delivery
+      summary: Inform Order Pickup
+      description: |-
+        Inform the **Logistic Service** that the order was picked by delivery person at Merchant
+
+        > **This is a OPTIONAL endpoint and should only be requested if the `notifyPickup` field has been set to `true` when sending the delivery request via the [POST /logistics/delivery](#operation/logisticsNewDelivery) endpoint.**
+      responses:
+        '200':
+          description: Order pickup has been confirmed.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/AccessDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+
+  /logistics/finishDelivery/{orderId}:
+    post:
+      operationId: logisticsFinish
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: orderId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The orderId generated by the **`Ordering Application`**.
+          example: '52122852-6626-11ed-9022-0242ac120002'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliveryOrderFinish'
+      tags:
+      - Delivery
+      summary: Finish Delivery
+      description: |-
+        Indicates the completion of a delivery order.
+
+        > **This is a OPTIONAL endpoint andshould only be requested if the `notifyConclusion` field has been set to `true` when sending the delivery request via the [POST /logistics/delivery](#operation/logisticsNewDelivery) endpoint.**
+      responses:
+        '200':
+          description: Delivery completion has been confirmed.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/AccessDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+
+  /logistics/handleProblem/{orderId}:
+    post:
+      operationId: logisticsProblem
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: orderId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The orderId generated by the **`Ordering Application`**.
+          example: '52122852-6626-11ed-9022-0242ac120002'
+      requestBody:
+        description: New event
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required: [problemCode]
-              properties:
-                problemCode:
-                  type: string
-                  description: Machine-readable problem identifier
-                  example: CUSTOMER_UNREACHABLE
-                description:
-                  type: string
-                  description: Human-readable problem description
-      responses:
-        '202': { description: Problem reported }
-        '404': { $ref: '#/components/responses/NotFound' }
+              $ref: '#/components/schemas/DeliveryHandleProblem'
+      tags:
+      - Delivery
+      summary: Handle problem
+      description: |-
+        Handle problems that may occur during the delivery.
 
-  /logistics/delivery/{orderId}/cancel:
-    parameters:
+        > Problems can occur at any time during a delivery in progress.
+        It is important that the **Logistic Service** always informs the **Software Service** (or **Ordering Application**) of a problem (via webhook), even if the problem does not require any action by the merchant to solve it.
+
+        > Since there are other ways to solve delivery problems, such as via telephone or messaging applications, the implementation of this endpoint is optional, and the **Logistic Service** will inform the **Software Service** (or **Ordering Application**) of the need to use it.
+      responses:
+        '200':
+          description: The problem has been addressed.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/AccessDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+
+  /logistics/cancel/{orderId}:
+    post:
+      operationId: logisticsCancel
+      security:
+      - bearerAuth: []
+      parameters:
       - name: orderId
         in: path
         required: true
-        schema: { type: string }
-
-    post:
-      tags: [Delivery]
-      operationId: cancelDelivery
-      summary: Cancel a delivery
-      description: |
-        Cancels the delivery for this order. Does not cancel the order itself.
-
-        Duplicate call while delivery is **already cancelled**: return `202`
-        (see “Duplicate lifecycle operations”). `409` only when cancel is impossible
-        in the current state (e.g. already completed delivery, if policy forbids).
+        schema:
+          type: string
+          format: uuid
+          description: The orderId generated by the **`Ordering Application`**.
+          example: '52122852-6626-11ed-9022-0242ac120002'
       requestBody:
+        description: New event
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required: [cancellationCode]
-              properties:
-                cancellationCode:
-                  type: string
-                  example: "MERCHANT_REQUEST"
-                reason:
-                  type: string
+              $ref: '#/components/schemas/DeliveryCancel'
+      tags:
+      - Delivery
+      summary: Cancel delivery
+      description: |-
+        Requests cancellation of a order delivery in progress
+
+        > The **Software Service** (or **Ordering Application**) may request to cancel the delivery of an order at any time.
+        Depending on **Logistic Service** policies, additional fees may apply.
+
+        > If the order being cancelled is in a combined delivery, when cancelling, the order informed will be unlinked from the delivery, not interrupting the progress of the other orders in the same delivery.
       responses:
         '202':
-          description: Cancellation accepted, or already cancelled
-        '404': { $ref: '#/components/responses/NotFound' }
-        '409':
-          description: Invalid state for cancellation (not merely “already cancelled”)
+          description: Cancel request has been accepted for processing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryCancelResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/AccessDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+
+
+x-webhooks:
+  newLogisticEvent:
+    post:
+      operationId: newLogisticEvent
+      security: []
+      parameters:
+      - in: header
+        name: X-App-Id
+        required: true
+        schema:
+          type: string
+          format: UUID
+          description: An unique Identificator of the **`Logistic Service`**. The same ID must be sent to all `**Software Service**s` and `**Ordering Applications**` that implements this webhook.
+      - in: header
+        name: X-App-MerchantId
+        required: true
+        schema:
+          type: string
+          description: An unique Identificator of the Merchant
+      - in: header
+        name: X-App-Signature
+        required: true
+        schema:
+          type: string
+          format: SHA256
+          description: SHA256 hash of the request body, using the client secret as the key
+      summary: Tracking Event Webhook
+      description: |-
+        ### Delivery Order Event Notification
+        Webhook is sent to notify the merchant **Software Service** (or the **Ordering Application**) that an new order event has happened on the **Logistic Service**.
+
+        The host that implements this webhook, should return an HTTP `200` response code with an empty response body to acknowledge receipt of the webhook event.
+        If the **Logistic Service** does not receive a `200` acknowledgement response, than the webhook event will be resent based on the **Logistic Service** policies.
+      tags:
+      - DeliveryTracking
+      requestBody:
+        description: New event
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliveryOrderEvent'
+      responses:
+        '204':
+          description: Data was received successfully. No response content.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/AccessDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+
+  confirmationCode:
+    post:
+      operationId: logistictsDeliveryCode
+      security: []
+      parameters:
+      - in: header
+        name: X-App-Id
+        required: true
+        schema:
+          type: string
+          format: UUID
+          description: An unique Identificator of the **`Logistic Service`**. The same ID must be sent to all `**Software Service**s` and `**Ordering Applications**` that implements this webhook.
+      - in: header
+        name: X-App-MerchantId
+        required: true
+        schema:
+          type: string
+          description: An unique Identificator of the Merchant
+      - in: header
+        name: X-App-Signature
+        required: true
+        schema:
+          type: string
+          format: SHA256
+          description: SHA256 hash of the request body, using the client secret as the key
+      summary: Delivery Code Webhook
+      description: |-
+        ### Delivery Confirmation Code Notification
+        Webhook is sent to notify the merchant **Software Service** (or the **Ordering Application**) of the Delivery Code, informed by the customer.
+
+        With this code, the **Software Service** (or the **Ordering Application**) needs to access the Ordering Application confirmation process and return if the code is valid or not.
+
+        The host that implements this webhook, should return:
+
+        - HTTP `200` response code if the Delivery Code is **valid**.
+        - HTTP `400` responde code if the Delivery Code is **invalid**. In this case you must inform the cause in the `title` propertie.
+      tags:
+      - DeliveryTracking
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliveryConfirmationCode'
+      responses:
+        '200':
+          description: Confirmation Code is correct. You can proceed with the delivery.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryConfirmationCode'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+
 
 components:
+  securitySchemes:
+    bearerAuth:
+      type: oauth2
+      description: OAuth2 with scope od.logistics
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.example.com/oauth/token
+          scopes:
+            od.logistics: Access to logistics endpoints
 
   responses:
     BadRequest:
-      description: Invalid request
+      description: Bad Request
       content:
-        application/json:
-          schema: { $ref: '#/components/schemas/Error' }
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Error'
     Unauthorized:
-      description: Missing or invalid credentials
+      description: Request lacks valid authentication credentials for the target resource
       content:
-        application/json:
-          schema: { $ref: '#/components/schemas/Error' }
-    Forbidden:
-      description: Insufficient scope
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    AccessDenied:
+      description: Access Denied
       content:
-        application/json:
-          schema: { $ref: '#/components/schemas/Error' }
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Error'
     NotFound:
-      description: Resource not found
+      description: Not Found
       content:
-        application/json:
-          schema: { $ref: '#/components/schemas/Error' }
-    Conflict:
-      description: Invalid state for the requested operation
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    UnprocessableEntity:
+      description: Unprocessable Entity
       content:
-        application/json:
-          schema: { $ref: '#/components/schemas/Error' }
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ServiceUnavailable:
+      description: Service Unavailable
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
 
   schemas:
-
-    Delivery:
+    Error:
       type: object
-      required: [orderId, status]
+      required: ['title', 'status']
+      properties:
+        title:
+          type: string
+          description: Short description of the problem.
+          example: Unexpected error
+        status:
+          type: integer
+          description: HTTP code of the returned status.
+          example: 500
+
+    Price:
+      type: object
+      title: Price
+      required: ['value', 'currency']
+      properties:
+        value:
+          type: number
+          format: decimal
+          description: Price value. 4 decimals places are accepted
+          example: 40
+        currency:
+          type: string
+          pattern: '^[A-Z]{3}$'
+          description: The 3-letter ISO 4217 currency code.
+          example: BRL
+
+    AddressLogistics:
+      type: object
+      title: Address
+      required:
+      - country
+      - state
+      - city
+      - district
+      - street
+      - number
+      - postalCode
+      - complement
+      properties:
+        country:
+          type: string
+          pattern: '^[A-Z]{2}$'
+          description: 'Two-letter [ISO 3166-1 alpha-2](https://www.iso.org/standard/72482.html) country code.'
+          example: BR
+        state:
+          type: string
+          description: 'State or country subdivision. It is recommended (but not required) that you use the [ISO 3166-2](https://www.iso.org/standard/72483.html) representation. '
+          example: BR-SP
+        city:
+          type: string
+          description: City name.
+          example: São Paulo
+        district:
+          type: string
+          description: District or Neighborhood name.
+          example: Moema
+        street:
+          type: string
+          description: Street Name.
+          example: Plaza Avenue
+        number:
+          type: string
+          description: Street Number.
+          example: '100'
+        postalCode:
+          type: string
+          description: Postal Code
+          example: '20111-000'
+        complement:
+          type: string
+          description: Address complement.
+          example: BL 02 AP 31
+        reference:
+          type: string
+          description: Address reference.
+          example: Yellow House
+        latitude:
+          type: number
+          format: float
+          description: "Latitude in degrees. Values are restricted to the range [[-90, 90]]."
+          example: -23.54809
+        longitude:
+          type: number
+          format: float
+          description: "Longitude in degrees. Values are restricted to the range [[-180, 180]]."
+          example: -46.63638
+
+    DeliveryOrder:
+      description: Delivery Order Object.
+      type: object
+      required:
+      - orderId
+      - orderDisplayId
+      - merchant
+      - pickupAddress
+      - returnToMerchant
+      - canCombine
+      - deliveryAddress
+      - customerName
+      - vehicle
+      - limitTimes
+      - totalOrderPrice
+      - totalWeight
+      - payments
       properties:
         orderId:
           type: string
-          description: Order identifier this delivery is linked to
-          example: order-abc123
+          format: UUID
+          description: The orderId generated by the **`Ordering Application`**.
+          example: '52122852-6626-11ed-9022-0242ac120002'
+        orderDisplayId:
+          type: string
+          description: Order Id shown in the **`Ordering Application`** interface for the customer.
+          example: 96b41025
+        merchant:
+          type: object
+          required: [id, name]
+          description: Merchant information.
+          properties:
+            id:
+              type: string
+              description: |-
+                Unique Identifier. Identifies the merchant in the different systems that the merchant will communicate.
+                This id must be generated by the merchant's **`Software Service`**.
+
+                > To avoid duplicates between different merchants it is recommended that the software creates the merchantId using:
+                > `Merchant Document + UUID`
+
+                > If this is not possible, it is recommended to at least use a UUID.
+              minLength: 36
+              maxLength: 100
+              example: '22815773000169-dbc7e35a-c936-4665-9e13-eb55eb8b6824'
+            name:
+              type: string
+              description: Merchant Public Name
+              maxLength: 500
+              example: Pizza Plaza
+        pickupAddress:
+          description: Pickup Address.
+          allOf:
+          - $ref: '#/components/schemas/AddressLogistics'
+          - type: object
+            properties:
+              pickupLocation:
+                type: string
+                description: Pickup Location
+              parkingSpace:
+                type: boolean
+                description: Parking Space
+              instructions:
+                type: string
+                description: Any instructions that may help the delivery.
+        pickupCode:
+          type: string
+          description: "Pickup code to be provided to the delivery person for order collection at the merchant. This code may have been generated by the 'Ordering Application' or by the 'Software Service'."
+        notifyReadyForPickup:
+          type: boolean
+          description: "Inform whether the **`Logistic Service`** to wait for a notification that the order was ready for been picked up. This notification happens via the endpoint: [POST /logistics/orderPicked/{orderId}](#operation/logisticsReadyForPicked)"
+        notifyPickup:
+          type: boolean
+          description: "Inform whether the **`Logistic Service`** to wait for a notification that the order has actually been picked. This notification happens via the endpoint: [POST /logistics/orderPicked/{orderId}](#operation/logisticsPicked)"
+        notifyConclusion:
+          type: boolean
+          description: "Inform whether the **`Logistic Service`** to wait for a delivery finish notification from the requester, before actually finalizing the delivery in its system. This notification is made via the endpoint: [POST /logistics/finishDelivery/{orderId}](#operation/logisticsFinish)"
+        returnToMerchant:
+          type: boolean
+          description: Inform whether the delivery person should return to the pickup address after the delivery has been made.
+        canCombine:
+          type: boolean
+          description: Inform whether the **`Logistic Service`** can combine this order with other orders in the same delivery.
+        confirmationCodeRequired:
+          type: boolean
+          description: " Inform whether the **Logistics Service** needs to validate a Delivery Confirmation Code passed by the customer to complete the delivery."
+        deliveryAddress:
+          description: Delivery Address
+          allOf:
+          - $ref: '#/components/schemas/AddressLogistics'
+          - type: object
+            properties:
+              instructions:
+                type: string
+                description: Instructions
+        customerName:
+          type: string
+          description: Customer Name.
+        customerPhone:
+          type: string
+          description: |-
+            Customer's phone. Here you can enter the customer's phone number directly (provided that the customer has given permission for this data to be shared, according to local policies) or another phone number (such as the ordering application's call center phone number).
+
+            **Please note**: The telephone number is considered an identification field and therefore the customer's advance consent is required.
+        customerPhoneLocalizer:
+          type: string
+          description: "This propertie should be used as a complementary field to the `customerPhone` field in cases where a generic phone number is provided, such as a call center, and it is necessary to provide some order or customer identification."
+        vehicle:
+          description: "Vehicle Info. informs which vehicle options are to be used for delivery. More than one can be informed, but the logistics service must choose only one of the types of vehicles informed."
+          allOf:
+          - $ref: '#/components/schemas/Vehicle'
+        limitTimes:
+          type: object
+          description: "Limit Times. Informs the maximum pickup and delivery times that must be met by the `Logistics Service`."
+          properties:
+            pickupLimit:
+              type: integer
+              description: Pickup Limit in **minutes**. It should be used to inform the maximum amount of minutes from the time the request was made to which the order should be collected at the merchant.
+              example: 23
+            deliveryLimit:
+              type: integer
+              description: Delivery Limit in **minutes**. It should be used to inform the maximum amount of minutes from the time the request was made to which the order should be delivered at the consumer's address.
+              example: 48
+            orderCreatedAt:
+              type: string
+              format: date-time
+              description: "The date and time that the Order was created at the **Ordering Application**. \n\n(UTC date-time in ISO timestamp format. See [Guidelines](#section/General-Guidelines) for more info)."
+        preparationStartDateTime:
+          type: string
+          format: date-time
+          description: "Estimated time when the order will start being prepared.\n\n(UTC date-time in ISO timestamp format. See [Guidelines](#section/General-Guidelines) for more info)."
+        totalOrderPrice:
+          description: "Total order price that was calculated and displayed for the final consumer in the **`Ordering Application`**. This value may already contain taxes and shipping in addition to the value of the items purchased."
+          allOf:
+          - $ref: '#/components/schemas/Price'
+        orderDeliveryFee:
+          description: "This field informs the delivery fee paid by the consumer in the **`Ordering Application`**."
+          allOf:
+          - $ref: '#/components/schemas/Price'
+        totalWeight:
+          type: integer
+          description: Total packaging weight in **grams**
+        packageVolume:
+          type: number
+          description: "The cubage of the packaging in **cubic meters (m³)**."
+        packageQuantity:
+          type: integer
+          description: |-
+            Number of packages that will be transported in this order. For example, 2 packages, or 3 boxes.
+            > The unit of measure will not be considered, only the quantity.
+        items:
+          type: array
+          description: List of items that are part of the delivery.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: Product name
+              quantity:
+                type: number
+                format: decimal
+                description: |-
+                  Amount of items.
+
+                    > Use fractional values for quantities smaller than the unit of measure:
+                    > Example: 500 grams = 0.5 KG
+        specialInstructions:
+          type: string
+          description: "Free text to describe special instructions that may apply. These instructions can be used to give some special guidance to the delivery person at the time of the pickup or delivery."
+        additionalPricePercentual:
+          type: number
+          format: double
+          description: |-
+            Indicates to the **`Logistic Service`** an additional percentage to the list price that the requester agrees to pay for the delivery.
+            > The delivery request will be refused if the delivery price exceeds this value.
+
+            Example: List Price = $10
+                     Actual calculated price = $15
+                     Additonal price percentage = **50**
+
+
+            In this case, any value informed below 50, would result in the order being rejected.
+        payments:
+          type: object
+          description: "Payments Info. It informs the payment methods chosen by the consumer in the **`Ordering Application`**. This section should be used by the `Logistics Service` to check how much the delivery person should receive from the consumer when delivering the order."
+          properties:
+            method:
+              type: string
+              description: |-
+                OFFLINE - The order will be paid by the consumer at the time the order is received.
+                ONLINE - The order has already been paid through the order application.
+              enum:
+              - OFFLINE
+              - ONLINE
+            wirelessPos:
+              type: boolean
+              description: Indicates whether the delivery person should take the wireless payment device with him.
+            offlineMethod:
+              type: array
+              description: "If the method is `OFFLINE`, the payment information should be provided."
+              items:
+                type: object
+                description: ""
+                properties:
+                  type:
+                    type: string
+                    enum:
+                    - CREDIT
+                    - DEBIT
+                    - MEAL_VOUCHER
+                    - FOOD_VOUCHER
+                    - PIX
+                    - CASH
+                    - CREDIT_DEBIT
+                    - OTHER
+                  amount:
+                    allOf:
+                    - $ref: '#/components/schemas/Price'
+              maxItems: 100
+            change:
+              description: "If type is `CASH`, tells how much change will be needed."
+              allOf:
+              - $ref: '#/components/schemas/Price'
+        combinedOrdersIds:
+          type: array
+          description: "Combined Orders Ids. Informs the logistics service of the Id of other orders already in progress so that the operator can combine these orders. This combination may or may not be accepted by the logistic service, respecting the contracted policies."
+          items:
+            type: string
+            format: uuid
+          maxItems: 10
+        sourceAppId:
+          type: string
+          format: uuid
+          description: "This field must be filled in with the AppId of the **Ordering Application** that originated the order. This field is to help the applications that will work as a Hub, intermediating the requests from the **Ordering Application** with the **Software Service** and the **Logistics Services**."
+        sourceOrderId:
+          type: string
+          format: uuid
+          description: "This field must be filled in with the original OrderId generated by the **Ordering Application**. In most cases this property will have the same value as the `orderId` property, since it is already recommended that the order id created by the **Ordering Application** be sent in the `orderId` property. But if the order id created by the **Ordering Application** is not sent in the `orderId` property then it must be entered in this field."
+
+
+    Vehicle:
+      description: Vehicle Object.
+      type: object
+      required: [type, container]
+      properties:
+        type:
+          type: array
+          description: Vehicle Type
+          items:
+            type: string
+            enum:
+            - MOTORBIKE_BAG
+            - MOTORBIKE_BOX
+            - CAR
+            - BICYCLE
+            - SCOOTER
+            - VUC
+          maxItems: 10
+        container:
+          type: string
+          description: Vehicle container (bag) type.
+          enum:
+          - NORMAL
+          - THERMIC
+        containerSize:
+          type: string
+          description: Vehicle container (bag) size.
+          enum:
+          - SMALL
+          - MEDIUM
+          - LARGE
+          - EXTRA_LARGE
+        instruction:
+          type: string
+          description: "Free text to describe special instructions that may apply. These instructions can be used to give some special guidance to the delivery person at the time of the pickup or delivery."
+
+    DeliveryOrderResponse:
+      description: Delivery Order Response Object.
+      type: object
+      required: [deliveryId, event, completion]
+      properties:
         deliveryId:
           type: string
-          description: Logistics provider's internal delivery identifier
-        status:
+          format: UUID
+          description: The delivery Id generated by the **`Logistic Service`**.
+          example: '48ae4d68-6626-11ed-9022-0242ac120002'
+        event:
+          description: "Current event of the order. It is expected to be sent with the value **`PENDING`** at this moment, since the acceptance or rejection of the request will be processed asynchronously."
           type: string
-          enum: [PENDING, ASSIGNED, IN_TRANSIT, DELIVERED, CANCELLED, FAILED]
-          description: |
-            Current delivery status:
-            - `PENDING` — waiting for courier assignment
-            - `ASSIGNED` — courier assigned, heading to store
-            - `IN_TRANSIT` — order collected, en route to customer
-            - `DELIVERED` — successfully delivered to customer
-            - `CANCELLED` — delivery cancelled
-            - `FAILED` — delivery attempted but failed (e.g., customer unreachable)
-        courier:
+          enum:
+          - PENDING
+          - ACCEPTED
+          - REJECTED
+          - PICKUP_ONGOING
+          - ARRIVED_AT_MERCHANT
+          - ORDER_PICKED
+          - DELIVERY_ONGOING
+          - ARRIVED_AT_CUSTOMER
+          - ORDER_DELIVERED
+          - RETURNING_TO_MERCHANT
+          - RETURNED_TO_MERCHANT
+          - DELIVERY_FINISHED
+          - CANCELLED
+        completion:
           type: object
-          description: Courier information (available after assignment)
+          description: Informs the expected date and time for sending the acceptance or refusal of the delivery order.
           properties:
-            name: { type: string, example: "João S." }
-            phone: { type: string }
-            vehicleType:
+            estimate:
               type: string
-              enum: [MOTORCYCLE, BICYCLE, CAR, WALKING]
-            trackingUrl:
+              format: date-time
+              description: "Expected date and time for completion. \n\n(UTC date-time in ISO timestamp format. See [Guidelines](#section/General-Guidelines) for more info)."
+            rejectAfter:
               type: string
-              format: uri
-              description: Real-time tracking URL (when provided by logistics platform)
-        estimatedDeliveryAt:
+              format: date-time
+              description: "Maximum date and time to wait for the acceptance or refusal of the order. After this time the delivery request should be disregarded and a new request should be made. \n\n(UTC date-time in ISO timestamp format. See [Guidelines](#section/General-Guidelines) for more info)."
+        deliveryDetailsURL:
           type: string
-          format: date-time
-          description: Estimated delivery timestamp (UTC)
-        pickedUpAt:
-          type: string
-          format: date-time
-          description: When the courier collected the order from the store
-        deliveredAt:
-          type: string
-          format: date-time
-          description: When the order was delivered to the customer
+          format: URI
+          description: |-
+            It is the URL where the delivery information can be found.
+            It should return the [GET /logistics/delivery/{orderId}](#operation/logisticDetails) route for this order."
+          example: 'http://yourApiBaseUrl.com/v1/logistics/delivery/52122852-6626-11ed-9022-0242ac120002'
 
-    Address:
+    DeliveryOrderEvent:
+      description: Delivery Order Event Object.
       type: object
-      required: [street, city, state, country, postalCode]
+      required:
+      - deliveryId
+      - orderId
+      - orderDisplayId
+      - merchant
+      - event
+      - customerName
       properties:
-        street: { type: string, example: "Rua das Flores, 42" }
-        complement: { type: string }
-        neighborhood: { type: string }
-        city: { type: string, example: "São Paulo" }
-        state: { type: string, example: "SP" }
-        country: { type: string, example: "BR" }
-        postalCode: { type: string, example: "01310-100" }
-        coordinates:
+        deliveryId:
+          type: string
+          format: UUID
+          description: The delivery ID generated by the `Logistics Service`.
+          example: '48ae4d68-6626-11ed-9022-0242ac120002'
+        orderId:
+          type: string
+          format: uuid
+          description: The orderId generated by the **`Ordering Application`**.
+          example: '52122852-6626-11ed-9022-0242ac120002'
+        orderDisplayId:
+          type: string
+          description: Order Id shown in the **`Ordering Application`** interface for the customer.
+          example: 96b41025
+        merchant:
           type: object
+          required: [id, name]
+          description: Merchant information.
           properties:
-            latitude: { type: number, format: double }
-            longitude: { type: number, format: double }
+            id:
+              type: string
+              description: |-
+                Unique Identifier. Identifies the merchant in the different systems that the merchant will communicate.
+                This id must be generated by the merchant's **`Software Service`**.
 
-    Error:
-      type: object
-      required: [code, message]
-      properties:
-        code:
+                > To avoid duplicates between different merchants it is recommended that the software creates the merchantId using:
+                > `Merchant Document + UUID`
+
+                > If this is not possible, it is recommended to at least use a UUID.
+              minLength: 36
+              maxLength: 100
+              example: '22815773000169-dbc7e35a-c936-4665-9e13-eb55eb8b6824'
+            name:
+              type: string
+              description: Merchant Public Name
+              maxLength: 500
+              example: Pizza Plaza
+        event:
+          description: Current Event Info.
+          allOf:
+          - $ref: '#/components/schemas/DeliveryEvent'
+        problem:
+          type: array
+          description: List of problems that may occur.
+          items:
+            allOf:
+            - $ref: '#/components/schemas/DeliveryProblem'
+        customerName:
           type: string
-          example: DELIVERY_NOT_FOUND
+          description: Customer Name.
+        vehicle:
+          description: |-
+            Chosen Vehicle Info.
+            > This propertie is **REQUIRED** when `event > type` is different from `PENDING`, `REJECTED` and `CANCELLED`
+          allOf:
+          - $ref: '#/components/schemas/ChosenVehicle'
+        deliveryPrice:
+          description: |-
+            Delivery Pricing Info.
+            > This propertie is **REQUIRED** when `event > type` is different from `PENDING`, `REJECTED` and `CANCELLED`
+          allOf:
+          - $ref: '#/components/schemas/DeliveryPrice'
+        eta:
+          description: |-
+            Estimate Times of Pickup and Delivery.
+            > This propertie is **REQUIRED** when `event > type` is different from `PENDING`, `REJECTED` and `CANCELLED`
+          allOf:
+          - $ref: '#/components/schemas/ETA'
+        deliveryPerson:
+          description: |-
+            Delivery Person Info.
+            > This propertie is **REQUIRED** when `event > type` is different from `PENDING`, `REJECTED` and `CANCELLED`
+          allOf:
+          - $ref: '#/components/schemas/DeliveryMan'
+        geoLocalization:
+          description: Geo Localization Info.
+          allOf:
+          - $ref: '#/components/schemas/GeoLocalization'
+        externalTrackingURL:
+          type: string
+          format: URI
+          description: "External URL, provided by the logistics service to track the delivery on a specific page. Example: Real-time map view, or delivery timeline."
+        combinedOrdersIds:
+          type: array
+          description: "Combined Orders Ids. Informs which other orders from the same merchant are being carried by the same delivery person, with the same `deliveryId`."
+          items:
+            type: string
+            format: uuid
+
+
+    DeliveryEvent:
+      description: Delivery Event Object.
+      type: object
+      required: [type, datetime]
+      properties:
+        type:
+          type: string
+          description: The current delivery event.
+          enum:
+          - PENDING
+          - ACCEPTED
+          - REJECTED
+          - PICKUP_ONGOING
+          - ARRIVED_AT_MERCHANT
+          - ORDER_PICKED
+          - DELIVERY_ONGOING
+          - ARRIVED_AT_CUSTOMER
+          - ORDER_DELIVERED
+          - RETURNING_TO_MERCHANT
+          - RETURNED_TO_MERCHANT
+          - DELIVERY_FINISHED
+          - CANCELLED
         message:
           type: string
-          example: "No delivery found for order 'order-abc123'"
+          description: Free message. It should be used to provide more detailed information.
+        datetime:
+          type: string
+          format: date-time
+          description: "Date and time when the event ocurred. \n\n(UTC date-time in ISO timestamp format. See [Guidelines](#section/General-Guidelines) for more info)."
+        rejectionInfo:
+          description: "Rejection Info. It should be informed to provide more information when the event type is `REJECTED`."
+          allOf:
+          - $ref: '#/components/schemas/DeliveryEventDenied'
+
+    DeliveryEventDenied:
+      description: Delivery Event Denied Object.
+      type: object
+      required: [reason]
+      discriminator:
+        propertyName: reason
+        mapping:
+          PRICE_EXCEEDED: '#/components/schemas/DeliveryEventDeniedPrice'
+          VEHICLE_NOT_AVAILABLE: '#/components/schemas/DeliveryEventDeniedVehicle'
+          NO_DELIVERYPERSON_AVAILABLE: '#/components/schemas/DeliveryEventDeniedNoDeliveryMan'
+          DOES_NOT_MEET_REQUESTED_TIMES: '#/components/schemas/DeliveryEventDeniedEta'
+          REGION_NOT_SERVED: '#/components/schemas/DeliveryEventDenied'
+          INVALID_ADDRESS: '#/components/schemas/DeliveryEventDenied'
+          OTHER: '#/components/schemas/DeliveryEventDenied'
+      properties:
+        reason:
+          type: string
+          description: Rejection reason.
+          enum:
+          - PRICE_EXCEEDED
+          - VEHICLE_NOT_AVAILABLE
+          - NO_DELIVERYPERSON_AVAILABLE
+          - DOES_NOT_MEET_REQUESTED_TIMES
+          - REGION_NOT_SERVED
+          - OTHER
+
+    DeliveryEventDeniedVehicle:
+      description: Metadata
+      allOf:
+      - $ref: '#/components/schemas/DeliveryEventDenied'
+      - type: object
+      - properties:
+          metadata:
+            type: object
+            description: Information about vehicles availability at the moment.
+            properties:
+              availableVehicles:
+                type: integer
+                description: Informs how many vehicles are available at the moment.
+              vehiclesAvailable:
+                description: List of currently available vehicles.
+                allOf:
+                - $ref: '#/components/schemas/Vehicle'
+              nextAvailableVehicle:
+                type: integer
+                description: Informs how soon the next vehicle will be available in **minutes**.
+
+    DeliveryEventDeniedPrice:
+      description: Metadata
+      allOf:
+      - $ref: '#/components/schemas/DeliveryEventDenied'
+      - type: object
+      - properties:
+          metadata:
+            type: object
+            description: The actual delivery price calculated according to the data given in the request.
+            allOf:
+            - $ref: '#/components/schemas/DeliveryPrice'
+
+    DeliveryEventDeniedNoDeliveryMan:
+      description: Metadata
+      allOf:
+      - $ref: '#/components/schemas/DeliveryEventDenied'
+      - type: object
+      - properties:
+          metadata:
+            type: object
+            description: Information about delivery person availability.
+            properties:
+              nextAvailableVehicle:
+                type: integer
+                description: Informs how soon the next delivery person will be available in **minutes**.
+
+    DeliveryEventDeniedEta:
+      description: Metadata
+      allOf:
+      - $ref: '#/components/schemas/DeliveryEventDenied'
+      - type: object
+      - properties:
+          metadata:
+            type: object
+            description: The actual ETAs calculated according to the data given in the request.
+            allOf:
+            - $ref: '#/components/schemas/ETA'
+
+
+    DeliveryProblem:
+      description: Delivery Problem Object.
+      type: object
+      required: [reason, datetime, canFinishDeliver, needMerchantAction]
+      properties:
+        reason:
+          type: string
+          description: Problem reason.
+          enum:
+          - DELIVERYPERSON_OCCURRENCE
+          - PAYMENT_PROBLEMS
+          - WRONG_PRODUCT_OR_ITEM
+          - ORDER_DELAYED
+          - ORDER_DAMAGED_OR_VIOLATED
+          - CUSTOMER_DID_NOT_PLACE_ORDER
+          - CUSTOMER_ADDRESS_UNKNOWN
+          - ORDER_MISSING_ITEMS
+          - NOBODY_TO_RECEIVE
+          - DELIVERYPERSON_WAITING_PAYMENT_FOR_ALREADY_PAID_ORDER
+          - ORDER_DELIVERED_WITHOUT_PAYMENT
+          - FRAUD_OR_THEFT
+          - OTHER
+        message:
+          type: string
+          description: Free message. It should be used to provide more detailed information.
+        datetime:
+          type: string
+          format: date-time
+          description: "Date and time when the problem ocurred. \n\n(UTC date-time in ISO timestamp format. See [Guidelines](#section/General-Guidelines) for more info)."
+        canFinishDeliver:
+          type: boolean
+          description: Informs whether or not it is still possible to finish the delivery.
+        needMerchantAction:
+          type: boolean
+          description: Informs whether or not the merchant needs to perform some action in order for delivery to continue.
+
+    DeliveryProblemHistory:
+      description: Delivery Event.
+      type: object
+      required: [reason, datetime, resolved]
+      properties:
+        reason:
+          type: string
+          description: Problem reason.
+          enum:
+          - DELIVERYPERSON_OCCURRENCE
+          - PAYMENT_PROBLEMS
+          - WRONG_PRODUCT_OR_ITEM
+          - ORDER_DELAYED
+          - ORDER_DAMAGED_OR_VIOLATED
+          - CUSTOMER_DID_NOT_PLACE_ORDER
+          - CUSTOMER_ADDRESS_UNKNOWN
+          - ORDER_MISSING_ITEMS
+          - NOBODY_TO_RECEIVE
+          - DELIVERYPERSON_WAITING_PAYMENT_FOR_ALREADY_PAID_ORDER
+          - ORDER_DELIVERED_WITHOUT_PAYMENT
+          - FRAUD_OR_THEFT
+          - OTHER
+        message:
+          type: string
+          description: Free message. It should be used to provide more detailed information.
+        datetime:
+          type: string
+          format: date-time
+          description: "Date and time when the problem ocurred. \n\n(UTC date-time in ISO timestamp format. See [Guidelines](#section/General-Guidelines) for more info)."
+        resolved:
+          type: boolean
+          description: Informs if the problem was resolved or not.
+        actionTaken:
+          type: string
+          description: Action taken by the requester.
+          enum:
+          - RETURN_TO_STORE
+          - DELIVER_PRODUCT
+          - CANCEL_DELIVERY
+        resolutionDate:
+          type: string
+          format: date-time
+          description: "Date and time when the problem was resolved. \n\n(UTC date-time in ISO timestamp format. See [Guidelines](#section/General-Guidelines) for more info)."
+
+    ChosenVehicle:
+      description: Delivery Order Response Object
+      type: object
+      required: [type, container]
+      properties:
+        type:
+          type: string
+          description: Vehicle Type.
+          enum:
+          - MOTORBIKE_BAG
+          - MOTORBIKE_BOX
+          - CAR
+          - BICYCLE
+          - SCOOTER
+          - VUC
+        container:
+          type: string
+          description: The veichle container (bag) type.
+          enum:
+          - NORMAL
+          - THERMIC
+        containerSize:
+          type: string
+          description: Vehicle container (bag) size.
+          enum:
+          - SMALL
+          - MEDIUM
+          - LARGE
+          - EXTRA_LARGE
+        instruction:
+          type: string
+          description: Special Instructions.
+
+    DeliveryPrice:
+      description: Delivery Pricing
+      type: object
+      required: [price, pricingList, additionalPricePercentual]
+      properties:
+        price:
+          description: "The calculated price of the delivery. It may be 0. The price shall be calculated according to the Price List being used, as well as previously established commercial agreements."
+          allOf:
+          - $ref: '#/components/schemas/Price'
+        pricingList:
+          type: string
+          description: Indicates what list was used to calculate the delivery price.
+          enum:
+          - NORMAL
+          - DYNAMIC
+        additionalPricePercentual:
+          type: number
+          description: |-
+            Indicates the additional percentage to the list price that was calculated for this delivery.
+
+            Example: List Price = $10
+                     Actual calculated price = $15
+                     Additonal price percentage = **50**
+
+
+    DeliveryAvailabilityPrice:
+      description: Delivery Order Object
+      type: object
+      required:
+      - pickupAddress
+      - returnToMerchant
+      - canCombine
+      - deliveryAddress
+      - vehicle
+      - limitTimes
+      - totalOrderPrice
+      - totalWeight
+      properties:
+        merchant:
+          type: object
+          required: [id, name]
+          description: Merchant information.
+          properties:
+            id:
+              type: string
+              description: |-
+                Unique Identifier. Identifies the merchant in the different systems that the merchant will communicate.
+                This id must be generated by the merchant's **`Software Service`**.
+
+                > To avoid duplicates between different merchants it is recommended that the software creates the merchantId using:
+                > `Merchant Document + UUID`
+
+                > If this is not possible, it is recommended to at least use a UUID.
+              minLength: 36
+              maxLength: 100
+              example: '22815773000169-dbc7e35a-c936-4665-9e13-eb55eb8b6824'
+            name:
+              type: string
+              description: Merchant Public Name
+              maxLength: 500
+              example: Pizza Plaza
+        pickupAddress:
+          description: Pickup Address.
+          allOf:
+          - $ref: '#/components/schemas/AddressLogistics'
+          - type: object
+            properties:
+              pickupLocation:
+                type: string
+                description: Pickup Location
+              parkingSpace:
+                type: boolean
+                description: Parking Space
+              instructions:
+                type: string
+                description: Instructions
+        returnToMerchant:
+          type: boolean
+          description: Inform whether the delivery person should return to the pickup address after the delivery has been made.
+        canCombine:
+          type: boolean
+          description: Inform whether the **`Logistic Service`** can combine this order with other orders in the same delivery.
+        deliveryAddress:
+          description: Delivery Address
+          allOf:
+          - $ref: '#/components/schemas/AddressLogistics'
+          - type: object
+            properties:
+              instructions:
+                type: string
+                description: Instructions
+        vehicle:
+          description: "Vehicle Info. informs which vehicle options are to be used for delivery. More than one can be informed, but the logistics service must choose only one of the types of vehicles informed."
+          allOf:
+          - $ref: '#/components/schemas/Vehicle'
+        limitTimes:
+          type: object
+          description: "Limit Times. Informs the maximum pickup and delivery times that must be met by the `Logistics Service`."
+          properties:
+            pickupLimit:
+              type: integer
+              description: Pickup Limit in **minutes**. It should be used to inform the maximum amount of minutes from the time the request was made to which the order should be collected at the merchant.
+              example: 23
+            deliveryLimit:
+              type: integer
+              description: Delivery Limit in **minutes**. It should be used to inform the maximum amount of minutes from the time the request was made to which the order should be delivered at the consumer's address.
+              example: 48
+            orderCreatedAt:
+              type: string
+              format: date-time
+              description: "The date and time that the Order was created at the **Ordering Application**. \n\n(UTC date-time in ISO timestamp format. See [Guidelines](#section/General-Guidelines) for more info)."
+        totalOrderPrice:
+          description: "Total order price that was calculated and displayed for the final consumer in the **`Ordering Application`**. This value may already contain taxes and shipping in addition to the value of the items purchased."
+          allOf:
+          - $ref: '#/components/schemas/Price'
+        orderDeliveryFee:
+          description: "This field informs the delivery fee paid by the consumer in the **`Ordering Application`**."
+          allOf:
+          - $ref: '#/components/schemas/Price'
+        totalWeight:
+          type: integer
+          description: Total Weight in **grams**
+        packageVolume:
+          type: number
+          description: "The cubage of the packaging in **cubic meters (m³)**."
+        packageQuantity:
+          type: integer
+          description: |-
+            Number of packages that will be transported in this order. For example, 2 packages, or 3 boxes.
+            > The unit of measure will not be considered, only the quantity.
+        specialInstructions:
+          type: string
+          description: Free text to describe special instructions that may apply.
+        additionalPricePercentual:
+          type: number
+          description: |-
+            Indicates to the **`Logistic Service`** an additional percentage to the list price that the requester agrees to pay for the delivery.
+            > The delivery request will be refused if the delivery price exceeds this value.
+
+            Example: List Price = $10
+                     Actual calculated price = $15
+                     Additonal price percentage = **50**
+
+
+            In this case, any value informed below 50, would result in the order being rejected.
+        onlinePayment:
+          type: boolean
+          description: "Informs whether or not the payment has already been made in the **`Ordering Application`**"
+
+    DeliveryAvailabilityPriceResponse:
+      description: Delivery Order Response Object
+      type: object
+      properties:
+        deliveryPrice:
+          description: Delivery Pricing Info.
+          allOf:
+          - $ref: '#/components/schemas/DeliveryPrice'
+        vehicles:
+          type: object
+          description: Chosen Vehicle Info.
+          properties:
+            availableVehicles:
+              type: integer
+              description: Informs how many vehicles are available at the moment.
+            vehiclesAvailable:
+              description: List of currently available vehicles.
+              allOf:
+              - $ref: '#/components/schemas/Vehicle'
+            nextAvailableVehicle:
+              type: integer
+              description: Informs how soon the next vehicle will be available in **minutes**.
+        ETAs:
+          description: ETAs
+          allOf:
+          - $ref: '#/components/schemas/ETA'
+
+
+    ETA:
+      description: ETA
+      type: object
+      required:
+      - updateMethod
+      - pickupEtaInMinutes
+      - pickupEtaDatetime
+      - deliveryEtaInMinutes
+      - deliveryEtaDatetime
+      - maxDeliveryTime
+      properties:
+        updateMethod:
+          type: string
+          description: |-
+            Update Method: Indicates how the times will be updated in the events.
+
+            `OFFLINE`: The time will be calculated in the event `ACCEPTED` and will no longer be updated in the following events.
+
+            `ONLINE`: The time will be updated in all events. In this case, when the collection has already occurred, the `pickupEtaInMinutes` property will be set to **0** and the `pickupEtaDatetime` property will be the time when the collection occurred.
+          enum:
+          - OFFLINE
+          - ONLINE
+        pickupEtaInMinutes:
+          type: integer
+          description: Pickup Eta in **minutes**. Informs how many minutes it will take the delivery person to arrive at the merchant for order pickup.
+        pickupEtaDatetime:
+          type: string
+          format: date-time
+          description: "Pickup Eta Datetime. Informs the date and time the delivery person is expected to arrive at the merchant for order pickup. \n\n(UTC date-time in ISO timestamp format. See [Guidelines](#section/General-Guidelines) for more info)."
+        deliveryEtaInMinutes:
+          type: integer
+          description: Delivery Eta in **minutes**. Informs how many minutes it will take the delivery person to arrive at the consumer's address for order delivery.
+        deliveryEtaDatetime:
+          type: string
+          format: date-time
+          description: "Delivery Eta Datetime. Informs the date and time the delivery person is expected to arrive at the consumer's address for order delivery. \n\n(UTC date-time in ISO timestamp format. See [Guidelines](#section/General-Guidelines) for more info)."
+        returnToMerchantEtaInMinutes:
+          type: integer
+          description: "Delivery Person return to merchant Eta in **minutes**. Informs how many minutes it will take the delivery person to return to the merchant. Only valid when `returnToMerchant` is `true`."
+        returnToMerchantEtaDatetime:
+          type: string
+          format: date-time
+          description: "Delivery Person return to merchant Eta Datetime. Informs the date and time the delivery person will arrive at the returning merchant. Only valid when `returnToMerchant` is `true`. \n\n(UTC date-time in ISO timestamp format. See [Guidelines](#section/General-Guidelines) for more info)."
+        maxDeliveryTime:
+          type: string
+          format: date-time
+          description: "Maximum Date and Time for delivery. This time should not exceed the delivery time limit given in the order request. \n\n(UTC date-time in ISO timestamp format. See [Guidelines](#section/General-Guidelines) for more info)."
+
+    DeliveryMan:
+      description: Delivery Person
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: string
+          description: Delivery Person Id generated at the `Logistics Service`.
+        name:
+          type: string
+          description: Delivery Person Name.
+        pictureURL:
+          type: string
+          format: URI
+          description: "URL to access the photo of the delivery person. Before entering this field, check that the parties allow data to be shared according to data disclosure laws and rules."
+        phone:
+          type: string
+          description: "Delivery Person Phone. Before entering this field, check that the parties allow data to be shared according to data disclosure laws and rules."
+
+    GeoLocalization:
+      description: Delivery Event
+      type: object
+      required: [latitude, longitude]
+      properties:
+        latitude:
+          type: number
+          format: float
+          description: "Indicates the latitude coordinate of the actual position of the delivery person.\n\n\n\nLatitude in degrees. Values are restricted to the range [[-90, 90]]."
+          example: -23.54809
+        longitude:
+          type: number
+          format: float
+          description: "Indicates the longitude coordinate of the actual position of the delivery person.\n\n\n\nLongitude in degrees. Values are restricted to the range [[-180, 180]]."
+          example: -46.63638
+        lastAddress:
+          description: The last known address that the delivery person was when the event was sent.
+          type: object
+          required: [distanceToPickup, distanceToDelivery, timestamp]
+          properties:
+            country:
+              type: string
+              pattern: '^[A-Z]{2}$'
+              description: 'Two-letter [ISO 3166-1 alpha-2](https://www.iso.org/standard/72482.html) country code.'
+              example: BR
+            state:
+              type: string
+              description: 'State or country subdivision. It is recommended (but not required) that you use the [ISO 3166-2](https://www.iso.org/standard/72483.html) representation. '
+              example: BR-SP
+            city:
+              type: string
+              description: City name.
+              example: São Paulo
+            district:
+              type: string
+              description: District or Neighborhood name.
+              example: Moema
+            street:
+              type: string
+              description: Street Name.
+              example: Plaza Avenue
+            postalCode:
+              type: string
+              description: Postal Code.
+              example: '20111-000'
+            distanceToPickup:
+              type: string
+              description: Distance To Pickup in **meters**.
+            distanceToDelivery:
+              type: string
+              description: Distance To Delivery in **meters**.
+            timestamp:
+              type: string
+              format: date-time
+              description: "Date and time when this information is valid. \n\n(UTC date-time in ISO timestamp format. See [Guidelines](#section/General-Guidelines) for more info)."
+
+
+    DeliveryCancel:
+      description: Delivery Cancel
+      type: object
+      required: [reason]
+      properties:
+        reason:
+          type: string
+          description: Cancel Reason.
+          enum:
+          - CONSUMER_CANCELLATION_REQUESTED
+          - NO_SHOW
+          - PROBLEM_AT_MERCHANT
+          - HIGH_ACCEPTANCE_TIME
+          - INCORRECT_ORDER_OR_PRODUCT_PICKUP
+          - PROBLEM_RESOLUTION
+          - DISCOMBINE_ORDER
+          - OTHER
+        action:
+          type: string
+          description: Action to be taken by the delivery person, after the cancellation.
+          enum:
+          - RETURN_TO_STORE
+          - CANCEL_DELIVERY
+        message:
+          type: string
+          description: Free message. It should be used to provide more detailed information.
+
+    DeliveryCancelResponse:
+      type: object
+      required: [additionalCharges]
+      properties:
+        additionalCharges:
+          type: boolean
+          description: Informs whether or not the cancellation will cause an additional charge to the delivery.
+
+    DeliveryHandleProblem:
+      description: Delivery Cancel
+      type: object
+      required: [reason, action]
+      properties:
+        reason:
+          type: string
+          description: Problem Reason.
+          enum:
+          - DELIVERYPERSON_OCCURRENCE
+          - PAYMENT_PROBLEMS
+          - WRONG_PRODUCT_OR_ITEM
+          - ORDER_DELAYED
+          - ORDER_DAMAGED_OR_VIOLATED
+          - CUSTOMER_DID_NOT_PLACE_ORDER
+          - CUSTOMER_ADDRESS_UNKNOWN
+          - ORDER_MISSING_ITEMS
+          - NOBODY_TO_RECEIVE
+          - DELIVERYPERSON_WAITING_PAYMENT_FOR_ALREADY_PAID_ORDER
+          - ORDER_DELIVERED_WITHOUT_PAYMENT
+          - FRAUD_OR_THEFT
+          - OTHER
+        action:
+          type: string
+          description: The action that the delivery person should take to solve this problem.
+          enum:
+          - RETURN_TO_STORE
+          - DELIVER_PRODUCT
+          - CANCEL_DELIVERY
+        message:
+          type: string
+          description: Free message. It should be used to provide more detailed information.
+
+    DeliveryOrderPicked:
+      type: object
+      title: Order Picked
+      properties:
+        pickupDate:
+          type: string
+          format: date-time
+          description: "Date and time when the order pickup occurred. \n\n(UTC date-time in ISO timestamp format. See [Guidelines](#section/General-Guidelines) for more info)."
+        volumePicked:
+          type: integer
+          description: Number of volumes picked up.
+        observation:
+          type: string
+          description: Free text. It should be used to provide more detailed information.
+
+    DeliveryOrderFinish:
+      type: object
+      title: Order Picked
+      required: [finishDate]
+      properties:
+        finishDate:
+          type: string
+          format: date-time
+          description: "Date and time when delivery completion occurred. \n\n(UTC date-time in ISO timestamp format. See [Guidelines](#section/General-Guidelines) for more info)."
+        observation:
+          type: string
+          description: Free text. It should be used to provide more detailed information.
+
+    DeliveryOrderDetails:
+      description: Delivery Order Details Object
+      type: object
+      required:
+      - deliveryId
+      - orderId
+      - orderDisplayId
+      - merchant
+      - customerName
+      - events
+      properties:
+        deliveryId:
+          type: string
+          format: UUID
+          description: The delivery ID generated by the `Logistics Service`.
+        orderId:
+          type: string
+          format: UUID
+          description: The orderId generated by the **`Ordering Application`**.
+        orderDisplayId:
+          type: string
+          description: Order Id shown in the **`Ordering Application`** interface for the customer.
+          example: 96b41025
+        merchant:
+          type: object
+          required: [id, name]
+          description: Merchant information.
+          properties:
+            id:
+              type: string
+              description: |-
+                Unique Identifier. Identifies the merchant in the different systems that the merchant will communicate.
+                This id must be generated by the merchant's **`Software Service`**.
+
+                > To avoid duplicates between different merchants it is recommended that the software creates the merchantId using:
+                > `Merchant Document + UUID`
+
+                > If this is not possible, it is recommended to at least use a UUID.
+              minLength: 36
+              maxLength: 100
+              example: '22815773000169-dbc7e35a-c936-4665-9e13-eb55eb8b6824'
+            name:
+              type: string
+              description: Merchant Public Name
+              maxLength: 500
+              example: Pizza Plaza
+        customerName:
+          type: string
+          description: Customer Name.
+        customerPhone:
+          type: string
+          description: |-
+            Customer's telephone number.
+
+            **Please note**: The telephone number is considered an identification field and therefore the customer's advance consent is required.
+        events:
+          type: array
+          description: Events History.
+          items:
+            allOf:
+            - $ref: '#/components/schemas/DeliveryEvent'
+        problem:
+          type: array
+          description: History of problems that occuried during delivery.
+          items:
+            allOf:
+            - $ref: '#/components/schemas/DeliveryProblemHistory'
+        vehicle:
+          description: |-
+            Chosen Vehicle Info.
+            > This propertie is **REQUIRED** when current `event > type` is different from `PENDING`, `REJECTED` and `CANCELLED`
+          allOf:
+          - $ref: '#/components/schemas/ChosenVehicle'
+        deliveryPrice:
+          description: |-
+            Delivery Pricing Info.
+            > This propertie is **REQUIRED** when current `event > type` is different from `PENDING`, `REJECTED` and `CANCELLED`
+          allOf:
+          - $ref: '#/components/schemas/DeliveryPrice'
+        times:
+          description: |-
+            Estimate Times of Pickup and Delivery.
+            > This propertie is **REQUIRED** when current `event > type` is different from `PENDING`, `REJECTED` and `CANCELLED`
+          allOf:
+          - $ref: '#/components/schemas/DeliveryTimes'
+        deliveryPerson:
+          description: Delivery person Info.
+          allOf:
+          - $ref: '#/components/schemas/DeliveryMan'
+        combinedOrdersIds:
+          type: array
+          description: "Combined Orders Ids. Informs which other orders from the same merchant are being carried by the same delivery person, with the same `deliveryId`."
+          items:
+            type: string
+            format: uuid
+        externalTrackingURL:
+          type: string
+          format: URI
+          description: "External URL, provided by the logistics service to track the delivery on a specific page. Example: Real-time map view, or delivery timeline."
+
+    DeliveryTimes:
+      description: ETA
+      type: object
+      required: [deliveryEtaDate, maxDeliveryTime, isDeliveryFinished]
+      properties:
+        deliveryEtaDate:
+          type: string
+          format: date-time
+          description: "Delivery Eta Datetime. Informs the date and time the delivery person is expected to arrive at the consumer's address for order delivery. \n\n(UTC date-time in ISO timestamp format. See [Guidelines](#section/General-Guidelines) for more info)."
+        maxDeliveryTime:
+          type: string
+          format: date-time
+          description: "Maximum Date and Time for delivery. This time should not exceed the delivery time limit given in the order request. \n\n(UTC date-time in ISO timestamp format. See [Guidelines](#section/General-Guidelines) for more info)."
+        isDeliveryFinished:
+          type: boolean
+          description: Informs whether or not the delivery is finished.
+        deliveryFinishDate:
+          type: string
+          format: date-time
+          description: "Date and time when the delivery finished. \n\n(UTC date-time in ISO timestamp format. See [Guidelines](#section/General-Guidelines) for more info)."
+
+    DeliveryConfirmationCode:
+      description: Delivery Confirmation Object.
+      type: object
+      required: [orderId, deliveryCode]
+      properties:
+        orderId:
+          type: string
+          format: uuid
+          description: The orderId informed in the Delivery Request.
+          example: '52122852-6626-11ed-9022-0242ac120002'
+        deliveryCode:
+          type: string
+          description: Delivery confirmation code provided by the customer.

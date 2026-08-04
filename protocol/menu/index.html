@@ -27,7 +27,7 @@
       
       
       <link rel="icon" href="../../assets/images/opendelivery-logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
     
     
       
@@ -1744,13 +1744,30 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Hierarquia">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#subcategorias-novo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Subcategorias (novo)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
-  <a href="#snapshot-vs-crud" class="md-nav__link">
+  <a href="#snapshot-vs-crud-vs-put" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Snapshot vs CRUD
+        Snapshot vs CRUD vs PUT
       
     </span>
   </a>
@@ -2652,13 +2669,30 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Hierarquia">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#subcategorias-novo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Subcategorias (novo)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
-  <a href="#snapshot-vs-crud" class="md-nav__link">
+  <a href="#snapshot-vs-crud-vs-put" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Snapshot vs CRUD
+        Snapshot vs CRUD vs PUT
       
     </span>
   </a>
@@ -2785,10 +2819,10 @@
 <tr>
 <td>Publicação</td>
 <td>Webhook monolítico</td>
-<td>CRUD + snapshot</td>
+<td><strong>CRUD + snapshot + PUT snapshot</strong></td>
 </tr>
 <tr>
-<td><code>option_price</code></td>
+<td><code>optionPrice</code></td>
 <td>Opcional</td>
 <td><strong>Obrigatório</strong> (0 se grátis)</td>
 </tr>
@@ -2798,14 +2832,34 @@
 <td><strong>Removido</strong></td>
 </tr>
 <tr>
-<td><code>unity_price</code></td>
+<td><code>unityPrice</code></td>
 <td>Implícito</td>
 <td><strong>Explícito</strong></td>
 </tr>
 <tr>
-<td><code>quantity_available</code></td>
+<td><code>quantityAvailable</code></td>
 <td>—</td>
 <td><strong>Novo</strong> (operacional)</td>
+</tr>
+<tr>
+<td>Imagens em categorias</td>
+<td>Não</td>
+<td><strong>Novo</strong></td>
+</tr>
+<tr>
+<td>Subcategorias</td>
+<td>Não</td>
+<td><strong>Novo</strong> (nesting de categorias)</td>
+</tr>
+<tr>
+<td>Imagens em categorias</td>
+<td>Não</td>
+<td><strong>Novo</strong></td>
+</tr>
+<tr>
+<td>Subcategorias</td>
+<td>Não</td>
+<td><strong>Novo</strong> (nesting de categorias)</td>
 </tr>
 </tbody>
 </table>
@@ -2814,14 +2868,19 @@
 <div class="highlight"><pre><span></span><code>Merchant
 ├── Service (DELIVERY / TAKEOUT / INDOOR) → menuId
 └── Menu
- └── Category
- └── ItemOffer
- └── OptionGroup (recursivo)
- └── Option → OptionGroup…
+    └── Category
+        ├── Subcategory (novo — nesting de categorias)
+        └── ItemOffer
+            └── OptionGroup (recursivo)
+                └── Option → OptionGroup…
 </code></pre></div>
 <p>Um estabelecimento pode ter <strong>múltiplos menus</strong>. Cada <a href="../merchant-store/#serviço-service">Service</a> pode referenciar o menu ativo via <code>menuId</code>.</p>
+<h3 id="subcategorias-novo">Subcategorias (novo)<a class="headerlink" href="#subcategorias-novo" title="Permanent link">&para;</a></h3>
+<p>Categorias podem ter subcategorias (um nível de nesting). Útil para estruturas como:
+- Hambúrgueres &gt; Clássicos, Especiais
+- Bebidas &gt; Quentes, Geladas</p>
 <hr />
-<h2 id="snapshot-vs-crud">Snapshot vs CRUD<a class="headerlink" href="#snapshot-vs-crud" title="Permanent link">&para;</a></h2>
+<h2 id="snapshot-vs-crud-vs-put">Snapshot vs CRUD vs PUT<a class="headerlink" href="#snapshot-vs-crud-vs-put" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -2835,6 +2894,11 @@
 <td>Carga inicial / reconciliação</td>
 <td>Snapshot completo</td>
 <td><code>getMenuSnapshot</code></td>
+</tr>
+<tr>
+<td>Atualizar cardápio inteiro após mudança grande</td>
+<td>PUT snapshot completo</td>
+<td><code>replaceMenuSnapshot</code></td>
 </tr>
 <tr>
 <td>Listar menus</td>
@@ -2858,18 +2922,23 @@
 </tr>
 </tbody>
 </table>
+<p><strong>Novo em V2</strong>: Ao invés do padrão V1 "atualizar → avisar via webhook → OA polling", use <strong>PUT snapshot</strong>:</p>
+<pre class="mermaid"><code>sequenceDiagram
+    participant SS as Software Service
+    participant OA as Ordering Application
+
+    Note over SS,OA: V2 — Push snapshot
+    SS-&gt;&gt;OA: PUT …/menus/{menuId}/snapshot
+    OA--&gt;&gt;SS: 202 Accepted
+    Note over OA: Processa cardápio completo
+
+    Note over SS,OA: Fallback — Pull snapshot
+    OA-&gt;&gt;SS: GET …/menus/{menuId}/snapshot
+    SS--&gt;&gt;OA: 200 MenuSnapshot
+    Note over OA: Bootstrap local / erro recovery</code></pre>
 <div class="highlight"><pre><span></span><code>GET /merchants/{merchantId}/menus/{menuId}/snapshot
 </code></pre></div>
 <p>O snapshot devolve a hierarquia (categorias → item-offers → option-groups → options). É o substituto prático do “cardápio completo” da V1 <strong>para bootstrap</strong>, não um retorno do webhook monolítico.</p>
-<pre class="mermaid"><code>sequenceDiagram
- participant OA as Ordering Application
- participant SS as Software Service
-
- OA-&gt;&gt;SS: GET …/menus/{menuId}/snapshot
- SS--&gt;&gt;OA: 200 MenuSnapshot
- Note over OA: bootstrap local
- OA-&gt;&gt;SS: PATCH …/item-offers/{id} { unity_price }
- SS--&gt;&gt;OA: 202 Accepted</code></pre>
 <hr />
 <h2 id="itemoffer-e-precos">ItemOffer e preços<a class="headerlink" href="#itemoffer-e-precos" title="Permanent link">&para;</a></h2>
 <table>
@@ -2882,12 +2951,12 @@
 </thead>
 <tbody>
 <tr>
-<td><code>unity_price</code></td>
+<td><code>unityPrice</code></td>
 <td>SIM</td>
 <td>Preço base em unidades menores (centavos)</td>
 </tr>
 <tr>
-<td><code>quantity_available</code></td>
+<td><code>quantityAvailable</code></td>
 <td>NÃO</td>
 <td>Sinal <strong>operacional</strong> (ex.: 10 porções do prato do dia). <strong>Não</strong> é estoque multi-canal. <code>null</code>/omitido = sem limite declarado; <code>0</code> = indisponível</td>
 </tr>
@@ -2901,14 +2970,19 @@
 <td>NÃO</td>
 <td>Código interno do PDV</td>
 </tr>
+<tr>
+<td><code>imageUrl</code></td>
+<td>NÃO</td>
+<td>URL da imagem do item (novo em V2)</td>
+</tr>
 </tbody>
 </table>
 <hr />
 <h2 id="optiongroup-e-option-recursivos">OptionGroup e Option (recursivos)<a class="headerlink" href="#optiongroup-e-option-recursivos" title="Permanent link">&para;</a></h2>
 <p>OptionGroups podem aninhar (ex.: tamanho → ponto → molho). Uso real costuma ser 2–3 níveis.</p>
 <div class="admonition important">
-<p class="admonition-title"><code>option_price</code> obrigatório na V2</p>
-<p>Todo <code>Option</code> DEVE ter <code>option_price</code>. Sem custo adicional: <code>0</code>. O campo <code>subtotal</code> de opções da V1 foi removido — no pedido, use <code>unity_price</code> + soma dos <code>option_price</code> (ver <a href="../orders/">Orders</a>).</p>
+<p class="admonition-title"><code>optionPrice</code> obrigatório na V2</p>
+<p>Todo <code>Option</code> DEVE ter <code>optionPrice</code>. Sem custo adicional: <code>0</code>. O campo <code>subtotal</code> de opções da V1 foi removido — no pedido, use <code>unityPrice</code> + soma dos <code>optionPrice</code> (ver <a href="../orders/">Orders</a>).</p>
 </div>
 <hr />
 <h2 id="mapa-de-operacoes-catalogo">Mapa de operações (catálogo)<a class="headerlink" href="#mapa-de-operacoes-catalogo" title="Permanent link">&para;</a></h2>
@@ -2925,12 +2999,16 @@
 <td><code>listMenus</code></td>
 </tr>
 <tr>
-<td>Snapshot</td>
-<td><code>getMenuSnapshot</code></td>
+<td>Snapshot (GET / PUT)</td>
+<td><code>getMenuSnapshot</code> · <code>replaceMenuSnapshot</code></td>
 </tr>
 <tr>
 <td>Categorias</td>
 <td><code>listCategories</code> · <code>createCategory</code> · <code>replaceCategory</code> · <code>deleteCategory</code></td>
+</tr>
+<tr>
+<td>Subcategorias</td>
+<td><code>listSubcategories</code> · <code>createSubcategory</code> · <code>replaceSubcategory</code> · <code>deleteSubcategory</code></td>
 </tr>
 <tr>
 <td>Item offers</td>

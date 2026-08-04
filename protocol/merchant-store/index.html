@@ -27,7 +27,7 @@
       
       
       <link rel="icon" href="../../assets/images/opendelivery-logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
     
     
       
@@ -1716,6 +1716,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Identidade e basic info">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#patch-atualizar-loja" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PATCH — atualizar loja
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2636,6 +2653,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Identidade e basic info">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#patch-atualizar-loja" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PATCH — atualizar loja
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2772,6 +2806,12 @@
 </tr>
 </tbody>
 </table>
+<h3 id="patch-atualizar-loja">PATCH — atualizar loja<a class="headerlink" href="#patch-atualizar-loja" title="Permanent link">&para;</a></h3>
+<p>O endpoint <code>PATCH</code> permite atualizar:
+- <code>externalCode</code> — <strong>Novo em V2</strong>: agora o Software Service pode atualizar o código interno da loja
+- <code>name</code>, <code>description</code>, <code>logoUrl</code> — identidade básica
+- <code>contacts</code> — contatos (telefone, email, etc.)</p>
+<p>Resposta: <strong><code>202</code></strong> (processamento assíncrono).</p>
 <p><code>merchantType</code> da V1 <strong>não existe</strong> na V2.</p>
 <hr />
 <h2 id="serviço-service">Serviço (<code>Service</code>)<a class="headerlink" href="#serviço-service" title="Permanent link">&para;</a></h2>
